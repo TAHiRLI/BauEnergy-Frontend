@@ -12,8 +12,9 @@ import BrokenImageOutlinedIcon from '@mui/icons-material/BrokenImageOutlined';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../pages/routes/routes';
+import UserInfo from '../userinfo';
 
-const Navbar = () => {
+const Sidebar = () => {
   const [openProjectsBtn, setopenProjectsBtn] = useState(false);
 
   const handleProjectsClick = () => {
@@ -133,14 +134,11 @@ const Navbar = () => {
       </div>
 
       <div className="px-4">
-        <List>
-          <ListItem button>
-            <ListItemIcon style={{ minWidth: '20px' }} className="mr-3">
-              <Search className="text-black" />
-            </ListItemIcon>
-            <ListItemText primary="Search" />
+          <ListItem div>
+            
+            <UserInfo/>
+
           </ListItem>
-        </List>
       </div>
     </div>
 
@@ -148,4 +146,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default Sidebar;
