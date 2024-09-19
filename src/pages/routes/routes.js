@@ -4,14 +4,19 @@ export const ROUTES = {
   LOGIN: "/login",
   CONTACT_US: "/contactUs",
 
-  // Products
-  PRODUCTS: '/products',
-  ADD_PRODUCT: '/addProduct',
-  EDIT_PRODUCT: '/products/:id',
-  PRODUCT_DETAILS: '/products/details/:id',
+  // İnstruments
+  INSTRUMENTS: '/instruments',
+  ADD_INSTRUMENTS: '/addinstrument',
+  EDIT_INSTRUMENTS: '/instrument/:id',
+  INSTRUMENTS_DETAILS: '/instrument/details/:id',
+  // Projects
+  PROJECT: '/projects',
+  ADD_PROJECT: '/addproject',
+  EDIT_PROJECT: '/project/:id',
+  PROJECT_DETAILS: '/project/:id',
+  REMOVEINTRUMENTFROM_PROJECT: '/project/removeinstrument',
 
   DASHBOARD :{
       BASE: "/dashboard"
   }
-
 };

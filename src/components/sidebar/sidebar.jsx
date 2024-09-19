@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse, CircularProgress } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import NotificationIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import Home from '@mui/icons-material/HomeOutlined';
@@ -10,15 +10,45 @@ import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import BrokenImageOutlinedIcon from '@mui/icons-material/BrokenImageOutlined';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../pages/routes/routes';
 import UserInfo from '../userinfo';
+import { projectService } from '../../APIs/Services/project.service'; 
 
 const Sidebar = () => {
-  const [openProjectsBtn, setopenProjectsBtn] = useState(false);
+  const [openProjectsBtn, setOpenProjectsBtn] = useState(false);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  const handleProjectsClick = () => {
-    setopenProjectsBtn(!openProjectsBtn);
+  const navigate = useNavigate();
+
+  const handleProjectsClick = async () => {
+    setOpenProjectsBtn(!openProjectsBtn);
+
+    if (!openProjectsBtn && projects.length === 0) { // Fetch projects only once
+      setLoading(true);
+      setError(false);
+
+      try {
+        const response = await projectService.getAll();
+        setProjects(response.data); // Assuming the response contains the project list in `data`
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        setError(true);
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleProjectSelect = async (projectId) => {
+    try {
+      const projectResponse = await projectService.getById(projectId);
+      navigate(`/project/${projectId}`, { state: { project: projectResponse.data } }); // Pass project data
+    } catch (error) {
+      console.error("Failed to fetch project details", error);
+    }
   };
 
   return (
@@ -35,7 +65,7 @@ const Sidebar = () => {
         <span className="text-lg ">Dashboard</span>
       </div>
 
-      <div className="px-4">
+      <div className="p-4">
         <List>
           <ListItem button>
             <ListItemIcon style={{ minWidth: '20px' }} className="mr-3">
@@ -44,7 +74,7 @@ const Sidebar = () => {
             <ListItemText primary="Search" />
           </ListItem>
         </List>
-
+        
         <List>
           <ListItem button>
             <ListItemIcon style={{ minWidth: '20px' }} className="mr-3">
@@ -62,14 +92,11 @@ const Sidebar = () => {
             <ListItemText primary="Settings and Teams" />
           </ListItem>
         </List>
-      </div>
 
-      <div className="px-5 py-4">
+        <div className="px-5 py-4">
         <Divider className="bg-gray-200 mx-4" />
-      </div>
+        </div>
 
-      {/* Bottom section */}
-      <div className="p-4">
         <List>
           <ListItem button>
             <ListItemIcon>
@@ -88,14 +115,17 @@ const Sidebar = () => {
           </ListItem>
           <Collapse in={openProjectsBtn} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-              <ListItem button className="pl-12">
-                <span className="text-blue-500 mr-2 ml-7">&#x25A0;</span>
-                <ListItemText primary="Bau Energy" />
-              </ListItem>
-              <ListItem button className="pl-12">
-                <span className="text-blue-500 mr-2 ml-7">&#x25A0;</span>
-                <ListItemText primary="Construction" />
-              </ListItem>
+              {projects.map((project) => (
+                <ListItem 
+                  button 
+                  className="pl-12" 
+                  key={project.id} 
+                  onClick={() => handleProjectSelect(project.id)}
+                >
+                  <span className="text-blue-500 mr-2 ml-7">&#x25A0;</span>
+                  <ListItemText primary={project.name} />
+                </ListItem>
+              ))}
             </List>
           </Collapse>
 
@@ -134,15 +164,11 @@ const Sidebar = () => {
       </div>
 
       <div className="px-4">
-          <ListItem div>
-            
-            <UserInfo/>
-
-          </ListItem>
+        <ListItem div>
+          <UserInfo />
+        </ListItem>
       </div>
     </div>
-
-    
   );
 };
 

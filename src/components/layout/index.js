@@ -4,27 +4,6 @@ import Sidebar from '../sidebar/sidebar'
 import {Toolbar, Typography } from '@mui/material';
 
 
-// function Layout({children}) {
-//   return (
-//     <>
-//       <nav className="flex justify-end">
-//         <div className='w-4/5'>
-//           <Appbar/>
-//         </div>
-//       </nav>
-
-//       <nav>
-//         <Navbar/>
-//       </nav>
-
-        
-//       {/* <main>
-//         {children}
-//       </main> */}
-//     </>
-//   )
-// }
-
 function Layout({ children }) {
   return (
     <div className="flex ">

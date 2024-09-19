@@ -14,6 +14,7 @@ export const PrivateRoute = ({ loginPath, children, allowedRoles }) => {
 
 
     if(!!allowedRoles && !allowedRoles.some(role => user?.authState?.roles?.includes(role))){
+        console.log(user)
         Swal.fire({
             title: 'Unauthorized!',
             text: `Only ${allowedRoles.join(', ')} can join`,
