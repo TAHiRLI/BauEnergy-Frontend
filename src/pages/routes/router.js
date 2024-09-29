@@ -7,6 +7,8 @@ import { PrivateRoute } from "../../components/PrivateRoute";
 import HomePage from "../HomePage";
 import { Roles } from "../../context/authContext";
 import ProjectPage from "../projects";
+import RegistrationView from "../Register";
+import ResetPassword from "../login/resetPassword";
 
 
 export const router = createBrowserRouter([
@@ -22,35 +24,55 @@ export const router = createBrowserRouter([
       path: ROUTES.LOGIN,
       element: <LoginPage />
   },
-
+  {
+    path: ROUTES.REGISTER,
+    element: <RegistrationView />
+  },
+  {
+    path: ROUTES.RESET_PASSWORD,
+    element: <ResetPassword />
+  },
   //==================
   // Instruments
   {
     path: ROUTES.INSTRUMENTS,
     element:
-    <PrivateRoute loginPath={ROUTES.INSTRUMENTS} //allowedRoles={[Roles.admin, Roles.superAdmin]}
+    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.superAdmin, Roles.projectManager]}
     >
               <Layout>
                 <Instruments />
               </Layout>
             </PrivateRoute>
   },
-  //==================
-  // Projects  
   {
-    path: ROUTES.PROJECT_DETAILS,
+    path: ROUTES.AVIABLEINSTRUMENTS,
     element:
-    <PrivateRoute loginPath={ROUTES.PROJECT_DETAILS} //allowedRoles={[Roles.admin, Roles.superAdmin]}
+    <PrivateRoute loginPath={ROUTES.AVIABLEINSTRUMENTS} //allowedRoles={[Roles.admin, Roles.superAdmin]}
     >
               <Layout>
                 <ProjectPage />
               </Layout>
             </PrivateRoute>
   },
+  //==================
+  // Projects   
   {
-    path: ROUTES.REMOVEINTRUMENTFROM_PROJECT,
+    path: ROUTES.PROJECT_DETAILS,
     element:
-    <PrivateRoute loginPath={ROUTES.REMOVEINTRUMENTFROM_PROJECT} //allowedRoles={[Roles.admin, Roles.superAdmin]}
+    <PrivateRoute loginPath={ROUTES.PROJECT_DETAILS} allowedRoles={[Roles.admin, Roles.superAdmin, Roles.projectManager]}
+    >
+              <Layout>
+                <ProjectPage />
+              </Layout>
+            </PrivateRoute>
+  },
+
+  //==================
+  // TeamMemmbers
+  {
+    path: ROUTES.ADD_TEAMMEMBERS,
+    element:
+    <PrivateRoute loginPath={ROUTES.ADD_TEAMMEMBERS} allowedRoles={[Roles.admin, Roles.superAdmin]}
     >
               <Layout>
                 <ProjectPage />

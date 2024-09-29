@@ -46,13 +46,21 @@ class ProjectService extends HttpClient {
         });
     }
 
-    async removeInstrumentFromProject(body){
-        return await this.delete('Project',body,{
+    async removeInstrumentFromProject(body) {
+        return await this.customDelete('Project/removeInstrument', {
+            data: body,
             headers: {
-                authorization: `Bearer ${cookies.get('user')?.token}`
+                authorization: `Bearer ${cookies.get('user')?.token}`,
             }
         });
     }
 
+    async addInstrumentToProject(body) {
+        return await this.post('Project/addInstrument',body, {
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`,
+            }
+        });
+    }
 }
 export const projectService = new ProjectService();

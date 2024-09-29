@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse, CircularProgress } from '@mui/material';
+import React, { useState } from 'react';
+import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import NotificationIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import Home from '@mui/icons-material/HomeOutlined';
 import PollOutlinedIcon from '@mui/icons-material/PollOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
-import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import BrokenImageOutlinedIcon from '@mui/icons-material/BrokenImageOutlined';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
@@ -14,10 +13,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../pages/routes/routes';
 import UserInfo from '../userinfo';
 import { projectService } from '../../APIs/Services/project.service'; 
+import Cookies from "universal-cookie";
 
 const Sidebar = () => {
   const [openProjectsBtn, setOpenProjectsBtn] = useState(false);
   const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null); // Store selected project
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -26,13 +27,13 @@ const Sidebar = () => {
   const handleProjectsClick = async () => {
     setOpenProjectsBtn(!openProjectsBtn);
 
-    if (!openProjectsBtn && projects.length === 0) { // Fetch projects only once
+    if (!openProjectsBtn && projects.length === 0) { 
       setLoading(true);
       setError(false);
 
       try {
         const response = await projectService.getAll();
-        setProjects(response.data); // Assuming the response contains the project list in `data`
+        setProjects(response.data); 
         setLoading(false);
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -45,10 +46,18 @@ const Sidebar = () => {
   const handleProjectSelect = async (projectId) => {
     try {
       const projectResponse = await projectService.getById(projectId);
-      navigate(`/project/${projectId}`, { state: { project: projectResponse.data } }); // Pass project data
+      setSelectedProject(projectResponse.data);  
+      navigate(`/project/${projectId}`, { state: { project: projectResponse.data } }); 
     } catch (error) {
       console.error("Failed to fetch project details", error);
     }
+  };
+
+  const cookies = new Cookies();
+  const user = cookies.get("user");
+  const handleLogout = () => {
+      cookies.remove('user', { path: '/' });
+      window.location.reload();
   };
 
   return (
@@ -98,26 +107,25 @@ const Sidebar = () => {
         </div>
 
         <List>
-          <ListItem button>
+          <ListItem button component={Link} to={ROUTES.BASE}>
             <ListItemIcon>
               <Home className="text-black" />
             </ListItemIcon>
             <ListItemText primary="Home" />
           </ListItem>
 
-          {/* Projects dropdown */}
-          <ListItem button onClick={handleProjectsClick}>
+          <ListItem button  component={Link} onClick={handleProjectsClick}>
             <ListItemIcon>
               <PollOutlinedIcon className="text-black" />
             </ListItemIcon>
             <ListItemText primary="Projects" />
             {openProjectsBtn ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
-          <Collapse in={openProjectsBtn} timeout="auto" unmountOnExit>
+          <Collapse in={openProjectsBtn} timeout="auto" unmountOnExit={false}>
             <List component="div" disablePadding>
               {projects.map((project) => (
                 <ListItem 
-                  button 
+                  button component={Link}
                   className="pl-12" 
                   key={project.id} 
                   onClick={() => handleProjectSelect(project.id)}
@@ -129,18 +137,11 @@ const Sidebar = () => {
             </List>
           </Collapse>
 
-          <ListItem button >
+          <ListItem button  component={Link} to={ROUTES.INSTRUMENTS}>
             <ListItemIcon>
               <BuildOutlinedIcon className="text-black" />
             </ListItemIcon>
             <ListItemText primary="Instruments" />
-          </ListItem>
-
-          <ListItem button>
-            <ListItemIcon>
-              <QrCode2OutlinedIcon className="text-black" />
-            </ListItemIcon>
-            <ListItemText primary="QR" />
           </ListItem>
 
           <ListItem button>
@@ -150,7 +151,7 @@ const Sidebar = () => {
             <ListItemText primary="Photos and Files" />
           </ListItem>
 
-          <ListItem button component={Link} to={ROUTES.BASE}>
+          <ListItem button component={Link} onClick={handleLogout}  >
             <ListItemIcon>
               <LogoutOutlinedIcon className="text-black" />
             </ListItemIcon>
@@ -168,8 +169,16 @@ const Sidebar = () => {
           <UserInfo />
         </ListItem>
       </div>
+
+      {selectedProject && (
+        <div className="project-details">
+          <h2>{selectedProject.name}</h2>
+          <p>{selectedProject.description}</p>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Sidebar;
+

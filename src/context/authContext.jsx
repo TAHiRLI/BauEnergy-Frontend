@@ -19,6 +19,7 @@ export const AuthActions = {
 export const Roles = {
   admin: 'Admin',
   superAdmin: 'SuperAdmin', 
+  projectManager: 'ProjectManager',
 };
 
 export const AuthContext = createContext(INITIAL_STATE);

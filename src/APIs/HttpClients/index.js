@@ -13,6 +13,9 @@ export class HttpClient{
     async post(endpoint, body,config){
         return await axios.post(`${this.baseUrl}/${endpoint}`, body,config);
     }
+    async customPost(endpoint,config){
+        return await axios.post(`${this.baseUrl}/${endpoint}`, config);
+    }
     async put(endpoint, id, body, config){
         return await axios.put(`${this.baseUrl}/${endpoint}/${id}`,body, config);
     }
@@ -20,7 +23,6 @@ export class HttpClient{
         return await axios.delete(`${this.baseUrl}/${endpoint}/${id}`, config)
     }
     async customDelete(endpoint,config){
-        return await axios.delete(`${this.baseUrl}/${endpoint}`, config)
+        return await axios.delete(`${this.baseUrl}/${endpoint}`, config);
     }
-    
 }
