@@ -13,8 +13,8 @@ import dayjs from 'dayjs';
 import { useLocation } from 'react-router-dom';
 
 const ResetPassword = () => {
-    const location = useLocation();  // Get the location object
-    const token = location.state?.token;  // Access the token from the state
+    const location = useLocation();  
+    const token = location.state?.token;
 
   //========================
   // Handle Translation
@@ -43,7 +43,7 @@ const ResetPassword = () => {
     const handleFormSubmit = async (values, { setFieldError }) => {
         dispatch({ type: AuthActions.start });
         try {
-            console.log('Form Values:', values); // Will include token here
+          //console.log('Form Values:', values); 
             let res = await loginService.resetPassword(values);
           console.log(res)
           if (res.status === 200) {

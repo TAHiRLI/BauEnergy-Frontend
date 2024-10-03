@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit'; 
 import Swal from 'sweetalert2';
 import { useProjects, ProjectsActions } from '../../context/projectContext';
 import { projectService } from '../../APIs/Services/project.service';
@@ -19,7 +21,7 @@ export default function TeamMember({ project }) {
   const [allTeamMembers, setAllTeamMembers] = useState([]); 
   const [imageFile, setImageFile] = useState(null); 
   const [isCreatingNew, setIsCreatingNew] = useState(false); 
-  const [selectedTeamMember, setSelectedTeamMember] = useState(null); // Store the full team member object
+  const [selectedTeamMember, setSelectedTeamMember] = useState(null); 
 
   const fetchAllTeamMembers = async () => {
     try {
@@ -34,6 +36,7 @@ export default function TeamMember({ project }) {
       setAllTeamMembers(response.data);
     } catch (error) {
       console.error('Error fetching all team members:', error);
+      console.log(project.id)
     }
   };
 
@@ -151,31 +154,67 @@ export default function TeamMember({ project }) {
       Swal.fire('Error!', 'Failed to remove team member.', 'error');
     }
   };
+  console.log(state.data)
 
+  const formatDate = (date) => {
+    return new Intl.DateTimeFormat('en-GB', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric'
+    }).format(new Date(date));
+  };
   const columns = [
-    { field: 'name', headerName: 'Team Member Name', width: 200 },
-    { field: 'createdBy', headerName: 'Added By', width: 200 },
+    {
+      field: 'name',
+      headerName: 'Name & Last name',
+      width: 300,
+      renderCell: (params) => {
+        const fullName = `${params.row.name} ${params.row.lastName}`; // Concatenate Name and LastName
+        const image = params.row.image ? 
+          `${params.row.image}` : 
+          `defaultUser.png`; 
+        return (
+          <Box display="flex" alignItems="center" sx={{ cursor: 'pointer' }}>
+            <img
+              src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/teammembers/${image}`}
+              alt={fullName}
+              style={{ width: 50, height: 50, marginRight: 10 }}
+            />
+            <Typography>{fullName}</Typography> {/* Display the full name */}
+          </Box>
+        );
+      },
+    },
     {
       field: 'role',
       headerName: 'Role',
       width: 150,
       renderCell: (params) => params.row.role,
     },
+    { field: 'dateAddedProject', headerName: 'Joined date', width: 200, renderCell: (params) => formatDate(params.row.dateAddedProject),  },
     {
       field: 'actions',
       headerName: 'Actions',
       width: 150,
       renderCell: (params) => (
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => handleDelete(params.row.id)}
-        >
-          Delete
-        </Button>
+        <>
+          <IconButton
+            className='!text-red-600'
+            onClick={() => handleDelete(params.row.id)}
+            sx={{ mr: 1 }}
+          >
+            <DeleteIcon />
+          </IconButton>
+          <IconButton
+            color="primary"
+          >
+            <EditIcon />
+          </IconButton>
+        </>
       ),
     },
   ];
+  
 
   return (
     <Box height={400}>
@@ -208,6 +247,7 @@ export default function TeamMember({ project }) {
                 onChange={(e) => {
                   const selectedMember = allTeamMembers.find((member) => member.id === e.target.value);
                   setSelectedTeamMember(selectedMember); // Store full member data
+                  console.log(e.target)
                 }}
               >
                 {allTeamMembers.map((member) => (

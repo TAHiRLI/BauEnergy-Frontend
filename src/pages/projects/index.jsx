@@ -7,7 +7,9 @@ import Box from '@mui/material/Box';
 import InstrumentTab from '../../components/ProjectsDetails/ProjectInstrumentTab';
 import { useLocation } from 'react-router-dom';
 import TeamMember from '../../components/ProjectsDetails/ProjectTeamMembers';
-
+import ProjectOverview from '../../components/ProjectsDetails/ProjectOverviewTab';
+import { Button } from '@mui/material';
+import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
 function CustomTabPanel(props) {
   const { children, value, index } = props;
 
@@ -41,7 +43,6 @@ export default function BasicTabs() {
   
   const [project, setProject] = useState(location.state?.project || null);
   const [value, setValue] = React.useState(0);
-
   useEffect(() => {
     if (location.state?.project) {
       setProject(location.state.project); 
@@ -51,9 +52,63 @@ export default function BasicTabs() {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+  const formatDate = (date) => {
+    return new Intl.DateTimeFormat('en-GB', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(new Date(date));
+  };
+
+  console.log(location.state)
 
   return (
+    
+
     <Box sx={{ width: '100%' }}>
+      
+      <div className='flex justify-between items-center p-2'>
+
+      <div>
+        <div className='text-2xl font-semibold'>
+          • {project.name}
+        </div>
+        <div className='text-gray-600 text-sm mt-2' >
+        {formatDate(project.startDate)} - {formatDate(project.endDate)}
+        </div>
+      </div>
+
+      <div className='flex items-center'>
+
+        <Button
+        className='!rounded-2xl'
+          variant="contained"
+          startIcon={<AddIcon />}
+          sx={{
+            bgcolor: '#3b82f6',
+            color: '#fff',
+            marginLeft: 2,
+            textTransform: 'none',
+          }} >
+          Add new people
+        </Button>
+
+        <Button
+          className='!rounded-2xl !bg-slate-200 !text-black !px-4'
+          startIcon={<ShareIcon />}
+          variant="contained"
+          sx={{
+            marginLeft: 1,
+            textTransform: 'none',
+          }}
+        >
+          Share project link
+        </Button>
+      </div>
+
+      </div>
+
+
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
           <Tab label="Overview" {...a11yProps(0)} />
@@ -63,7 +118,7 @@ export default function BasicTabs() {
       </Box>
 
       <CustomTabPanel value={value} index={0}>
-        {project ? project.description : 'No project description available'}
+        <ProjectOverview project={project}/>
       </CustomTabPanel>
 
       <CustomTabPanel value={value} index={1}>

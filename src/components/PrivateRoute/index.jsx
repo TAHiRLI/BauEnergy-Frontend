@@ -16,14 +16,14 @@ export const PrivateRoute = ({ loginPath, children, allowedRoles }) => {
     let decodedToken;
     try {
         decodedToken = jwtDecode(token);
-        console.log("Decoded token:", decodedToken);
+        //console.log("Decoded token:", decodedToken);
     } catch (error) {
         console.error("Invalid token:", error);
         return (<Navigate to={loginPath} replace />);
     }
 
     const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
-    console.log(userRoles)
+    //console.log(userRoles)
     if (!!allowedRoles && !allowedRoles.some(role => userRoles.includes(role))) {
         Swal.fire({
             title: 'Unauthorized!',

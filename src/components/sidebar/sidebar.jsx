@@ -46,7 +46,7 @@ const Sidebar = () => {
   const handleProjectSelect = async (projectId) => {
     try {
       const projectResponse = await projectService.getById(projectId);
-      setSelectedProject(projectResponse.data);  
+      setSelectedProject(projectResponse.data); 
       navigate(`/project/${projectId}`, { state: { project: projectResponse.data } }); 
     } catch (error) {
       console.error("Failed to fetch project details", error);

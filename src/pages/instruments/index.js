@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem } from '@mui/material';
-import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
-import { InstrumentActions, useInstruments } from '../../context/instrumentContext';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Grid, Typography, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import ShareIcon from '@mui/icons-material/Share';
 import { instrumentService } from '../../APIs/Services/instrument.service';
+import { useInstruments, InstrumentActions } from '../../context/instrumentContext';
 import { useErrorModal } from '../../hooks/useErrorModal';
-import DeleteIcon from '@mui/icons-material/Delete';
+import StatusButton from '../../components/common/statusBtn';
 
 export const Instruments = () => {
     const [isUpdated, forceUpdate] = useState(false);
     const { state, dispatch } = useInstruments();
     const showError = useErrorModal();
-
     const [openModal, setOpenModal] = useState(false);
+    const [openQRDialog, setOpenQRDialog] = useState(false); 
+    const [qrImage, setQrImage] = useState(null); 
+    const [qrInstrumentName, setQrInstrumentName] = useState(null);
     const [newInstrument, setNewInstrument] = useState({
         name: '',
         images: [],
@@ -29,7 +32,7 @@ export const Instruments = () => {
                 const res = await instrumentService.getAll();
                 dispatch({ type: InstrumentActions.success, payload: res.data });
             } catch (err) {
-                console.error("Error fetching instruments:", err);
+                console.error('Error fetching instruments:', err);
                 dispatch({ type: InstrumentActions.failure, payload: err });
             }
         })();
@@ -37,13 +40,10 @@ export const Instruments = () => {
 
     const handleDelete = async (id) => {
         try {
-            console.log(id);
             await instrumentService.remove(id);
-            console.log("remove")
-
-            forceUpdate(x => !x);
+            forceUpdate((x) => !x);
         } catch (err) {
-            console.error("Error deleting instrument:", err);
+            console.error('Error deleting instrument:', err);
             showError();
         }
     };
@@ -53,14 +53,15 @@ export const Instruments = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setNewInstrument(prevState => ({
+        setNewInstrument((prevState) => ({
             ...prevState,
             [name]: value,
         }));
     };
 
     const handleImageUpload = (e) => {
-        setNewInstrument(prevState => ({
+        console.log()
+        setNewInstrument((prevState) => ({
             ...prevState,
             images: Array.from(e.target.files),
         }));
@@ -78,14 +79,22 @@ export const Instruments = () => {
         formData.append('InstrumentTypeId', instrumentTypeId);
 
         try {
-            await instrumentService.add(formData); // Adjust as per your service API
-            forceUpdate(x => !x);
+            await instrumentService.add(formData);
+            forceUpdate((x) => !x);
             handleCloseModal();
         } catch (err) {
-            console.error("Error adding instrument:", err);
+            console.error('Error adding instrument:', err);
             showError();
         }
     };
+
+    const handleShowQR = (qrImage, instrumentName) => {
+        setQrImage(qrImage);
+        setQrInstrumentName(instrumentName);
+        setOpenQRDialog(true);
+    };
+
+    const handleCloseQRDialog = () => setOpenQRDialog(false);
 
     if (!state.data || state.data.length === 0) {
         return (
@@ -94,8 +103,6 @@ export const Instruments = () => {
                     Add Instrument
                 </Button>
                 <div>No instruments found</div>
-
-                {/* Modal for adding instrument */}
                 <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
                     <DialogTitle>Add New Instrument</DialogTitle>
                     <DialogContent>
@@ -174,73 +181,149 @@ export const Instruments = () => {
         );
     }
 
-    const rows = state.data.map(instrument => ({
+    const rows = state.data.map((instrument) => ({
         id: instrument.id,
         name: instrument.name,
         isActive: instrument.isActive ? 'Inactive' : 'Active',
         shortDesc: instrument.shortDesc,
-        image: instrument.images.find(image => image.isMain),
+        image: instrument.images.find((image) => image.isMain),
+        status: instrument.status,
+        qr : instrument.qrImage
     }));
-    console.log(rows)
-    const columns = [
-        { field: 'id', headerName: 'ID', flex: 0.5, disableColumnMenu: true },
-        {
-            field: 'mainImage',
-            headerName: 'Main Image',
-            flex: 1,
-            disableColumnMenu: true,
-            renderCell: (params) => (
-                <img 
-                    src={`${process.env.REACT_APP_DOCUMENT_URL}${params.row.image.image}`} 
-                    alt={params.row.name} 
-                    style={{ width: '100%', height: 'auto' }} 
-                />
-            ),
-        },
-        { field: 'name', headerName: 'Name', flex: 1, disableColumnMenu: true },
-        { field: 'isActive', headerName: 'Status', flex: 0.5, disableColumnMenu: true },
-        { field: 'shortDesc', headerName: 'Description', flex: 2, disableColumnMenu: true },
-        {
-            field: 'actions',
-            headerName: 'Actions',
-            type: 'actions',
-            flex: 0.5,
-            disableColumnMenu: true,
-            getActions: (params) => [
-                <GridActionsCellItem
-                    icon={<DeleteIcon />}
-                    label="Delete"
-                    onClick={() => handleDelete(params.id)}
-                />,
-            ],
-        },
-    ];
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'Under_maintance':
+                return 'red';
+            case 'In_use':
+                return 'blue';
+            case 'Available':
+                return 'green';
+            case 'Aviable':
+                return 'green';
+            default:
+                return 'gray';
+        }
+    };
+    rows.map((rowww) =>(
+        console.log(rowww.image)
+    ))
 
     return (
         <Box m={"20px"}>
-            <Button variant="contained" color="primary" onClick={handleOpenModal}>
-                Add Instrument
-            </Button>
-
-            <div style={{ width: '100%', overflowX: 'auto', marginTop: '20px' }}>
-                <div style={{ minWidth: 1000 }}>
-                    <DataGrid
-                        sx={{ minWidth: 200 }}
-                        density='standard'
-                        rowCount={state.data?.totalItems}
-                        rows={rows}
-                        columns={columns}
-                        getRowId={(param) => param.id}
-                        checkboxSelection={false}
-                        disableColumnSelector
-                        disableRowSelectionOnClick
-                        autoHeight
-                        autoWidth
-                    />
-                </div>
+            <div className='flex justify-between'>
+                <span className='text-3xl font-semibold'>List of instruments</span>
+                <Button variant="contained" color="primary" onClick={handleOpenModal}>
+                    Add Instrument
+                </Button>
             </div>
+            <p className='mt-4'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
 
-            {/* Modal for adding instrument */}
+            <Grid container spacing={2} sx={{ marginTop: '20px' }}>
+                {rows.map((row) => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={row.id}>
+                        <Box p={2} boxShadow={2} className='rounded-lg'>
+                            <img 
+                                src={`${process.env.REACT_APP_DOCUMENT_URL}${row.image?.image}`} 
+                                alt={row.name} 
+                                style={{ width: '100%', height: 'auto', marginBottom: '10px' }}
+                                className='rounded-lg'
+                            />
+                            <StatusButton text={row.status.split('_').join(' ')} color={getStatusColor(row.status)} />
+                            <Typography className="!text-lg !mt-1">{row.name}</Typography>
+                            <Typography variant="body2" color="textSecondary">{row.shortDesc}</Typography>
+                            <Button 
+                                onClick={() => handleShowQR(row.qr, row.name)} 
+                                sx={{ marginTop: '10px' }}
+                                className='!underline' >
+                                Scan QR code
+                            </Button>
+                        </Box>
+                    </Grid>
+                ))}
+            </Grid>
+
+            {/* QR Modal */}
+            <Dialog open={openQRDialog} onClose={handleCloseQRDialog}>
+                <DialogTitle>
+                    Qr Instrument
+                    <IconButton
+                        aria-label="close"
+                        onClick={handleCloseQRDialog}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: (theme) => theme.palette.grey[500],
+                        }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+
+                <DialogContent dividers>
+        <div className='flex justify-between items-center'>
+        <Typography variant="body1" gutterBottom>
+            Instrument details:
+        </Typography>
+
+        <Button
+            color="primary"
+            startIcon={<ShareIcon />}
+            //onClick={handleShareQR}
+        >
+            Share
+        </Button>
+
+        </div>
+
+        {/* QR Code Image */}
+        {qrImage && (
+            <Box
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                p={2}
+                border={1}
+                borderColor="grey.300"
+                borderRadius="12px"
+            >
+                <Typography
+                    variant="h6"
+                    align="center"
+                    gutterBottom
+                    style={{ fontWeight: 'bold' }}
+                >
+                    {qrInstrumentName}
+                </Typography>
+
+                <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    align="center"
+                    gutterBottom
+                >
+                    Scan QR to get more information about instrument's history
+                </Typography>
+
+                <img
+                    src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/qrcodes/${qrImage}`}
+                    alt="QR Code"
+                    style={{
+                        width: '200px',
+                        height: '200px',
+                        margin: '10px 0',
+                    }}
+                />
+            </Box>
+        )}
+                </DialogContent>
+
+            </Dialog>
+
+
+            {/* Add Instrument Modal */}
             <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
                 <DialogTitle>Add New Instrument</DialogTitle>
                 <DialogContent>

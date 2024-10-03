@@ -24,7 +24,7 @@ class LoginService extends HttpClient {
     }
 
     async resetPassword(body) {
-        console.log(`Sending request to: ${this.baseUrl}/Auth/ResetPassword`); // Log the URL
+        //console.log(`Sending request to: ${this.baseUrl}/Auth/ResetPassword`); // Log the URL
 
         return await this.post('Auth/ResetPassword', body);
     }

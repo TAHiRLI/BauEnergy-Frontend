@@ -1,16 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { IconButton, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, Typography, InputAdornment, TextField } from '@mui/material';
 import Swal from 'sweetalert2';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import DateRangeIcon from '@mui/icons-material/DateRange';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit'; 
 import { useProjects, ProjectsActions } from '../../context/projectContext';
 import { projectService } from '../../APIs/Services/project.service';
 import { instrumentService } from '../../APIs/Services/instrument.service';
+import CloseIcon from '@mui/icons-material/Close';
+import ShareIcon from '@mui/icons-material/Share';
+import PrintIcon from '@mui/icons-material/Print'; // Import Print Icon
 
 export default function InstrumentTab({ project }) {
   const { state, dispatch } = useProjects();
   const [openDialog, setOpenDialog] = useState(false);
-  const [allInstruments, setAllInstruments] = useState([]); 
+  const [openQRDialog, setOpenQRDialog] = useState(false); 
+  const [allInstruments, setAllInstruments] = useState([]);
   const [selectedInstrumentId, setSelectedInstrumentId] = useState('');
+  const [instrument, setInstrument] = useState('');
+  const [qrImage, setQrImage] = useState('');
+  const [qrInstrumentName, setQrInstrumentName] = useState('');
 
   const handleDelete = async (id) => {
     try {
@@ -26,9 +37,7 @@ export default function InstrumentTab({ project }) {
 
       if (result.isConfirmed) {
         const body = { projectId: project.id, instrumentId: id }; 
-        console.log("Sending request with body:", body);
-
-        await projectService.removeInstrumentFromProject(body); 
+        await projectService.removeInstrumentFromProject(body);
         
         Swal.fire({
           title: 'Deleted!',
@@ -54,7 +63,6 @@ export default function InstrumentTab({ project }) {
   const handleAddInstrument = async () => {
     try {
       const body = { projectId: project.id, instrumentId: selectedInstrumentId };
-      console.log(body)
       await projectService.addInstrumentToProject(body);
       
       Swal.fire({
@@ -86,7 +94,7 @@ export default function InstrumentTab({ project }) {
       const response = await instrumentService.getAviableInstruments(); 
       setAllInstruments(response.data);
     } catch (error) {
-      console.error('Error fetching aviable instruments:', error);
+      console.error('Error fetching available instruments:', error);
     }
   };
 
@@ -111,27 +119,68 @@ export default function InstrumentTab({ project }) {
     }
   }, [openDialog]);
 
+  const handleShowQR = (instrument) => {
+    setInstrument(instrument);
+    setQrImage(instrument.qrImage); 
+    setQrInstrumentName(instrument.name);
+    setOpenQRDialog(true);
+  };
+
+  const handleCloseQRDialog = () => {
+    setOpenQRDialog(false);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   const columns = [
-    { field: 'name', headerName: 'Instrument Name', width: 200 },
-    { field: 'createdBy', headerName: 'Created By', width: 200 },
+    {
+      field: 'name',
+      headerName: 'Instrument Name',
+      width: 300,
+      renderCell: (params) => {
+        const mainImage = params.row.images?.find(img => img.isMain);
+        return (
+          <Box display="flex" alignItems="center" sx={{ cursor: 'pointer' }} onClick={() => handleShowQR(params.row)}>
+            {mainImage && (
+              <img
+                src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${mainImage.image}`}
+                alt={params.row.name}
+                style={{ width: 50, height: 50, marginRight: 10 }}
+              />
+            )}
+            <Typography>{params.row.name}</Typography>
+          </Box>
+        );
+      },
+    },
+    { field: 'dateAdded', headerName: 'Date Added', width: 200 },
     {
       field: 'status',
       headerName: 'Status',
       width: 150,
-      renderCell: (params) => (params.row.isActive ? 'Inactive' : 'Active'),
     },
+    { field: 'instrumentType', headerName: 'Type', width: 200 },
     {
       field: 'actions',
       headerName: 'Actions',
       width: 150,
       renderCell: (params) => (
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => handleDelete(params.row.id)}
-        >
-          Delete
-        </Button>
+        <>
+          <IconButton
+            className='!text-red-600'
+            onClick={() => handleDelete(params.row.id)}
+            sx={{ mr: 1 }}
+          >
+            <DeleteIcon />
+          </IconButton>
+          <IconButton
+            color="primary"
+          >
+            <EditIcon />
+          </IconButton>
+        </>
       ),
     },
   ];
@@ -146,6 +195,52 @@ export default function InstrumentTab({ project }) {
 
   return (
     <Box height={400}>
+
+      <div>
+      <Box display="flex" gap={1}>
+
+      {/* Type input */}
+      <TextField
+        label="Type"
+        variant="outlined"
+        className='!rounded-3xl'
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <DateRangeIcon /> 
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      {/* Date input */}
+      <TextField
+        label="Date"
+        variant="outlined"
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <DateRangeIcon />
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      {/* Status input */}
+      <TextField
+        label="Status"
+        variant="outlined"
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <ArrowDropDownIcon />
+            </InputAdornment>
+          ),
+        }}
+      />
+    </Box>
+      </div>
+      
       <Button
         variant="contained"
         color="primary"
@@ -188,9 +283,62 @@ export default function InstrumentTab({ project }) {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* QR Code Dialog */}
+      <Dialog open={openQRDialog} onClose={handleCloseQRDialog}>
+        <DialogTitle>
+          QR Instrument
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseQRDialog}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent dividers>
+          <div className='flex justify-between items-center'>
+            <Typography variant="body1" gutterBottom>
+              Instrument details:
+            </Typography>
+
+            <Button
+              color="primary"
+              startIcon={<ShareIcon />}
+            >
+              Share
+            </Button>
+          </div>
+
+          {/* QR Code Image */}
+          {qrImage && (
+            <Box textAlign="center" my={2}>
+              <Typography variant="h6">{qrInstrumentName}</Typography>
+              <img
+                src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/qrcodes/${qrImage}`}
+                alt="Instrument QR Code"
+                style={{ width: 200, height: 200 }}
+              />
+
+              {/* Print Button */}
+              <Button
+                color="primary"
+                startIcon={<PrintIcon />}
+                onClick={handlePrint}
+                sx={{ mt: 2 }}
+              >
+                Print QR Code
+              </Button>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
-
-
-
