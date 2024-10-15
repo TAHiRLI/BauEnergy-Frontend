@@ -7,11 +7,14 @@ import { ROUTES } from '../routes/routes';
 import { AuthActions, useAuth } from '../../context/authContext';
 import Cookies from 'universal-cookie';
 import dayjs from 'dayjs';
-import ResetPassword from './resetPassword';
 
 const validationSchema = yup.object().shape({
   email: yup.string().email('Invalid email').required('Email is required'),
-  password: yup.string().required('Password is required').min(3, 'Password is too short').max(20, 'Password is too long'),
+  password: yup
+    .string()
+    .required('Password is required')
+    .min(3, 'Password is too short')
+    .max(20, 'Password is too long'), 
 });
 
 export const LoginPage = () => {
@@ -20,7 +23,7 @@ export const LoginPage = () => {
   const cookies = new Cookies();
   const [renderReset, setRenderReset] = useState(false);
   const [token, setToken] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(''); // New state for error message
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = async (values, { setFieldError }) => {
     dispatch({ type: AuthActions.start });
@@ -41,16 +44,12 @@ export const LoginPage = () => {
         navigate(ROUTES.BASE, { replace: true });
       }
     } catch (err) {
-      console.log(err.response);
-      
       if (err.response?.status === 403) {
         setToken(err.response?.data?.resetToken);
-        setErrorMessage(err.response?.data?.message || 'Password reset required.'); // Set error message from response
+        setErrorMessage(err.response?.data?.message || 'Password reset required.');
         setRenderReset(true);
       } else {
-        setFieldError('email', 'Incorrect email or password');
-        setFieldError('password', 'Incorrect email or password');
-        setErrorMessage('Incorrect email or password'); // Set generic error message
+        setErrorMessage('Incorrect email or password');
       }
 
       dispatch({ type: AuthActions.failure, payload: err.message });
@@ -59,7 +58,6 @@ export const LoginPage = () => {
 
   const handlePasswordReset = () => {
     navigate(ROUTES.RESET_PASSWORD, { state: { token } });
-    console.log(token)
   };
 
   return (
@@ -69,7 +67,7 @@ export const LoginPage = () => {
         validationSchema={validationSchema}
         onSubmit={(values, actions) => handleLogin(values, actions)}
       >
-        {({ isSubmitting }) => (
+        {({ isSubmitting, errors, touched, isValid, validateOnChange, validateOnBlur, submitCount }) => (
           <Form className="bg-white p-6 rounded shadow-md w-full max-w-sm">
             <h2 className="text-2xl font-bold mb-4">Login</h2>
 
@@ -80,11 +78,9 @@ export const LoginPage = () => {
                 name="email"
                 className="w-full p-2 border border-gray-300 rounded"
               />
-              <ErrorMessage
-                name="email"
-                component="div"
-                className="text-red-500 text-sm"
-              />
+              {submitCount > 0 && errors.email && (
+                <div className="text-red-500 text-sm">{errors.email}</div>
+              )}
             </div>
 
             <div className="mb-4">
@@ -94,14 +90,12 @@ export const LoginPage = () => {
                 name="password"
                 className="w-full p-2 border border-gray-300 rounded"
               />
-              <ErrorMessage
-                name="password"
-                component="div"
-                className="text-red-500 text-sm"
-              />
+              {submitCount > 0 && errors.password && (
+                <div className="text-red-500 text-sm">{errors.password}</div>
+              )}
             </div>
 
-            {errorMessage && ( // Show error message if available
+            {Object.keys(errors).length === 0 && errorMessage && (
               <div className="mb-4 text-red-500 text-sm">{errorMessage}</div>
             )}
 
@@ -113,7 +107,6 @@ export const LoginPage = () => {
               {isSubmitting ? 'Logging in...' : 'Login'}
             </button>
 
-            {/* Show reset password button if the reset password is required */}
             {renderReset && (
               <button
                 type="button"

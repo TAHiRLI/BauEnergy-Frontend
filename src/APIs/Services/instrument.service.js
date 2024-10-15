@@ -53,6 +53,18 @@ class InstrumentService extends HttpClient {
             }
         });
     }
+    
+async updateStatus(id,body) {
+    //console.log( body)
+
+        console.log(id,body)
+    return await this.put(`Instrument`, id , body, 
+    {
+        headers: {
+            authorization: `Bearer ${cookies.get('user')?.token}`
+        }
+    });
+}
 
 
 }

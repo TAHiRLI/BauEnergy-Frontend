@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, FormHelperText } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit'; 
+import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
 import Swal from 'sweetalert2';
 import { useProjects, ProjectsActions } from '../../context/projectContext';
 import { projectService } from '../../APIs/Services/project.service';
@@ -12,6 +13,24 @@ import * as Yup from 'yup';
 import { TextField } from '@mui/material';
 import axios from 'axios';
 import Cookies from "universal-cookie";
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import { styled } from '@mui/material/styles';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+
+const VisuallyHiddenInput = styled('input')({
+  display: 'none',
+});
+
+const StyledBox = styled(Box)(({ theme }) => ({
+  border: '1px solid',
+  borderColor: theme.palette.grey[400],
+  padding: theme.spacing(1),
+  marginTop: theme.spacing(1),
+  borderRadius: theme.shape.borderRadius,
+  '&:hover': {
+      borderColor: theme.palette.common.black,
+  },
+}));
 
 const cookies = new Cookies();
 
@@ -22,6 +41,8 @@ export default function TeamMember({ project }) {
   const [imageFile, setImageFile] = useState(null); 
   const [isCreatingNew, setIsCreatingNew] = useState(false); 
   const [selectedTeamMember, setSelectedTeamMember] = useState(null); 
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false); // For the edit modal
+  const [teamMemberToEdit, setTeamMemberToEdit] = useState(null);
 
   const fetchAllTeamMembers = async () => {
     try {
@@ -36,7 +57,7 @@ export default function TeamMember({ project }) {
       setAllTeamMembers(response.data);
     } catch (error) {
       console.error('Error fetching all team members:', error);
-      console.log(project.id)
+      //console.log(project.id)
     }
   };
 
@@ -61,34 +82,57 @@ export default function TeamMember({ project }) {
   }, [dispatch, project.id]);
 
   const validationSchema = Yup.object({
-    name: Yup.string().required('Required'),
+   name: Yup.string().required('Required'),
     lastName: Yup.string().required('Required'),
     email: Yup.string().email('Invalid email').required('Required'),
     role: Yup.number().required('Required'),
-    image: Yup.mixed().nullable(),
+   image: Yup.mixed().nullable(),
   });
+  const RoleEnum = {
+    Admin: 0,
+    User: 1,
+    ProjectManager: 2,
+  };
+
+  const handleImageUpload = (event) => {
+    const files = event.target.files;
+    if (files.length > 0) {
+      // Assuming you're only handling one image, you can select the first file
+      const selectedFile = files[0];
+      setImageFile(selectedFile);
+    }
+  };
+
+  const handleEdit = (teamMember) => {
+    setTeamMemberToEdit(teamMember); 
+    setIsEditDialogOpen(true);       
+  };
+  
 
   const handleAddExistingTeamMember = async () => {
     try {
       if (selectedTeamMember) {
         const formData = new FormData();
+        const roleEnumValue = RoleEnum[selectedTeamMember.role];
+
       formData.append('Name', selectedTeamMember.name);
       formData.append('LastName', selectedTeamMember.lastName);
       formData.append('Email', selectedTeamMember.email);
-      formData.append('Role', selectedTeamMember.role);
+      formData.append('Role', roleEnumValue);
       formData.append('ProjectId', project.id);
       if (imageFile) {
         formData.append('Image', imageFile); 
       }
-       // console.log(formData)
-
+        
         await teamMemberService.add(formData);
         Swal.fire('Success', 'Team member has been added to the project!', 'success');
         setOpenDialog(false);
         const response = await projectService.getById(project.id);
         dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
       }
-    } catch (error) {
+    } 
+    catch (error) {
+      setOpenDialog(false);
       console.error('Error adding team member:', error);
       Swal.fire('Error', 'Failed to add team member.', 'error');
     }
@@ -118,7 +162,6 @@ export default function TeamMember({ project }) {
       resetForm();
       setOpenDialog(false);
   
-      // Update the team members list
       const projectResponse = await projectService.getById(project.id);
       dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
   
@@ -138,7 +181,7 @@ export default function TeamMember({ project }) {
         text: 'You won\'t be able to revert this!',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
+        confirmButtonColor: '#1D34D8',
         cancelButtonColor: '#d33',
         confirmButtonText: 'Yes, delete it!',
       });
@@ -154,14 +197,52 @@ export default function TeamMember({ project }) {
       Swal.fire('Error!', 'Failed to remove team member.', 'error');
     }
   };
-  console.log(state.data)
+
+  const handleUpdateTeamMember = async (values) => {
+    try {
+      const formData = new FormData();
+      formData.append('Name', values.name);
+      formData.append('LastName', values.lastName);
+      formData.append('Email', values.email);
+      formData.append('Role', values.role);
+      formData.append('TeamMemberId', teamMemberToEdit.id); // Pass the team member ID to identify which member to update
+  
+      if (values.image) {
+        formData.append('Image', values.image); // Add the image to the formData if it exists
+      }
+  
+      // Send the request using the provided edit method
+      await teamMemberService.edit(teamMemberToEdit.id, formData);
+  
+      Swal.fire('Success', 'Team member has been updated!', 'success');
+      setIsEditDialogOpen(false);
+  
+      // Refresh the team member list after the update
+      const projectResponse = await projectService.getById(project.id);
+      dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
+  
+    } catch (error) {
+      console.error('Error updating team member:', error.response || error.message);
+      Swal.fire('Error', 'Failed to update team member.', 'error');
+    }
+  };
+  
 
   const formatDate = (date) => {
-    return new Intl.DateTimeFormat('en-GB', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric'
-    }).format(new Date(date));
+    if (!date) {
+      return 'N/A'; 
+    }
+    
+    try {
+      return new Intl.DateTimeFormat('en-GB', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      }).format(new Date(date));
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date'; 
+    }
   };
   const columns = [
     {
@@ -169,7 +250,7 @@ export default function TeamMember({ project }) {
       headerName: 'Name & Last name',
       width: 300,
       renderCell: (params) => {
-        const fullName = `${params.row.name} ${params.row.lastName}`; // Concatenate Name and LastName
+        const fullName = `${params.row.name} ${params.row.lastName}`; 
         const image = params.row.image ? 
           `${params.row.image}` : 
           `defaultUser.png`; 
@@ -180,7 +261,7 @@ export default function TeamMember({ project }) {
               alt={fullName}
               style={{ width: 50, height: 50, marginRight: 10 }}
             />
-            <Typography>{fullName}</Typography> {/* Display the full name */}
+            <Typography>{fullName}</Typography>
           </Box>
         );
       },
@@ -198,147 +279,345 @@ export default function TeamMember({ project }) {
       width: 150,
       renderCell: (params) => (
         <>
+        <div className='text-center'>
           <IconButton
-            className='!text-red-600'
+            onClick={() => handleEdit(params.row)}
+            sx={{
+              backgroundColor: "#f5f5f5",  
+              borderRadius: "20%",         
+              padding: "5px",               
+              border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
+              marginRight: "8px"
+            }}>
+            <EditIcon sx={{ color: "#424242" }} />
+          </IconButton>
+          <IconButton
             onClick={() => handleDelete(params.row.id)}
-            sx={{ mr: 1 }}
-          >
-            <DeleteIcon />
+            sx={{
+              backgroundColor: "#f5f5f5",  
+              borderRadius: "20%",         
+              padding: "5px",               
+              border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
+              marginRight: "8px"
+            }}>            
+            <DeleteIcon sx={{ color: "#424242" }} />
           </IconButton>
-          <IconButton
-            color="primary"
-          >
-            <EditIcon />
-          </IconButton>
+        </div>
         </>
       ),
     },
   ];
   
-
   return (
     <Box height={400}>
       <Button
+        className='!bg-[#1D34D8] !rounded-2xl !mb-5'
+        startIcon={<AddIcon />}
         variant="contained"
-        color="primary"
         onClick={() => setOpenDialog(true)}
-        sx={{ mb: 2 }}
       >
-        Add New Team Member
+        Add New People
       </Button>
       
       <DataGrid
         rows={state.data || []}
         columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
+        pageSize={4}
+        rowsPerPageOptions={[4]}
         getRowId={(row) => row.id}
       />
 
       {/* Modal dialog for adding team member */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth>
-        <DialogTitle>{isCreatingNew ? 'Create New Team Member' : 'Select Existing Team Member'}</DialogTitle>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth PaperProps={{
+          style: {
+            borderRadius: 20,
+            //height: "500px",
+            backgroundColor: "#fcfcfc"  
+          },
+        }}>
+        <DialogTitle className='!font-semibold'>{isCreatingNew ? 'Create New Team Member' : 'Select Existing Team Member'}
+        <IconButton
+          className="!text-[#1D34D8]"
+          aria-label="close"
+          onClick={() => setOpenDialog(false)}  
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+          }}
+        >
+          <CancelOutlinedIcon />
+        </IconButton>
+        </DialogTitle>
         <DialogContent>
           {!isCreatingNew ? (
-            <FormControl fullWidth margin="dense">
-              <InputLabel>Select Team Member</InputLabel>
-              <Select
-                value={selectedTeamMember ? selectedTeamMember.id : ''}
-                onChange={(e) => {
-                  const selectedMember = allTeamMembers.find((member) => member.id === e.target.value);
-                  setSelectedTeamMember(selectedMember); // Store full member data
-                  console.log(e.target)
-                }}
-              >
-                {allTeamMembers.map((member) => (
-                  <MenuItem key={member.id} value={member.id}>
-                    {member.name} {member.lastName}
-                  </MenuItem>
-                ))}
-              </Select>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAddExistingTeamMember}
-                disabled={!selectedTeamMember}
-                sx={{ mt: 2 }}
-              >
-                Add to Project
-              </Button>
-              <Button onClick={() => setIsCreatingNew(true)} sx={{ mt: 2 }}>
-                Or Create New Member
-              </Button>
-            </FormControl>
+          <FormControl fullWidth margin="dense">
+          <InputLabel sx={{ color: '#1D34D8' }}>Select Team Member</InputLabel>
+          <Select
+            value={selectedTeamMember ? selectedTeamMember.id : ''}
+            label="Select Team Member"
+            onChange={(e) => {
+              const selectedMember = allTeamMembers.find((member) => member.id === e.target.value);
+              setSelectedTeamMember(selectedMember);
+            }}
+            sx={{
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#1D34D8' },
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#1D34D8' },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#1D34D8' },
+            }}
+          >
+            {allTeamMembers.map((member) => (
+              <MenuItem key={member.id} value={member.id}>
+                {member.name} {member.lastName}
+              </MenuItem>
+            ))}
+          </Select>
+        
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: '#1D34D8',
+              '&:hover': {
+                backgroundColor: '#1730b5', 
+              },
+              mt: 2,
+            }}
+            onClick={handleAddExistingTeamMember}
+            disabled={!selectedTeamMember}
+          >
+            Add to Project
+          </Button>
+          <Button
+            onClick={() => setIsCreatingNew(true)}
+            sx={{
+              color: '#1D34D8',
+              mt: 2,
+            }}
+          >
+            Or Create New Member
+          </Button>
+        </FormControl>
+        
           ) : (
             <Formik
-              initialValues={{
-                name: '',
-                lastName: '',
-                email: '',
-                role: '',
-              }}
-              validationSchema={validationSchema}
-              onSubmit={handleFormSubmit}
-            >
-              {({ setFieldValue, isSubmitting, errors, touched }) => (
-                <Form>
-                  <Field
-                    as={TextField}
-                    label="Name"
-                    name="name"
-                    fullWidth
-                    margin="dense"
-                    error={touched.name && !!errors.name}
-                    helperText={touched.name && errors.name}
-                  />
-                  <Field
-                    as={TextField}
-                    label="Last Name"
-                    name="lastName"
-                    fullWidth
-                    margin="dense"
-                    error={touched.lastName && !!errors.lastName}
-                    helperText={touched.lastName && errors.lastName}
-                  />
-                  <Field
-                    as={TextField}
-                    label="Email"
-                    name="email"
-                    fullWidth
-                    margin="dense"
-                    error={touched.email && !!errors.email}
-                    helperText={touched.email && errors.email}
-                  />
-                  <Field
-                    as={TextField}
-                    label="Role"
-                    name="role"
-                    type="number"
-                    fullWidth
-                    margin="dense"
-                    error={touched.role && !!errors.role}
-                    helperText={touched.role && errors.role}
-                  />
-                  <input
-                    type="file"
-                    onChange={(event) => {
-                      setImageFile(event.currentTarget.files[0]);
-                      setFieldValue('image', event.currentTarget.files[0]);
-                    }}
-                    style={{ marginTop: '15px', marginBottom: '10px' }}
-                  />
-                  <DialogActions>
-                    <Button onClick={() => setIsCreatingNew(false)}>Cancel</Button>
-                    <Button type="submit" color="primary" variant="contained" disabled={isSubmitting}>
-                      Create and Add Team Member
-                    </Button>
-                  </DialogActions>
-                </Form>
-              )}
-            </Formik>
+            initialValues={{
+              name: '',
+              lastName: '',
+              email: '',
+              role: '',
+              image: null,
+            }}
+            validationSchema={validationSchema}
+            onSubmit={handleFormSubmit}
+          >
+            {({ setFieldValue, errors, touched, isSubmitting }) => (
+              <Form>
+                <Field
+                  as={TextField}
+                  name="name"
+                  label="Name"
+                  fullWidth
+                  margin="normal"
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={touched.name && errors.name}
+                />
+
+                <Field
+                  as={TextField}
+                  name="lastName"
+                  label="Last Name"
+                  fullWidth
+                  margin="normal"
+                  error={touched.lastName && Boolean(errors.lastName)}
+                  helperText={touched.lastName && errors.lastName}
+                />
+
+                <Field
+                  as={TextField}
+                  name="email"
+                  label="Email"
+                  fullWidth
+                  margin="normal"
+                  error={touched.email && Boolean(errors.email)}
+                  helperText={touched.email && errors.email}
+                />
+
+
+                <Field name="role">
+                  {({ field, form }) => (
+                    <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
+                      <InputLabel id="role-label">Role</InputLabel>
+                      <Select
+                        {...field}
+                        labelId="role-label"
+                        label="Role" 
+                        value={field.value}
+                      >
+                        {Object.entries(RoleEnum).map(([key, value]) => (
+                          <MenuItem key={value} value={value}>
+                            {key}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {form.touched.role && form.errors.role && (
+                        <FormHelperText>{form.errors.role}</FormHelperText>
+                      )}
+                    </FormControl>
+                  )}
+                </Field>
+
+                <StyledBox>
+                  <Button
+                    component="label"
+                    variant="contained"
+                    startIcon={<CloudUploadIcon />}
+                  >
+                    Upload Image
+                    <VisuallyHiddenInput
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => {
+                        handleImageUpload(event);
+                        setFieldValue('image', event.currentTarget.files[0]);
+                      }}
+                    />
+                  </Button>
+                </StyledBox>
+                <DialogActions>
+                <Button onClick={() => setIsCreatingNew(false)} className='!text-[#1D34D8]'>Cancel</Button>
+                <Button type="submit" onClick={() => setIsCreatingNew(false)} disabled={isSubmitting} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
+                </DialogActions>
+              </Form>
+            )}
+          </Formik>
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog
+        open={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        fullWidth
+        PaperProps={{
+          style: {
+            borderRadius: 20,
+            backgroundColor: "#fcfcfc"
+          },
+        }}
+      >
+        <DialogTitle className="!font-semibold">
+          Edit Team Member
+          <IconButton
+            className="!text-[#1D34D8]"
+            aria-label="close"
+            onClick={() => setIsEditDialogOpen(false)}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+            }}
+          >
+            <CancelOutlinedIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Formik
+            initialValues={{
+              name: teamMemberToEdit?.name || '',
+              lastName: teamMemberToEdit?.lastName || '',
+              email: teamMemberToEdit?.email || '',
+              role: teamMemberToEdit?.role || '',
+              image: null,
+            }}
+            validationSchema={validationSchema}
+            onSubmit={async (values, { setSubmitting }) => {
+              await handleUpdateTeamMember(values);
+              setSubmitting(false);
+            }}
+          >
+            {({ setFieldValue, errors, touched, isSubmitting }) => (
+              <Form>
+                <Field
+                  as={TextField}
+                  name="name"
+                  label="Name"
+                  fullWidth
+                  margin="normal"
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={touched.name && errors.name}
+                />
+
+                <Field
+                  as={TextField}
+                  name="lastName"
+                  label="Last Name"
+                  fullWidth
+                  margin="normal"
+                  error={touched.lastName && Boolean(errors.lastName)}
+                  helperText={touched.lastName && errors.lastName}
+                />
+
+                <Field
+                  as={TextField}
+                  name="email"
+                  label="Email"
+                  fullWidth
+                  margin="normal"
+                  error={touched.email && Boolean(errors.email)}
+                  helperText={touched.email && errors.email}
+                />
+
+                <Field name="role">
+                  {({ field, form }) => (
+                    <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
+                      <InputLabel id="role-label">Role</InputLabel>
+                      <Select
+                        {...field}
+                        labelId="role-label"
+                        label="Role"
+                        value={field.value}
+                      >
+                        {Object.entries(RoleEnum).map(([key, value]) => (
+                          <MenuItem key={value} value={value}>
+                            {key}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {form.touched.role && form.errors.role && (
+                        <FormHelperText>{form.errors.role}</FormHelperText>
+                      )}
+                    </FormControl>
+                  )}
+                </Field>
+
+                <StyledBox>
+                  <Button
+                    component="label"
+                    variant="contained"
+                    startIcon={<CloudUploadIcon />}
+                  >
+                    Upload Image
+                    <VisuallyHiddenInput
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => {
+                        handleImageUpload(event);
+                        setFieldValue('image', event.currentTarget.files[0]);
+                      }}
+                    />
+                  </Button>
+                </StyledBox>
+
+                <DialogActions>
+                  <Button onClick={() => setIsEditDialogOpen(false)} className="!text-[#1D34D8]">Cancel</Button>
+                  <Button type="submit" disabled={isSubmitting} variant="contained" className="!bg-[#1D34D8]">Update</Button>
+                </DialogActions>
+              </Form>
+            )}
+          </Formik>
+        </DialogContent>
+      </Dialog>
+
     </Box>
   );
 }

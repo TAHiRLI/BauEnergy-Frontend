@@ -12,7 +12,7 @@ function Layout({ children }) {
         <Sidebar />
       </nav>
 
-      <div className="flex-grow px-5 h-full mt-3">
+      <div className="flex-grow px-5 h-full mt-3 ml-[260px]">
         {/* Appbar */}
         <Appbar position="static" className="bg-blue-200 " >
           <Toolbar>

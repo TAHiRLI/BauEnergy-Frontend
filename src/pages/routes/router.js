@@ -9,6 +9,7 @@ import { Roles } from "../../context/authContext";
 import ProjectPage from "../projects";
 import RegistrationView from "../Register";
 import ResetPassword from "../login/resetPassword";
+import InstrumentDetails from "../instruments/details" ;
 
 
 export const router = createBrowserRouter([
@@ -39,15 +40,25 @@ export const router = createBrowserRouter([
     element:
     <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.superAdmin, Roles.projectManager]}
     >
-              <Layout>
-                <Instruments />
-              </Layout>
-            </PrivateRoute>
+      <Layout>
+        <Instruments />
+      </Layout>
+    </PrivateRoute>
+  },
+  {
+    path: ROUTES.INSTRUMENTS_DETAILS,
+    element:
+    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.superAdmin, Roles.projectManager]}
+    >
+      <Layout>
+        <InstrumentDetails />
+      </Layout>
+    </PrivateRoute>
   },
   {
     path: ROUTES.AVIABLEINSTRUMENTS,
     element:
-    <PrivateRoute loginPath={ROUTES.AVIABLEINSTRUMENTS} //allowedRoles={[Roles.admin, Roles.superAdmin]}
+    <PrivateRoute loginPath={ROUTES.BASE} //allowedRoles={[Roles.admin, Roles.superAdmin]}
     >
               <Layout>
                 <ProjectPage />
@@ -59,7 +70,7 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.PROJECT_DETAILS,
     element:
-    <PrivateRoute loginPath={ROUTES.PROJECT_DETAILS} allowedRoles={[Roles.admin, Roles.superAdmin, Roles.projectManager]}
+    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.user, Roles.projectManager]}
     >
               <Layout>
                 <ProjectPage />
@@ -72,7 +83,7 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.ADD_TEAMMEMBERS,
     element:
-    <PrivateRoute loginPath={ROUTES.ADD_TEAMMEMBERS} allowedRoles={[Roles.admin, Roles.superAdmin]}
+    <PrivateRoute loginPath={ROUTES.ADD_TEAMMEMBERS} allowedRoles={[Roles.admin, Roles.projectManager]}
     >
               <Layout>
                 <ProjectPage />

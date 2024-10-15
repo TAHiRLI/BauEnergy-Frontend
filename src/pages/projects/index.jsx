@@ -10,6 +10,8 @@ import TeamMember from '../../components/ProjectsDetails/ProjectTeamMembers';
 import ProjectOverview from '../../components/ProjectsDetails/ProjectOverviewTab';
 import { Button } from '@mui/material';
 import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
+import Swal from 'sweetalert2';
+
 function CustomTabPanel(props) {
   const { children, value, index } = props;
 
@@ -42,7 +44,8 @@ export default function BasicTabs() {
   const location = useLocation();
   
   const [project, setProject] = useState(location.state?.project || null);
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = useState(0);
+
   useEffect(() => {
     if (location.state?.project) {
       setProject(location.state.project); 
@@ -52,6 +55,7 @@ export default function BasicTabs() {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+
   const formatDate = (date) => {
     return new Intl.DateTimeFormat('en-GB', {
       year: 'numeric',
@@ -60,54 +64,57 @@ export default function BasicTabs() {
     }).format(new Date(date));
   };
 
-  console.log(location.state)
+  const handleShare = () => {
+    const shareData = {
+      title: project.name,
+      text: `Check out this project: ${project.name}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      navigator.share(shareData).catch((err) => {
+        console.error('Error sharing:', err);
+      });
+    } else {
+      Swal.fire({
+        icon: 'info',
+        title: 'Share Link',
+        text: `Your browser doesn't support sharing. Please copy the link manually.`,
+        footer: `<a href="${window.location.href}" target="_blank">Copy Link</a>`,
+      });
+    }
+  };
 
   return (
-    
-
     <Box sx={{ width: '100%' }}>
       
-      <div className='flex justify-between items-center p-2'>
+      <div className='flex justify-between items-center pl-2 pr-6'>
 
-      <div>
-        <div className='text-2xl font-semibold'>
-          • {project.name}
+        <div>
+          <div className='text-2xl font-semibold'>
+            • {project.name}
+          </div>
+          <div className='text-gray-600 text-sm mt-2'>
+            {formatDate(project.startDate)} - {formatDate(project.endDate)}
+          </div>
         </div>
-        <div className='text-gray-600 text-sm mt-2' >
-        {formatDate(project.startDate)} - {formatDate(project.endDate)}
+
+        <div className='flex items-center'>
+          <Button
+            className='!rounded-2xl !bg-slate-200 !text-black !px-4'
+            startIcon={<ShareIcon />}
+            variant="contained"
+            sx={{
+              marginLeft: 1,
+              textTransform: 'none',
+            }}
+            onClick={handleShare} // Share button click event
+          >
+            Share project link
+          </Button>
         </div>
-      </div>
-
-      <div className='flex items-center'>
-
-        <Button
-        className='!rounded-2xl'
-          variant="contained"
-          startIcon={<AddIcon />}
-          sx={{
-            bgcolor: '#3b82f6',
-            color: '#fff',
-            marginLeft: 2,
-            textTransform: 'none',
-          }} >
-          Add new people
-        </Button>
-
-        <Button
-          className='!rounded-2xl !bg-slate-200 !text-black !px-4'
-          startIcon={<ShareIcon />}
-          variant="contained"
-          sx={{
-            marginLeft: 1,
-            textTransform: 'none',
-          }}
-        >
-          Share project link
-        </Button>
-      </div>
 
       </div>
-
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">

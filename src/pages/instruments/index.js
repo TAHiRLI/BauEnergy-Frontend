@@ -1,13 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Grid, Typography, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import React, { useEffect, useState, useRef  } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Select, MenuItem, InputLabel, FormControl,Typography, IconButton, Box, Grid, FormControlLabel, Radio,  } from '@mui/material';
 import ShareIcon from '@mui/icons-material/Share';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { useInstruments, InstrumentActions } from '../../context/instrumentContext';
 import { useErrorModal } from '../../hooks/useErrorModal';
 import StatusButton from '../../components/common/statusBtn';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import Swal from 'sweetalert2';
+import InfoIcon from '@mui/icons-material/Info'; 
+import { Link, Routes, useNavigate } from 'react-router-dom';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { styled } from '@mui/material/styles';
+import { useLocation } from 'react-router-dom';
+
+  const VisuallyHiddenInput = styled('input')({
+    display: 'none',
+  });
+  
+  const StyledBox = styled(Box)(({ theme }) => ({
+    border: '1px solid',
+    borderColor: theme.palette.grey[400],
+    padding: theme.spacing(1),
+    marginTop: theme.spacing(1),
+    borderRadius: theme.shape.borderRadius,
+    '&:hover': {
+        borderColor: theme.palette.common.black,
+    },
+  }));
 
 export const Instruments = () => {
+
+
     const [isUpdated, forceUpdate] = useState(false);
     const { state, dispatch } = useInstruments();
     const showError = useErrorModal();
@@ -15,15 +38,59 @@ export const Instruments = () => {
     const [openQRDialog, setOpenQRDialog] = useState(false); 
     const [qrImage, setQrImage] = useState(null); 
     const [qrInstrumentName, setQrInstrumentName] = useState(null);
+    const [instrumentTypes, setInstrumentTypes] = useState([]);
+    const [imagePreviews, setImagePreviews] = useState([]);
+    const [searchTerm, setSearchTerm] = useState(''); // State for search input
+    const [filteredInstruments, setFilteredInstruments] = useState(state?.data || []);
     const [newInstrument, setNewInstrument] = useState({
         name: '',
         images: [],
+        files: [], 
         mainImageIndex: 0,
         description: '',
         shortDesc: '',
         projectId: '',
-        instrumentTypeId: 0,
+        instrumentTypeId: '',
     });
+    const [instrument, setInstrument] = useState(null)
+
+    const navigate = useNavigate();
+    const handleInstrumentInfoSelect = async (id) => {
+        try {
+            const projectResponse = await instrumentService.getById(id);
+            setInstrument(projectResponse.data); 
+            navigate(`/instrument/details/${id}`, { state: { instrument: projectResponse.data } }); 
+            } catch (error) {
+            console.error("Failed to fetch project details", error);
+        }
+    };
+    const location = useLocation();
+   // const searchInputRef = useRef(null); 
+    //console.log(location)
+    useEffect(() => {
+        //const searchParams = new URLSearchParams(location.search);
+        //const focusSearch = searchParams.get('focusSearch');        
+        if (location.state === 'true') {
+          // Use document.getElementById to focus the input by its id
+          const searchInput = document.getElementById('searchbtnax');
+          if (searchInput) {
+            searchInput.focus();
+          }
+        }
+      }, [location.search]);
+
+    useEffect(() => {
+        if (state?.data) {
+          const filtered = state.data.filter(instrument =>
+            instrument.name.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          setFilteredInstruments(filtered);
+        }
+      }, [searchTerm, state.data]);
+
+      const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value); 
+      };
 
     useEffect(() => {
         (async () => {
@@ -49,42 +116,104 @@ export const Instruments = () => {
     };
 
     const handleOpenModal = () => setOpenModal(true);
-    const handleCloseModal = () => setOpenModal(false);
-
+    const handleCloseModal = () => {
+        setOpenModal(false);
+        //setImagePreviews([]);
+    }
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewInstrument((prevState) => ({
+        ...prevState,
+        [name]: value,
+        }));
+    };
+    const handlePdfUpload = (event) => {
+        const files = event.target.files;
+        setNewInstrument(prevState => ({
             ...prevState,
-            [name]: value,
+            files: [...prevState.files, ...files]  
         }));
     };
 
     const handleImageUpload = (e) => {
-        console.log()
+        const files = Array.from(e.target.files);
+        const previews = files.map((file) => URL.createObjectURL(file));
+    
+        setImagePreviews(previews);
         setNewInstrument((prevState) => ({
-            ...prevState,
-            images: Array.from(e.target.files),
+        ...prevState,
+        images: files,
+        }));
+    };
+    const handleMainImageChange = (event) => {
+        setNewInstrument((prevState) => ({
+        ...prevState,
+        mainImageIndex: parseInt(event.target.value, 10),
         }));
     };
 
     const handleAddInstrument = async () => {
-        const { name, images, mainImageIndex, description, shortDesc, projectId, instrumentTypeId } = newInstrument;
+        const { name, images, mainImageIndex, files, description, shortDesc, projectId, instrumentType } = newInstrument;
         const formData = new FormData();
+    
         formData.append('Name', name);
-        images.forEach((file) => formData.append('Images', file));
         formData.append('MainImageIndex', mainImageIndex);
         formData.append('Description', description);
         formData.append('ShortDesc', shortDesc);
         formData.append('ProjectId', projectId || '');
-        formData.append('InstrumentTypeId', instrumentTypeId);
-
+        formData.append('InstrumentType', instrumentType);    
+        images.forEach((file, index) => {
+            formData.append('Images', file);  
+        });
+        files?.forEach((file, index) => {
+            formData.append('Files', file);  
+        });
+    
         try {
             await instrumentService.add(formData);
             forceUpdate((x) => !x);
             handleCloseModal();
         } catch (err) {
             console.error('Error adding instrument:', err);
-            showError();
+            if (err.response && err.response.status === 403) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Access Denied',
+                    text: 'You do not have permission to perform this action.',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                // Handle other errors
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while adding the instrument. Please try again.',
+                    confirmButtonText: 'OK'
+                });
+            }
+            handleCloseModal();
+           // showError();
+        }
+    };
+    
+    const handleShare = () => {
+        const shareData = {
+          //title: project.name,
+          //text: `Check out this project: ${project.name}`,
+          url: window.location.href,
+        };
+    
+        if (navigator.share) {
+          navigator.share(shareData).catch((err) => {
+            console.error('Error sharing:', err);
+          });
+        } else {
+          Swal.fire({
+            icon: 'info',
+            title: 'Share Link',
+            text: `Your browser doesn't support sharing. Please copy the link manually.`,
+            footer: `<a href="${window.location.href}" target="_blank">Copy Link</a>`,
+          });
         }
     };
 
@@ -93,9 +222,9 @@ export const Instruments = () => {
         setQrInstrumentName(instrumentName);
         setOpenQRDialog(true);
     };
-
     const handleCloseQRDialog = () => setOpenQRDialog(false);
 
+    //console.log(state)
     if (!state.data || state.data.length === 0) {
         return (
             <Box m={"20px"}>
@@ -181,7 +310,7 @@ export const Instruments = () => {
         );
     }
 
-    const rows = state.data.map((instrument) => ({
+    const rows = filteredInstruments.map((instrument) => ({
         id: instrument.id,
         name: instrument.name,
         isActive: instrument.isActive ? 'Inactive' : 'Active',
@@ -205,49 +334,93 @@ export const Instruments = () => {
                 return 'gray';
         }
     };
-    rows.map((rowww) =>(
-        console.log(rowww.image)
-    ))
 
     return (
         <Box m={"20px"}>
-            <div className='flex justify-between'>
+            <div className='flex justify-between items-center' >
                 <span className='text-3xl font-semibold'>List of instruments</span>
-                <Button variant="contained" color="primary" onClick={handleOpenModal}>
+                <div className="flex items-center gap-4 justify-center"> {/* Flexbox layout with center alignment and gap */}
+                <TextField
+                    id='searchbtnax'
+                    ///ref={searchInputRef} 
+                    variant="outlined"
+                    placeholder="Search Instruments..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    sx={{
+                    width: '50%', // Makes it responsive, taking up available space
+                    //maxWidth: '400px', // Optional max width for better control
+                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)', // Soft shadow for a raised look
+                    borderRadius: '30px', // Rounded corners for modern look
+                    '& .MuiOutlinedInput-root': {
+                        borderRadius: '30px', // Rounded input corners
+                    },
+                    '& .MuiOutlinedInput-input': {
+                        padding: '10px 15px', // Clean padding for better readability
+                    },
+                    }}
+                />
+                <Button variant="contained" className='!bg-[#1D34D8] !rounded-3xl !ml-3' onClick={handleOpenModal}>
                     Add Instrument
                 </Button>
+                </div>               
             </div>
             <p className='mt-4'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
 
             <Grid container spacing={2} sx={{ marginTop: '20px' }}>
                 {rows.map((row) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={row.id}>
-                        <Box p={2} boxShadow={2} className='rounded-lg'>
-                            <img 
-                                src={`${process.env.REACT_APP_DOCUMENT_URL}${row.image?.image}`} 
-                                alt={row.name} 
-                                style={{ width: '100%', height: 'auto', marginBottom: '10px' }}
-                                className='rounded-lg'
-                            />
-                            <StatusButton text={row.status.split('_').join(' ')} color={getStatusColor(row.status)} />
-                            <Typography className="!text-lg !mt-1">{row.name}</Typography>
-                            <Typography variant="body2" color="textSecondary">{row.shortDesc}</Typography>
+                <Grid item xs={12} sm={6} md={4} lg={3} key={row.id}>
+                    <Box p={2} boxShadow={2} className='rounded-lg'>
+                    <img 
+                        src={`${process.env.REACT_APP_DOCUMENT_URL}${row.image?.image}`} 
+                        alt={row.name} 
+                        style={{ width: '100%', height: '200px', marginBottom: '10px', objectFit: 'fill', }}
+                        className='rounded-lg'
+                        />
+                        <StatusButton text={row.status.split('_').join(' ')} color={getStatusColor(row.status)} />
+                        <Typography className="!text-lg !mt-1 !whitespace-nowrap !overflow-hidden !text-ellipsis">{row.name}</Typography>
+                        <Typography variant="body2" color="textSecondary" 
+                            sx={{
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                        }}
+                        >{row.shortDesc} </Typography>
+                        <div className='flex justify-between'>
+                                <Button 
+                                    variant="outlined"  
+                                    startIcon={<InfoIcon />} 
+                                    sx={{ marginRight: '10px', borderColor: 'blue', color: 'blue' }}
+                                    onClick={() => handleInstrumentInfoSelect(row.id)}
+
+                                >
+                                    Info
+                                </Button>
                             <Button 
-                                onClick={() => handleShowQR(row.qr, row.name)} 
-                                sx={{ marginTop: '10px' }}
-                                className='!underline' >
+                            onClick={() => handleShowQR(row.qr, row.name)} 
+                            className='!underline !text-[#1D34D8] !rounded-xl' 
+                            >
                                 Scan QR code
                             </Button>
-                        </Box>
-                    </Grid>
+                        </div>
+                    </Box>
+                </Grid>
                 ))}
             </Grid>
 
+
             {/* QR Modal */}
-            <Dialog open={openQRDialog} onClose={handleCloseQRDialog}>
+            <Dialog open={openQRDialog} onClose={handleCloseQRDialog}
+            PaperProps={{
+                style: {
+                  borderRadius: 20,
+                  //height: "500px",  
+                },
+              }}>
                 <DialogTitle>
                     Qr Instrument
                     <IconButton
+                        className="!text-blue-700"
                         aria-label="close"
                         onClick={handleCloseQRDialog}
                         sx={{
@@ -257,20 +430,20 @@ export const Instruments = () => {
                             color: (theme) => theme.palette.grey[500],
                         }}
                     >
-                        <CloseIcon />
-                    </IconButton>
+                    <CancelOutlinedIcon />
+                </IconButton>
                 </DialogTitle>
 
-                <DialogContent dividers>
+                <DialogContent >
         <div className='flex justify-between items-center'>
-        <Typography variant="body1" gutterBottom>
+        <Typography variant="body1" >
             Instrument details:
         </Typography>
 
         <Button
             color="primary"
             startIcon={<ShareIcon />}
-            //onClick={handleShareQR}
+            onClick={handleShare}
         >
             Share
         </Button>
@@ -285,6 +458,7 @@ export const Instruments = () => {
                 alignItems="center"
                 justifyContent="center"
                 p={2}
+                mt={2}
                 border={1}
                 borderColor="grey.300"
                 borderRadius="12px"
@@ -308,6 +482,7 @@ export const Instruments = () => {
                 </Typography>
 
                 <img
+                className='border-[30px] border-gray-200 rounded-xl'
                     src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/qrcodes/${qrImage}`}
                     alt="QR Code"
                     style={{
@@ -319,12 +494,17 @@ export const Instruments = () => {
             </Box>
         )}
                 </DialogContent>
-
             </Dialog>
 
 
             {/* Add Instrument Modal */}
-            <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
+            <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
+            style: {
+                borderRadius: 20,
+                //height: "500px",
+                backgroundColor: "#fcfcfc"  
+            },
+            }}>
                 <DialogTitle>Add New Instrument</DialogTitle>
                 <DialogContent>
                     <TextField
@@ -355,21 +535,18 @@ export const Instruments = () => {
                         value={newInstrument.shortDesc}
                         onChange={handleInputChange}
                     />
-                    <input
-                        accept="image/*"
-                        type="file"
-                        multiple
-                        onChange={handleImageUpload}
-                    />
+
+                    {/* Instrument Type */}
                     <TextField
                         margin="dense"
-                        name="mainImageIndex"
-                        label="Main Image Index"
-                        type="number"
+                        name="instrumentType"
+                        label="Instrument Type"
+                        type="text"
                         fullWidth
-                        value={newInstrument.mainImageIndex}
+                        value={newInstrument.instrumentType || ''}
                         onChange={handleInputChange}
                     />
+                    {/* Project ID */}
                     <TextField
                         margin="dense"
                         name="projectId"
@@ -379,23 +556,66 @@ export const Instruments = () => {
                         value={newInstrument.projectId || ''}
                         onChange={handleInputChange}
                     />
-                    <TextField
-                        margin="dense"
-                        name="instrumentTypeId"
-                        label="Instrument Type ID"
-                        type="number"
-                        fullWidth
-                        value={newInstrument.instrumentTypeId}
-                        onChange={handleInputChange}
-                    />
+                    
+                    {/* Image upload */}
+                    <StyledBox>
+                        <Button
+                        component="label"
+                        variant="contained"
+                        startIcon={<CloudUploadIcon />}
+                        >
+                        Upload Images
+                        <VisuallyHiddenInput
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                        />
+                        </Button>
+                    </StyledBox>
+
+                    {/* Image Previews and Main Image Selection */}
+                    {imagePreviews.length > 0 && (
+                        <Box mt={2}>
+                        <Typography variant="h6">Select Main Image:</Typography>
+                        <Grid container spacing={2}>
+                            {imagePreviews.map((image, index) => (
+                            <Grid item xs={4} key={index}>
+                                <img src={image} alt={`Preview ${index}`} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
+                                <FormControlLabel
+                                control={<Radio
+                                    checked={newInstrument.mainImageIndex === index}
+                                    onChange={handleMainImageChange}
+                                    value={index}
+                                    name="mainImage"
+                                />}
+                                label="Main"
+                                />
+                            </Grid>
+                            ))}
+                        </Grid>
+                        </Box>
+                    )}
+
+                    {/* PDF Upload */}
+                    <StyledBox>
+                        <Button
+                            component="label"
+                            variant="contained"
+                            startIcon={<CloudUploadIcon />}
+                        >
+                            Upload files
+                            <VisuallyHiddenInput
+                            type="file"
+                            onChange={handlePdfUpload}
+                            multiple
+                            />
+                        </Button>
+                    </StyledBox>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleCloseModal} color="secondary">
-                        Cancel
-                    </Button>
-                    <Button onClick={handleAddInstrument} color="primary">
-                        Add
-                    </Button>
+                <DialogActions className='!px-10'>
+                <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
+                <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
                 </DialogActions>
             </Dialog>
         </Box>

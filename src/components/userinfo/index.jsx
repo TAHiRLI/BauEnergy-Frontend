@@ -1,41 +1,36 @@
-// import React from 'react'
-// import { List, ListItem, ListItemIcon, ListItemText, Collapse } from '@mui/material';
-// import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
-
-// function UserInfo() {
-//   return (
-//     <>
-//         <List>
-//           <ListItem div>
-//             <ListItemIcon style={{ minWidth: '20px' }} className="mr-3">
-//               <PersonOutlineOutlinedIcon className="text-black" />
-//             </ListItemIcon>
-//             <div>
-//                 <p>mirheyder@gmaiil.com</p>
-//                 <p></p>
-//             </div>
-
-//           </ListItem>
-//         </List>
-//     </>
-//   )
-// }
-
-// export default UserInfo
-
-
 import { Avatar, Typography } from "@mui/material";
+import { jwtDecode } from 'jwt-decode';
+import { useAuth } from "../../context/authContext";
 
 const UserInfo = () => {
+  const { user } = useAuth(); 
+
+  const decodedToken = user?.token ? jwtDecode(user.token) : null;
+
+  //console.log("Decoded Token:", decodedToken);
+
+  if (!decodedToken) {
+    return <Typography className="text-sm text-gray-500">No user logged in</Typography>;
+  }
+
+  const fullName = decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"];
+  const email = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"]?.[0]; // Assuming email is in an array
+  const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]?.[0]; // Assuming role is in an array
+
   return (
-    <div className="flex items-center space-x-2 ">
-      <Avatar className="bg-gray-200 " />
+    <div className="flex items-center space-x-2">
+      <Avatar className="bg-gray-200" />
       <div>
-        <Typography className="text-sm text-gray-500">email@gmail.com</Typography>
-        <p className="font-bold text-black  ">Team Construction</p>
+        {/* <Typography className="text-sm text-gray-500">{email}</Typography>*/}
+        <Typography className="font-bold text-black">
+          {fullName || 'Team Construction'} 
+        </Typography>
+        <Typography className="text-sm text-gray-500">{role}</Typography> 
       </div>
     </div>
   );
 };
 
 export default UserInfo;
+
+
