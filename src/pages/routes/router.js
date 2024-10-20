@@ -2,10 +2,14 @@ import { createBrowserRouter } from "react-router-dom";
 import { ROUTES } from "./routes";
 import Layout from "../../components/layout";
 import LoginPage from "../login/";
-import Products from "../products";
+import {Instruments} from "../instruments";
 import { PrivateRoute } from "../../components/PrivateRoute";
 import HomePage from "../HomePage";
 import { Roles } from "../../context/authContext";
+import ProjectPage from "../projects";
+import RegistrationView from "../Register";
+import ResetPassword from "../login/resetPassword";
+import InstrumentDetails from "../instruments/details" ;
 
 
 export const router = createBrowserRouter([
@@ -21,17 +25,70 @@ export const router = createBrowserRouter([
       path: ROUTES.LOGIN,
       element: <LoginPage />
   },
+  {
+    path: ROUTES.REGISTER,
+    element: <RegistrationView />
+  },
+  {
+    path: ROUTES.RESET_PASSWORD,
+    element: <ResetPassword />
+  },
+  //==================
+  // Instruments
+  {
+    path: ROUTES.INSTRUMENTS,
+    element:
+    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.superAdmin, Roles.projectManager]}
+    >
+      <Layout>
+        <Instruments />
+      </Layout>
+    </PrivateRoute>
+  },
+  {
+    path: ROUTES.INSTRUMENTS_DETAILS,
+    element:
+    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.superAdmin, Roles.projectManager]}
+    >
+      <Layout>
+        <InstrumentDetails />
+      </Layout>
+    </PrivateRoute>
+  },
+  {
+    path: ROUTES.AVIABLEINSTRUMENTS,
+    element:
+    <PrivateRoute loginPath={ROUTES.BASE} //allowedRoles={[Roles.admin, Roles.superAdmin]}
+    >
+              <Layout>
+                <ProjectPage />
+              </Layout>
+            </PrivateRoute>
+  },
+  //==================
+  // Projects   
+  {
+    path: ROUTES.PROJECT_DETAILS,
+    element:
+    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.user, Roles.projectManager]}
+    >
+              <Layout>
+                <ProjectPage />
+              </Layout>
+            </PrivateRoute>
+  },
 
   //==================
-  // Products
+  // TeamMemmbers
   {
-    path: ROUTES.PRODUCTS,
+    path: ROUTES.ADD_TEAMMEMBERS,
     element:
-    //<PrivateRoute loginPath={ROUTES.PRODUCTS} allowedRoles={[Roles.admin, Roles.superAdmin]}>
+    <PrivateRoute loginPath={ROUTES.ADD_TEAMMEMBERS} allowedRoles={[Roles.admin, Roles.projectManager]}
+    >
               <Layout>
-                <Products />
+                <ProjectPage />
               </Layout>
-           // </PrivateRoute>
+            </PrivateRoute>
   },
 ]);
 
