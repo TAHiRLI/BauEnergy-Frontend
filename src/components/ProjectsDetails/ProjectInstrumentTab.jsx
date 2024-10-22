@@ -360,7 +360,7 @@ export default function InstrumentTab({ project }) {
           />
 
           {/* Date input */}
-           <TextField
+          <TextField
           label="Search by Date"
           type="date"
           InputLabelProps={{
