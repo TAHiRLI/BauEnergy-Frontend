@@ -228,7 +228,9 @@ export const Instruments = () => {
     if (!state.data || state.data.length === 0) {
         return (
             <Box m={"20px"}>
-                <Button variant="contained" color="primary" onClick={handleOpenModal}>
+                <Button variant="contained"
+              className='!ml-6 !bg-[#1D34D8] !rounded-3xl !py-2'
+              sx={{ml: 2,textTransform: "none",}} onClick={handleOpenModal}>
                     Add Instrument
                 </Button>
                 <div>No instruments found</div>
