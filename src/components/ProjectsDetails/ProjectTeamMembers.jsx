@@ -46,20 +46,14 @@ export default function TeamMember({ project }) {
 
   const fetchAllTeamMembers = async () => {
     try {
-      const response = await axios.get(
-        `https://localhost:7068/api/TeamMember/GetAllByCompany?projectId=${project.id}`,
-        {
-          headers: {
-            authorization: `Bearer ${cookies.get('user')?.token}`,
-          }
-        }
-      );
+      const response = await teamMemberService.getAllByCompany(project.id); // Pass the projectId to the service
       setAllTeamMembers(response.data);
     } catch (error) {
       console.error('Error fetching all team members:', error);
-      //console.log(project.id)
+      // Handle error accordingly
     }
   };
+  
 
   useEffect(() => {
     if (openDialog) {
@@ -151,12 +145,8 @@ export default function TeamMember({ project }) {
         formData.append('Image', imageFile); // Handle file upload correctly
       }
   
-      const response = await axios.post('https://localhost:7068/api/TeamMember', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          authorization: `Bearer ${cookies.get('user')?.token}`,
-        },
-      });
+      // Use the service to send the request
+      const response = await teamMemberService.add(formData);
   
       Swal.fire('Success', 'Team member has been created and added to the project!', 'success');
       resetForm();
@@ -172,6 +162,7 @@ export default function TeamMember({ project }) {
       setSubmitting(false);
     }
   };
+  
   
 
   const handleDelete = async (id) => {
@@ -485,7 +476,8 @@ export default function TeamMember({ project }) {
                 </StyledBox>
                 <DialogActions>
                 <Button onClick={() => setIsCreatingNew(false)} className='!text-[#1D34D8]'>Cancel</Button>
-                <Button type="submit" onClick={() => setIsCreatingNew(false)} disabled={isSubmitting} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
+                {/* <Button type="submit" onClick={() => setIsCreatingNew(false)} disabled={isSubmitting} variant="contained" className='!bg-[#1D34D8]'>Submit</Button> */}
+                <Button type="submit" disabled={isSubmitting} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
                 </DialogActions>
               </Form>
             )}

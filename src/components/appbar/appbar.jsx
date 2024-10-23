@@ -89,7 +89,6 @@ export default function Appbar() {
   // });
 
   const handleFormSubmit = async (values, { setSubmitting, resetForm }) => {
-    console.log("values:", values )
     try {
       const formData = new FormData();
       formData.append('Name', values.Name);
