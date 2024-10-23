@@ -16,8 +16,9 @@ class TeamMemberService extends HttpClient {
         });
     }
 
-    async getAllByCompany() {
+    async getAllByCompany(projectId) {
         return await this.get(`TeamMember`, {
+            params: { projectId },
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }
