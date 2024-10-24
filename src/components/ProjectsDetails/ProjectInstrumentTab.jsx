@@ -100,6 +100,7 @@ export default function InstrumentTab({ project }) {
         icon: 'error',
         timer: 2000,
       });
+      setOpenDialog(false); 
     }
   };
   
