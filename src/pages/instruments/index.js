@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef  } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Select, MenuItem, InputLabel, FormControl,Typography, IconButton, Box, Grid, FormControlLabel, Radio,  } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Select, MenuItem, InputLabel, FormControl,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress,  } from '@mui/material';
 import ShareIcon from '@mui/icons-material/Share';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { useInstruments, InstrumentActions } from '../../context/instrumentContext';
@@ -53,6 +53,7 @@ export const Instruments = () => {
         instrumentTypeId: '',
     });
     const [instrument, setInstrument] = useState(null)
+    const [loading, setLoading] = useState(true); // Loading state
 
     const navigate = useNavigate();
     const handleInstrumentInfoSelect = async (id) => {
@@ -65,7 +66,7 @@ export const Instruments = () => {
         }
     };
     const location = useLocation();
-   // const searchInputRef = useRef(null); 
+    // const searchInputRef = useRef(null); 
     //console.log(location)
     useEffect(() => {
         //const searchParams = new URLSearchParams(location.search);
@@ -94,6 +95,7 @@ export const Instruments = () => {
 
     useEffect(() => {
         (async () => {
+            setLoading(true); // Start loading
             dispatch({ type: InstrumentActions.start });
             try {
                 const res = await instrumentService.getAll();
@@ -101,6 +103,8 @@ export const Instruments = () => {
             } catch (err) {
                 console.error('Error fetching instruments:', err);
                 dispatch({ type: InstrumentActions.failure, payload: err });
+            }finally {
+                setLoading(false); // End loading after success or failure
             }
         })();
     }, [dispatch, isUpdated]);
@@ -114,6 +118,14 @@ export const Instruments = () => {
             showError();
         }
     };
+    if (loading) {
+        // Show loading spinner while fetching data
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     const handleOpenModal = () => setOpenModal(true);
     const handleCloseModal = () => {
@@ -234,79 +246,125 @@ export const Instruments = () => {
                     Add Instrument
                 </Button>
                 <div>No instruments found</div>
-                <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm">
-                    <DialogTitle>Add New Instrument</DialogTitle>
-                    <DialogContent>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            name="name"
-                            label="Instrument Name"
-                            type="text"
-                            fullWidth
-                            value={newInstrument.name}
-                            onChange={handleInputChange}
-                        />
-                        <TextField
-                            margin="dense"
-                            name="description"
-                            label="Description"
-                            type="text"
-                            fullWidth
-                            value={newInstrument.description}
-                            onChange={handleInputChange}
-                        />
-                        <TextField
-                            margin="dense"
-                            name="shortDesc"
-                            label="Short Description"
-                            type="text"
-                            fullWidth
-                            value={newInstrument.shortDesc}
-                            onChange={handleInputChange}
-                        />
-                        <input
-                            accept="image/*"
+                <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
+            style: {
+                borderRadius: 20,
+                //height: "500px",
+                backgroundColor: "#fcfcfc"  
+            },
+            }}>
+                <DialogTitle>Add New Instrument</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        name="name"
+                        label="Instrument Name"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.name}
+                        onChange={handleInputChange}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="description"
+                        label="Description"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.description}
+                        onChange={handleInputChange}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="shortDesc"
+                        label="Short Description"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.shortDesc}
+                        onChange={handleInputChange}
+                    />
+
+                    {/* Instrument Type */}
+                    <TextField
+                        margin="dense"
+                        name="instrumentType"
+                        label="Instrument Type"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.instrumentType || ''}
+                        onChange={handleInputChange}
+                    />
+                    {/* Project ID */}
+                    <TextField
+                        margin="dense"
+                        name="projectId"
+                        label="Project ID (optional)"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.projectId || ''}
+                        onChange={handleInputChange}
+                    />
+                    
+                    {/* Image upload */}
+                    <StyledBox>
+                        <Button
+                        component="label"
+                        variant="contained"
+                        startIcon={<CloudUploadIcon />}
+                        >
+                        Upload Images
+                        <VisuallyHiddenInput
                             type="file"
                             multiple
+                            accept="image/*"
                             onChange={handleImageUpload}
                         />
-                        <TextField
-                            margin="dense"
-                            name="mainImageIndex"
-                            label="Main Image Index"
-                            type="number"
-                            fullWidth
-                            value={newInstrument.mainImageIndex}
-                            onChange={handleInputChange}
-                        />
-                        <TextField
-                            margin="dense"
-                            name="projectId"
-                            label="Project ID (optional)"
-                            type="text"
-                            fullWidth
-                            value={newInstrument.projectId || ''}
-                            onChange={handleInputChange}
-                        />
-                        <TextField
-                            margin="dense"
-                            name="instrumentTypeId"
-                            label="Instrument Type ID"
-                            type="number"
-                            fullWidth
-                            value={newInstrument.instrumentTypeId}
-                            onChange={handleInputChange}
-                        />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseModal} color="secondary">
-                            Cancel
                         </Button>
-                        <Button onClick={handleAddInstrument} color="primary">
-                            Add
+                    </StyledBox>
+
+                    {/* Image Previews and Main Image Selection */}
+                    {imagePreviews.length > 0 && (
+                        <Box mt={2}>
+                        <Typography variant="h6">Select Main Image:</Typography>
+                        <Grid container spacing={2}>
+                            {imagePreviews.map((image, index) => (
+                            <Grid item xs={4} key={index}>
+                                <img src={image} alt={`Preview ${index}`} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
+                                <FormControlLabel
+                                control={<Radio
+                                    checked={newInstrument.mainImageIndex === index}
+                                    onChange={handleMainImageChange}
+                                    value={index}
+                                    name="mainImage"
+                                />}
+                                label="Main"
+                                />
+                            </Grid>
+                            ))}
+                        </Grid>
+                        </Box>
+                    )}
+
+                    {/* PDF Upload */}
+                    <StyledBox>
+                        <Button
+                            component="label"
+                            variant="contained"
+                            startIcon={<CloudUploadIcon />}
+                        >
+                            Upload files
+                            <VisuallyHiddenInput
+                            type="file"
+                            onChange={handlePdfUpload}
+                            multiple
+                            />
                         </Button>
-                    </DialogActions>
+                    </StyledBox>
+                </DialogContent>
+                <DialogActions className='!px-10'>
+                <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
+                <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
+                </DialogActions>
                 </Dialog>
             </Box>
         );
@@ -485,7 +543,7 @@ export const Instruments = () => {
 
                 <img
                 className='border-[30px] border-gray-200 rounded-xl'
-                    src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/qrcodes/${qrImage}`}
+                    src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
                     alt="QR Code"
                     style={{
                         width: '200px',

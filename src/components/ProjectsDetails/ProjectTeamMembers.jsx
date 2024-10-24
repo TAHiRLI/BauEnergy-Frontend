@@ -48,6 +48,7 @@ export default function TeamMember({ project }) {
     try {
       const response = await teamMemberService.getAllByCompany(project.id); // Pass the projectId to the service
       setAllTeamMembers(response.data);
+      console.log(response.data)
     } catch (error) {
       console.error('Error fetching all team members:', error);
       // Handle error accordingly
