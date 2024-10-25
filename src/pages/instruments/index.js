@@ -62,7 +62,7 @@ export const Instruments = () => {
         try {
             const projectResponse = await instrumentService.getById(id);
             setInstrument(projectResponse.data); 
-            navigate(`/instrument/details/${id}`, { state: { instrument: projectResponse.data } }); 
+            navigate(`/instruments/details/${id}`, { state: { instrument: projectResponse.data } }); 
             } catch (error) {
             console.error("Failed to fetch project details", error);
         }

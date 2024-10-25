@@ -129,7 +129,7 @@ const InstrumentDetails = () => {
   return (
     <Box p={2}>
       {/* Instrument Card */}
-      <Card sx={{ display: 'flex', boxShadow: 5, borderRadius: 4, overflow: 'hidden', mb: 5 }}>
+      <Card sx={{ boxShadow: 5, borderRadius: 4, overflow: 'hidden', mb: 5 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
             {mainImage && (
@@ -161,7 +161,7 @@ const InstrumentDetails = () => {
           </Grid>
 
           {/* Instrument Details */}
-          <Grid item xs={12} sm={8}>
+          <Grid item xs={12} sm={3}>
             <CardContent sx={{ px: 5, py: 4 }}>
               <Typography variant="h4" component="div" gutterBottom sx={{ fontWeight: 'bold', color: '#1D4ED8' }}>
                 {instrument.name}
