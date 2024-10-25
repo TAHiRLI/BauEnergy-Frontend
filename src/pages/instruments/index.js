@@ -12,6 +12,7 @@ import { Link, Routes, useNavigate } from 'react-router-dom';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import { useLocation } from 'react-router-dom';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'; // Import PDF icon
 
   const VisuallyHiddenInput = styled('input')({
     display: 'none',
@@ -42,6 +43,8 @@ export const Instruments = () => {
     const [imagePreviews, setImagePreviews] = useState([]);
     const [searchTerm, setSearchTerm] = useState(''); // State for search input
     const [filteredInstruments, setFilteredInstruments] = useState(state?.data || []);
+    const [uploadedFiles, setUploadedFiles] = useState([]);
+
     const [newInstrument, setNewInstrument] = useState({
         name: '',
         images: [],
@@ -49,7 +52,6 @@ export const Instruments = () => {
         mainImageIndex: 0,
         description: '',
         shortDesc: '',
-        projectId: '',
         instrumentTypeId: '',
     });
     const [instrument, setInstrument] = useState(null)
@@ -139,18 +141,27 @@ export const Instruments = () => {
         [name]: value,
         }));
     };
+    // const handlePdfUpload = (event) => {
+    //     const files = event.target.files;
+    //     setNewInstrument(prevState => ({
+    //         ...prevState,
+    //         files: [...prevState.files, ...files]  
+    //     }));
+    // };
+
     const handlePdfUpload = (event) => {
         const files = event.target.files;
-        setNewInstrument(prevState => ({
-            ...prevState,
-            files: [...prevState.files, ...files]  
+        setUploadedFiles(prevFiles => [...prevFiles, ...files]);
+        setNewInstrument(prevInstrument => ({
+          ...prevInstrument,
+          files: [...prevInstrument.files, ...files]
         }));
-    };
+      };
 
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
         const previews = files.map((file) => URL.createObjectURL(file));
-    
+        console.log(files)
         setImagePreviews(previews);
         setNewInstrument((prevState) => ({
         ...prevState,
@@ -293,18 +304,7 @@ export const Instruments = () => {
                         fullWidth
                         value={newInstrument.instrumentType || ''}
                         onChange={handleInputChange}
-                    />
-                    {/* Project ID */}
-                    <TextField
-                        margin="dense"
-                        name="projectId"
-                        label="Project ID (optional)"
-                        type="text"
-                        fullWidth
-                        value={newInstrument.projectId || ''}
-                        onChange={handleInputChange}
-                    />
-                    
+                    />                   
                     {/* Image upload */}
                     <StyledBox>
                         <Button
@@ -399,7 +399,7 @@ export const Instruments = () => {
         <Box m={"20px"}>
             <div className='flex justify-between items-center' >
                 <span className='text-3xl font-semibold'>List of instruments</span>
-                <div className="flex items-center gap-4 justify-center"> {/* Flexbox layout with center alignment and gap */}
+                <div className="flex items-center gap-4 justify-between"> {/* Flexbox layout with center alignment and gap */}
                 <TextField
                     id='searchbtnax'
                     ///ref={searchInputRef} 
@@ -420,7 +420,7 @@ export const Instruments = () => {
                     },
                     }}
                 />
-                <Button variant="contained" className='!bg-[#1D34D8] !rounded-3xl !ml-3' onClick={handleOpenModal}>
+                <Button variant="contained" className='!bg-[#1D34D8] !rounded-3xl !ml-3 !py-2'  sx={{textTransform: "none",}} onClick={handleOpenModal}>
                     Add Instrument
                 </Button>
                 </div>               
@@ -495,64 +495,64 @@ export const Instruments = () => {
                 </DialogTitle>
 
                 <DialogContent >
-        <div className='flex justify-between items-center'>
-        <Typography variant="body1" >
-            Instrument details:
-        </Typography>
+                    <div className='flex justify-between items-center'>
+                    <Typography variant="body1" >
+                        Instrument details:
+                    </Typography>
 
-        <Button
-            color="primary"
-            startIcon={<ShareIcon />}
-            onClick={handleShare}
-        >
-            Share
-        </Button>
+                    <Button
+                        className="!text-blue-700"
+                        startIcon={<ShareIcon />}
+                        onClick={handleShare}
+                    >
+                        Share
+                    </Button>
 
-        </div>
+                    </div>
 
-        {/* QR Code Image */}
-        {qrImage && (
-            <Box
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-                justifyContent="center"
-                p={2}
-                mt={2}
-                border={1}
-                borderColor="grey.300"
-                borderRadius="12px"
-            >
-                <Typography
-                    variant="h6"
-                    align="center"
-                    gutterBottom
-                    style={{ fontWeight: 'bold' }}
-                >
-                    {qrInstrumentName}
-                </Typography>
+                    {/* QR Code Image */}
+                    {qrImage && (
+                        <Box
+                            display="flex"
+                            flexDirection="column"
+                            alignItems="center"
+                            justifyContent="center"
+                            p={2}
+                            mt={2}
+                            border={1}
+                            borderColor="grey.300"
+                            borderRadius="12px"
+                        >
+                            <Typography
+                                variant="h6"
+                                align="center"
+                                gutterBottom
+                                style={{ fontWeight: 'bold' }}
+                            >
+                                {qrInstrumentName}
+                            </Typography>
 
-                <Typography
-                    variant="body2"
-                    color="textSecondary"
-                    align="center"
-                    gutterBottom
-                >
-                    Scan QR to get more information about instrument's history
-                </Typography>
+                            <Typography
+                                variant="body2"
+                                color="textSecondary"
+                                align="center"
+                                gutterBottom
+                            >
+                                Scan QR to get more information about instrument's history
+                            </Typography>
 
-                <img
-                className='border-[30px] border-gray-200 rounded-xl'
-                    src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
-                    alt="QR Code"
-                    style={{
-                        width: '200px',
-                        height: '200px',
-                        margin: '10px 0',
-                    }}
-                />
-            </Box>
-        )}
+                            <img
+                            className='border-[30px] border-gray-200 rounded-xl'
+                                src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
+                                alt="QR Code"
+                                style={{
+                                    width: '200px',
+                                    height: '200px',
+                                    margin: '10px 0',
+                                }}
+                            />
+                        </Box>
+                    )}
                 </DialogContent>
             </Dialog>
 
@@ -606,17 +606,6 @@ export const Instruments = () => {
                         value={newInstrument.instrumentType || ''}
                         onChange={handleInputChange}
                     />
-                    {/* Project ID */}
-                    <TextField
-                        margin="dense"
-                        name="projectId"
-                        label="Project ID (optional)"
-                        type="text"
-                        fullWidth
-                        value={newInstrument.projectId || ''}
-                        onChange={handleInputChange}
-                    />
-                    
                     {/* Image upload */}
                     <StyledBox>
                         <Button
@@ -656,22 +645,42 @@ export const Instruments = () => {
                         </Grid>
                         </Box>
                     )}
+                     {/* PDF Upload */}
+        <StyledBox>
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+          >
+            Upload files
+            <VisuallyHiddenInput
+              type="file"
+              onChange={handlePdfUpload}
+              multiple
+              accept="application/pdf"
+            />
+          </Button>
+        </StyledBox>
 
-                    {/* PDF Upload */}
-                    <StyledBox>
-                        <Button
-                            component="label"
-                            variant="contained"
-                            startIcon={<CloudUploadIcon />}
-                        >
-                            Upload files
-                            <VisuallyHiddenInput
-                            type="file"
-                            onChange={handlePdfUpload}
-                            multiple
-                            />
-                        </Button>
-                    </StyledBox>
+        {/* Display uploaded PDF files */}
+        <Box mt={2}>
+            {uploadedFiles.length > 0 ? (
+
+              <Grid container spacing={1}>
+                {uploadedFiles.map((file, index) => (
+                  <Grid item xs={12} key={index} display="flex" alignItems="center">
+                    <PictureAsPdfIcon color="error" />
+                    <Typography variant="body2" ml={1}>
+                      {file.name}
+                    </Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Typography variant="body2" color="textSecondary">No files uploaded</Typography>
+            )}
+          </Box>
+                    
                 </DialogContent>
                 <DialogActions className='!px-10'>
                 <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
@@ -681,3 +690,4 @@ export const Instruments = () => {
         </Box>
     );
 };
+

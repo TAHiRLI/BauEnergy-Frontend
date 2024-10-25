@@ -23,7 +23,7 @@ import { notificationService } from '../../APIs/Services/notification.service';
 const Sidebar = () => {
   const [openProjectsBtn, setOpenProjectsBtn] = useState(false);
   const [projects, setProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null); // Store selected project
+  const [selectedProject, setSelectedProject] = useState(null); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
@@ -120,7 +120,6 @@ const Sidebar = () => {
               />
               <span className="ml-4 text-xl font-bold">BauEnergy</span>
             </div>
-            <span className="text-lg">Dashboard</span>
           </div>
 
           {/* Navigation */}
@@ -136,7 +135,7 @@ const Sidebar = () => {
             </List>
 
             <List>
-              <ListItem button className='!rounded-xl' onClick={handleNotificationClick}
+              <ListItem button className='!rounded-xl' onClick={handleNotificationClick} component={Link}
               >
                 <ListItemIcon style={{ minWidth: '20px' }} className="mr-3">
                   <NotificationIcon className="text-black" />
@@ -146,7 +145,7 @@ const Sidebar = () => {
             </List>
 
             <List>
-              <ListItem button className='!rounded-xl'>
+              <ListItem button className='!rounded-xl' component={Link}>
                 <ListItemIcon style={{ minWidth: '20px' }} className="mr-3">
                   <SettingsOutlinedIcon className="text-black" />
                 </ListItemIcon>

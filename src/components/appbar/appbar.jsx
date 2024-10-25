@@ -99,6 +99,7 @@ export default function Appbar() {
       console.log(formData)
       await projectService.add(formData ); 
       Swal.fire('Success', 'Project has been added!', 'success');
+      window.location.reload(); 
       resetForm();
       setOpenDialog(false); 
       //dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
@@ -206,8 +207,6 @@ export default function Appbar() {
       <AppBar position="static" className='rounded-t-xl' sx={{backgroundColor: '#F1F3FD'}}>
         <Toolbar>
           <UserInfo/>
-          
-          
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }} className='!flex !justify-center !items-center'>
           <div className='flex justify-center items-center gap-5 p-2 pr-6'>
@@ -345,9 +344,19 @@ export default function Appbar() {
                   error={touched.StartDate && !!errors.StartDate}
                   helperText={touched.StartDate && errors.StartDate}
                   InputLabelProps={{ shrink: true }}
-                  InputProps={{ placeholder: '' }}
-                />
-               <Field
+                  InputProps={{
+                    inputProps: { style: { cursor: 'pointer' } },
+                  }}
+                  onClick={(e) => {
+                    const inputElement = e.currentTarget.querySelector('input');
+                    if (inputElement) {
+                      inputElement.showPicker(); 
+                    }                  }}
+                  sx={{
+                    cursor: 'pointer',  
+                    '.MuiInputBase-input': { cursor: 'pointer' }, 
+                  }}                                  />
+              <Field
                   as={TextField}
                   label="End Date"
                   name="EndDate"
@@ -357,7 +366,18 @@ export default function Appbar() {
                   error={touched.EndDate && !!errors.EndDate}
                   helperText={touched.EndDate && errors.EndDate}
                   InputLabelProps={{ shrink: true }}
-                  InputProps={{ placeholder: '' }}
+                  InputProps={{
+                    inputProps: { style: { cursor: 'pointer' } },
+                  }}
+                  onClick={(e) => {
+                    const inputElement = e.currentTarget.querySelector('input');
+                    if (inputElement) {
+                      inputElement.showPicker(); 
+                    }                  }}
+                  sx={{
+                    cursor: 'pointer',  
+                    '.MuiInputBase-input': { cursor: 'pointer' }, 
+                  }}                  
                 />
 
                 <DialogActions>
