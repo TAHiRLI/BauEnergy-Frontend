@@ -129,79 +129,67 @@ const InstrumentDetails = () => {
   return (
     <Box p={2}>
       {/* Instrument Card */}
-      <Card sx={{ boxShadow: 5, borderRadius: 4, overflow: 'hidden', mb: 5 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            {mainImage && (
-              <CardMedia
-                component="img"
-                height="auto"
-                width="100%"
-                image={`${process.env.REACT_APP_DOCUMENT_URL}${mainImage.image}`}
-                alt={instrument.name}
-                sx={{ borderRadius: '12px', m: 3, boxShadow: 3 }}
-              />
-            )}
+      <div className="bg-white shadow-lg rounded-2xl overflow-hidden mb-5">
+  <div className="flex flex-col sm:flex-row">
+    <div className="sm:w-1/3 p-4">
+      {mainImage && (
+        <img
+          src={`${process.env.REACT_APP_DOCUMENT_URL}${mainImage.image}`}
+          alt={instrument.name}
+          className="rounded-lg w-full h-auto shadow-md mb-3"
+        />
+      )}
 
-            {/* Secondary Images */}
-            <Grid container spacing={1} sx={{ justifyContent: 'center' }}>
-              {otherImages &&
-                otherImages.map((img, index) => (
-                  <Grid item xs={6} key={index}>
-                    <CardMedia
-                      component="img"
-                      height="120"
-                      image={`${process.env.REACT_APP_DOCUMENT_URL}${img.image}`}
-                      alt={`${instrument.name} image ${index + 1}`}
-                      sx={{ borderRadius: '8px', m: 1, boxShadow: 2 }}
-                    />
-                  </Grid>
-                ))}
-            </Grid>
-          </Grid>
+      {/* Secondary Images */}
+      <div className="grid grid-cols-2 gap-2">
+        {otherImages &&
+          otherImages.map((img, index) => (
+            <img
+              key={index}
+              src={`${process.env.REACT_APP_DOCUMENT_URL}${img.image}`}
+              alt={`${instrument.name} image ${index + 1}`}
+              className="rounded-md shadow-sm"
+            />
+          ))}
+      </div>
+    </div>
 
-          {/* Instrument Details */}
-          <Grid item xs={12} sm={3}>
-            <CardContent sx={{ px: 5, py: 4 }}>
-              <Typography variant="h4" component="div" gutterBottom sx={{ fontWeight: 'bold', color: '#1D4ED8' }}>
-                {instrument.name}
-              </Typography>
-              <Typography variant="subtitle1" color="textSecondary" gutterBottom>
-                Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+    {/* Instrument Details */}
+    <div className="sm:w-2/3 p-5">
+      <div className="text-2xl font-bold text-blue-600 mb-2">
+        {instrument.name}
+      </div>
+      <div className="text-gray-600 mb-2">
+        Status:{" "}
+        <span className="font-bold" style={{ color: getStatusColor(instrument.status) }}>
+          {instrument.status.split('_').join(' ')}
+        </span>
+      </div>
+      <p className="text-gray-700 my-2">{instrument.shortDesc}</p>
+      <p className="text-gray-600 mb-2">{instrument.description}</p>
+      <div className="text-gray-600">
+        Instrument Type: <span className="font-bold text-blue-700">{instrument.instrumentType}</span>
+      </div>
+      <div className="text-gray-600 my-2">Project: {instrument.projectName}</div>
+      <div className="text-gray-600 my-2">
+        Added to project:{" "}
+        <span className="font-bold text-blue-600">
+          {new Date(instrument.addedProjectDate).toLocaleDateString()}
+        </span>
+      </div>
 
-              </Typography>
-              <Typography variant="body1" sx={{ my: 2, color: '#4B5563' }}>
-                {instrument.shortDesc}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" sx={{ my: 2 }}>
-                {instrument.description}
-              </Typography>
-              <Grid item xs={6}>
-                <Typography variant="body2" color="textSecondary">
-                  Instrument Type: <span style={{ fontWeight: 'bold', color: '#1D34D8' }}>{instrument.instrumentType}</span>
-                </Typography>
-              </Grid>
+      <div className="mt-4">
+        <button
+          onClick={handleShowQR}
+          className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
+        >
+          Scan QR Code
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-              <Typography variant="body2" color="textSecondary" sx={{ my: 2 }}>
-                Project: {instrument.projectName}
-              </Typography>
-              <Typography variant="body2" color="textSecondary" sx={{ my: 2 }}>
-                Added to project: <span style={{ fontWeight: 'bold', color: '#1D4ED8' }}>{new Date(instrument.addedProjectDate).toLocaleDateString()}</span>
-              </Typography>
-
-              <Box mt={3}>
-                <Button
-                  className='!rounded-3xl'
-                  onClick={handleShowQR}
-                  sx={{ backgroundColor: '#1D4ED8', color: '#fff', textTransform: 'none', borderRadius: 2, px: 4 }}
-                >
-                  Scan QR Code
-                </Button>
-              </Box>
-            </CardContent>
-          </Grid>
-        </Grid>
-      </Card>
 
       {/* Document Section */}
       <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
