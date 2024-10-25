@@ -1,56 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse } from '@mui/material';
-import { Search } from '@mui/icons-material';
+import {
+  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Collapse,
+  IconButton,
+  Drawer,
+} from '@mui/material';
+import { Menu as MenuIcon, Search, ExpandLess, ExpandMore } from '@mui/icons-material';
 import NotificationIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import Home from '@mui/icons-material/HomeOutlined';
 import PollOutlinedIcon from '@mui/icons-material/PollOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
-import BrokenImageOutlinedIcon from '@mui/icons-material/BrokenImageOutlined';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../pages/routes/routes';
 import UserInfo from '../userinfo';
-import { projectService } from '../../APIs/Services/project.service'; 
-import Cookies from "universal-cookie";
+import { projectService } from '../../APIs/Services/project.service';
+import Cookies from 'universal-cookie';
 import NotificationModal from '../notification/notification';
 import { jwtDecode } from 'jwt-decode';
-import { useAuth } from "../../context/authContext";
+import { useAuth } from '../../context/authContext';
 import { notificationService } from '../../APIs/Services/notification.service';
-
+import { useMediaQuery } from '@mui/material';
 
 const Sidebar = () => {
   const [openProjectsBtn, setOpenProjectsBtn] = useState(false);
   const [projects, setProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null); 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-
-  const { user } = useAuth(); 
-  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Toggle sidebar
+  const { user } = useAuth();
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
-
-  const userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-  
-
+  const userId = decodedToken?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
   const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width:1024px)'); // Check if screen size is <= 1024px
+  const [selectedProject, setSelectedProject] = useState(null); 
+
+  // Toggle sidebar
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const handleProjectsClick = async () => {
     setOpenProjectsBtn(!openProjectsBtn);
-
-    if (!openProjectsBtn && projects.length === 0) { 
-      setLoading(true);
-      setError(false);
-
+    if (!openProjectsBtn && projects.length === 0) {
       try {
         const response = await projectService.getAll();
-        setProjects(response.data); 
-        setLoading(false);
+        setProjects(response.data);
       } catch (error) {
         console.error("Error fetching projects:", error);
-        setError(true);
-        setLoading(false);
       }
     }
   };
@@ -71,12 +69,11 @@ const Sidebar = () => {
   const handleNotificationClick = () => {
     setIsNotificationModalOpen(true);
   };
-
   const handleNotificationModalClose = () => {
     setIsNotificationModalOpen(false);
     fetchNotifications();
   };
-
+  
   const fetchNotifications = async () => {
     try {
       console.log(userId)
@@ -93,20 +90,36 @@ const Sidebar = () => {
     }
   }, [userId]);
 
-
-  const handleSearchBtnClick = () => {
-    navigate('/instruments', { state: { focusSearch: true } });
-  };
-
-  const cookies = new Cookies();
-  //const user = cookies.get("user");
   const handleLogout = () => {
-      cookies.remove('user', { path: '/' });
-      window.location.reload();
+    const cookies = new Cookies();
+    cookies.remove('user', { path: '/' });
+    window.location.reload();
   };
 
   return (
-    <div className="flex bg-[#F8F8F8] fixed overflow-y-auto z-50">
+    <div className="flex">
+      {/* Hamburger Menu Icon */}
+      {isMobile && (
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          onClick={toggleSidebar}
+          className="fixed top-4 left-4 z-50"
+        >
+          <MenuIcon />
+        </IconButton>
+      )}
+
+      {/* Sidebar Drawer */}
+      <Drawer
+        variant={isMobile ? "temporary" : "persistent"}
+        anchor="left"
+        open={!isMobile || isSidebarOpen} // Open on large screens or if toggled
+        onClose={toggleSidebar}
+        PaperProps={{ style: { width: '256px', backgroundColor: '#F8F8F8' } }}
+      >
+        <div className="flex bg-[#F8F8F8] fixed overflow-y-auto z-50">
       {/* Sidebar */}
       <div className="w-64 bg-[#F8F8F8] text-black flex flex-col h-screen">
         <div>
@@ -135,7 +148,9 @@ const Sidebar = () => {
             </List>
 
             <List>
-              <ListItem button className='!rounded-xl' onClick={handleNotificationClick} component={Link}
+              <ListItem button className='!rounded-xl' 
+              onClick={handleNotificationClick} 
+              component={Link}
               >
                 <ListItemIcon style={{ minWidth: '20px' }} className="mr-3">
                   <NotificationIcon className="text-black" />
@@ -221,14 +236,14 @@ const Sidebar = () => {
         {/* Place the main content here */}
       </div>
       <NotificationModal 
-              open={isNotificationModalOpen} 
-              onClose={handleNotificationModalClose} 
+               open={isNotificationModalOpen} 
+               onClose={handleNotificationModalClose} 
               style={{ zIndex: 2500 }}
             />
     </div>
-
+      </Drawer>
+    </div>
   );
 };
 
 export default Sidebar;
-

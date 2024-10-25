@@ -28,6 +28,7 @@ import { notificationService } from '../../APIs/Services/notification.service';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell} from '@fortawesome/free-regular-svg-icons';
 import { faEllipsis } from '@fortawesome/free-solid-svg-icons';
+import AddIcon from '@mui/icons-material/Add';
 
 
 export default function Appbar() {
@@ -169,23 +170,24 @@ export default function Appbar() {
       onClose={handleMobileMenuClose}
     >
       <MenuItem>
-        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-          <Badge badgeContent={4} color="error">
-            <MailIcon />
-          </Badge>
-        </IconButton>
-        <p>Messages</p>
-      </MenuItem>
-      <MenuItem>
         <IconButton
           size="large"
           aria-label="show 17 new notifications"
-          color="inherit">
-          <Badge badgeContent={17} color="error">
+          color="inherit"
+          onClick={handleNotificationClick}
+        >
+          <Badge badgeContent={unreadCount} color="error">
             <NotificationsIcon />
           </Badge>
         </IconButton>
         <p>Notifications</p>
+      </MenuItem>
+      <MenuItem>
+        <IconButton size="large" aria-label="create new project" color="inherit" onClick={() => setOpenDialog(true)}
+        >
+            <AddIcon />
+        </IconButton>
+        <p>Create Project</p>
       </MenuItem>
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
@@ -219,6 +221,7 @@ export default function Appbar() {
               color="inherit"
               onClick={handleNotificationClick}
               sx={{
+                display: { xs: 'none', md: 'flex' }, 
                 width: '30px',     
                 height: '30px',    
                 borderRadius: '50%',
@@ -230,7 +233,9 @@ export default function Appbar() {
               },
               }}
             >
-              <Badge badgeContent={unreadCount} color="error">
+              <Badge badgeContent={unreadCount} color="error" sx={{
+                  display: { xs: 'none', md: 'block' },  
+                }}>
               <FontAwesomeIcon icon={faBell} className='text-lg text-black bg-white rounded-full p-[6px] '/>
                 {/* <NotificationsNoneOutlinedIcon className='bg-white rounded-full p-1 !text-black !text-3xl !font-thin' /> */}
               </Badge>
@@ -245,6 +250,7 @@ export default function Appbar() {
               onClick={handleProfileMenuOpen}
               color="inherit"
               sx={{
+                display: { xs: 'none', md: 'flex' }, 
                 width: '30px',     
                 height: '30px',    
                 borderRadius: '50%',
@@ -268,27 +274,37 @@ export default function Appbar() {
 
             <Button
               variant="contained"
-              className='!ml-6 !bg-[#1D34D8] !rounded-3xl !py-2'
+              className="!ml-6 !bg-[#1D34D8] !rounded-3xl !py-2 !text-base sm:text-xs"
               onClick={() => setOpenDialog(true)}
-              sx={{ml: 2,textTransform: "none",}}
+              sx={{ ml: 2, textTransform: "none",display: { xs: 'none', md: 'flex' }, 
+            }}
             >
               Create new project
             </Button>
-
           </div>
           </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="show more"
-              aria-controls={mobileMenuId}
-              aria-haspopup="true"
-              onClick={handleMobileMenuOpen}
-              color="inherit"
-            >
-              <MoreIcon />
-            </IconButton>
-          </Box>
+  <IconButton
+    size="large"
+    aria-label="show more"
+    aria-controls={mobileMenuId}
+    aria-haspopup="true"
+    onClick={handleMobileMenuOpen}
+    sx={{
+      bgcolor: 'white',     // white background
+      color: 'black',       // black icon color
+      borderRadius: '50%',  // circular shape
+      p: 0.5,               // reduced padding
+      '&:hover': {
+        bgcolor: 'white',   // keep background white on hover
+      },
+    }}
+  >
+    <MoreIcon />
+  </IconButton>
+</Box>
+
+
         </Toolbar>
       </AppBar>
       <NotificationModal open={openNotifications} onClose={handleNotificationClose} />

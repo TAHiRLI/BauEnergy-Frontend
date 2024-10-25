@@ -8,11 +8,11 @@ function Layout({ children }) {
   return (
     <div className="flex ">
       {/* Sidebar */}
-      <nav className="h-screen bg-blue-500">
+      <nav className="h-screen lg:bg-blue-500">
         <Sidebar />
       </nav>
 
-      <div className="flex-grow px-5 h-full mt-3 ml-[260px]">
+      <div className="flex-grow px-5 h-full mt-3 lg:ml-[260px]">
         {/* Appbar */}
         <Appbar position="static" className="bg-blue-200 " >
           <Toolbar>
@@ -23,7 +23,7 @@ function Layout({ children }) {
         </Appbar>
 
         {/* Main Content */}
-        <main className="p-6">
+        <main className="p-0 sm:p-6">
           {children}
         </main>
       </div>
