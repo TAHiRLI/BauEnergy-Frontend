@@ -398,7 +398,7 @@ export default function InstrumentTab({ project }) {
       </div>
 
       <Button
-        className='!bg-[#1D34D8] !rounded-2xl'
+        className='!bg-[#1D34D8] !rounded-3xl !normal-case !py-2'
         startIcon={<AddIcon />}
         variant="contained"
         onClick={() => setOpenDialog(true)}
@@ -521,7 +521,7 @@ export default function InstrumentTab({ project }) {
                   <div className='flex justify-center items-center'>
                     <img
                       className='border-[25px] rounded-xl my-5'
-                      src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/qrcodes/${qrImage}`}
+                      src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
                       alt="Instrument QR Code"
                       style={{ width: 170, height: 170 }} 
                     />

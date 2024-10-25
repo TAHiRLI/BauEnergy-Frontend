@@ -19,16 +19,23 @@ const InstrumentDetails = () => {
   const [error, setError] = useState(null);
   const [openQRDialog, setOpenQRDialog] = useState(false);
 
+
   useEffect(() => {
     const fetchInstrument = async () => {
       try {
         const response = await instrumentService.getById(id);
         setInstrument(response.data);
+        setLoading(false); // Stop loading once instrument data is set
       } catch (error) {
         setError('Error fetching instrument details');
+        setLoading(false);
       }
     };
-
+  
+    fetchInstrument();
+  }, [id]);
+  
+  useEffect(() => {
     const fetchHistory = async () => {
       try {
         const response = await instrumentHistoryService.getById(id);
@@ -37,14 +44,13 @@ const InstrumentDetails = () => {
         console.error('Error fetching instrument history:', error);
       }
     };
-
-    const fetchData = async () => {
-      await Promise.all([fetchInstrument(), fetchHistory()]);
-      setLoading(false);
-    };
-
-    fetchData();
-  }, [id]);
+  
+    // Only fetch history after instrument data has been fetched
+    if (instrument) {
+      fetchHistory();
+    }
+  }, [id, instrument]);
+  
 
   const handleShowQR = () => {
     setOpenQRDialog(true);
@@ -185,6 +191,7 @@ const InstrumentDetails = () => {
 
               <Box mt={3}>
                 <Button
+                  className='!rounded-3xl'
                   onClick={handleShowQR}
                   sx={{ backgroundColor: '#1D4ED8', color: '#fff', textTransform: 'none', borderRadius: 2, px: 4 }}
                 >
@@ -323,7 +330,7 @@ const InstrumentDetails = () => {
 
                           <img
                           className='border-[30px] border-gray-200 rounded-xl'
-                              src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/qrcodes/${instrument.qrImage}`}
+                              src={`${process.env.REACT_APP_DOCUMENT_URL}/${instrument.qrImage}`}
                               alt="QR Code"
                               style={{
                                   width: '200px',
