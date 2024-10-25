@@ -50,6 +50,8 @@ const InstrumentStatusButton = ({ instrumentId, currentStatus }) => {
     } catch (error) {
       console.error("Error while updating status:", error);
     }
+
+    
   };
 
   return (

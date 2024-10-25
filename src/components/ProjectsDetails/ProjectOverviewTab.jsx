@@ -14,41 +14,39 @@ export default function ProjectOverviewTab({ project }) {
 
   return (
     <Box className='!p-0'>
-      <Grid container spacing={4}>
+      <Grid container spacing={4} sx={{ display: 'flex', justifyContent: 'space-between' }}>
         {/* Project Description */}
-        <div className='flex items-center justify-between pt-7 pl-9'>
-          <Grid item xs={12} md={8}>
-            <Typography variant="h5" fontWeight="bold">
-              Project Description
-            </Typography>
-            <Typography variant="body1" color="textSecondary" mt={2}>
-              {project.description}
-            </Typography>
-          </Grid>
+        <Grid item xs={12} md={8}>
+          <Typography variant="h5" fontWeight="bold">
+            Project Description
+          </Typography>
+          <Typography variant="body1" color="textSecondary" mt={2}>
+            {project.description}
+          </Typography>
+        </Grid>
 
-          {/* Project Dates */}
-          <Grid item xs={12} md={3}>
-            <Paper elevation={1} sx={{ padding: 4, backgroundColor: '#f0f4f8', borderRadius: '16px' }}>
-              <Typography variant="h6" fontWeight="bold" color="#1D34D8">
-                Project Timeline
-              </Typography>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="subtitle1" gutterBottom>
-                Start Date
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                {formatDate(project.startDate)}
-              </Typography>
+        {/* Project Dates - Stays on the far right */}
+        <Grid item xs={12} md={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Paper elevation={1} sx={{ padding: 4, backgroundColor: '#f0f4f8', borderRadius: '16px', width: '100%' }}>
+            <Typography variant="h6" fontWeight="bold" color="#1D34D8">
+              Project Timeline
+            </Typography>
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="subtitle1" gutterBottom>
+              Start Date
+            </Typography>
+            <Typography variant="body2" color="textSecondary" gutterBottom>
+              {formatDate(project.startDate)}
+            </Typography>
 
-              <Typography variant="subtitle1" gutterBottom>
-                End Date
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {formatDate(project.endDate)}
-              </Typography>
-            </Paper>
-          </Grid>
-        </div>
+            <Typography variant="subtitle1" gutterBottom>
+              End Date
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              {formatDate(project.endDate)}
+            </Typography>
+          </Paper>
+        </Grid>
 
         {/* Team Members and Instruments Count */}
         <Grid item xs={12}>

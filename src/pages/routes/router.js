@@ -48,7 +48,7 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.INSTRUMENTS_DETAILS,
     element:
-    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.superAdmin, Roles.projectManager]}
+    <PrivateRoute loginPath={ROUTES.BASE} //allowedRoles={[Roles.admin, Roles.superAdmin, Roles.projectManager]}
     >
       <Layout>
         <InstrumentDetails />
