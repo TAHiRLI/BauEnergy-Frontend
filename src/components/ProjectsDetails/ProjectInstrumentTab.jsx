@@ -338,54 +338,54 @@ export default function InstrumentTab({ project }) {
     return <div>Error loading instruments</div>;
   }
 
-  return (
-    <Box height={400} px={0} className='!px-0'>
-      <div className='sm:flex sm:flex-row flex flex-col sm:justify-between sm:items-center mb-5'>
-        <div>
-          <Box display="flex" gap={1}>
-
-            {/* Type input */}
+  return  (
+    <Box height={400} px={0} className='!px-0 W-full'>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-1">
+            {/* Type Input */}
             <TextField
               label="Type"
               variant="outlined"
               onChange={(e) => setSearchType(e.target.value)}
               value={searchType}
-              className='!rounded-3xl'
+              className="rounded-3xl w-full sm:w-auto"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <DateRangeIcon /> 
+                    <DateRangeIcon />
                   </InputAdornment>
                 ),
               }}
             />
 
-            {/* Date input */}
+            {/* Date Input */}
             <TextField
-            label="Search by Date"
-            type="date"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            variant="outlined"
-            value={searchDate}
-            onChange={(e) => setSearchDate(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <DateRangeIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
+              label="Search by Date"
+              type="date"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              variant="outlined"
+              value={searchDate}
+              onChange={(e) => setSearchDate(e.target.value)}
+              className="rounded-3xl w-full sm:w-auto"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <DateRangeIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-            {/* Status input */}
-            <FormControl variant="outlined" sx={{ minWidth: 200 }}>
+            {/* Status Input */}
+            <FormControl variant="outlined" className="w-full sm:w-48">
               <InputLabel>Status</InputLabel>
               <Select
                 label="Status"
                 value={searchStatus}
                 onChange={handleStatusChange}
+                className="rounded-3xl"
               >
                 {statuses.map((status) => (
                   <MenuItem key={status} value={status}>
@@ -394,7 +394,6 @@ export default function InstrumentTab({ project }) {
                 ))}
               </Select>
             </FormControl>
-          </Box>
         </div>
 
         <Button
@@ -408,31 +407,37 @@ export default function InstrumentTab({ project }) {
         </Button>
       </div>
 
-      {/* <DataGrid
-        rows={filteredInstruments}
-        columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
-        getRowId={(row) => row.id}
-      /> */}
-     <Paper
-        sx={{
-          height: 400,
-          width: '100%',
-          overflowX: 'auto', // Enable horizontal scrolling for table only
-          maxWidth: { xs: 640, sm: '100%' }, // Limit width on smaller screens
-        }}
-      >
-        <DataGrid
-          rows={filteredInstruments}
-          columns={columns}
-          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-          pageSizeOptions={[5, 10]}
-          sx={{ border: 0, minWidth: 640,
-          }} // Minimum width for DataGrid to scroll on smaller screens
-          getRowId={(row) => row.id}
-        />
-      </Paper>
+    <Paper
+  sx={{
+    height: '200px',
+    width: '100%',
+    overflowX: 'hidden',
+    maxWidth: '100vw', // Restrict Paper width to viewport
+  }}
+>
+  <Box
+    sx={{
+      maxWidth: { xs: '250px', sm: '100%' },
+      overflowX: 'auto', 
+    }}
+  >
+    <DataGrid
+      rows={filteredInstruments}
+      columns={columns}
+      initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+      pageSizeOptions={[5, 10]}
+      sx={{
+        border: 0,
+        minWidth: 640, // Minimum width for DataGrid to avoid squashing columns
+        overflowX: 'auto', // Enable horizontal scrolling on DataGrid
+      }}
+      getRowId={(row) => row.id}
+    />
+  </Box>
+    </Paper>
+
+
+
 
       {/* Dialog for Adding New Instrument */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} PaperProps={{
