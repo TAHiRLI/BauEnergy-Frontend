@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { IconButton, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, Typography, InputAdornment, TextField, Checkbox, ListItemText, Chip, Divider, Paper} from '@mui/material';
+import { IconButton, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, Typography, InputAdornment, TextField, Checkbox, ListItemText, Chip, Divider} from '@mui/material';
 import Swal from 'sweetalert2';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -340,301 +340,83 @@ export default function InstrumentTab({ project }) {
 
   return (
     <Box height={400} px={0} className='!px-0'>
-      <div className='sm:flex sm:flex-row flex flex-col sm:justify-between sm:items-center mb-5'>
-        <div>
-          <Box display="flex" gap={1}>
+      <div className='flex justify-between items-center mb-5'>
+      <div>
+        <Box display="flex" gap={1}>
 
-            {/* Type input */}
-            <TextField
-              label="Type"
-              variant="outlined"
-              onChange={(e) => setSearchType(e.target.value)}
-              value={searchType}
-              className='!rounded-3xl'
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <DateRangeIcon /> 
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            {/* Date input */}
-            <TextField
-            label="Search by Date"
-            type="date"
-            InputLabelProps={{
-              shrink: true,
-            }}
+          {/* Type input */}
+          <TextField
+            label="Type"
             variant="outlined"
-            value={searchDate}
-            onChange={(e) => setSearchDate(e.target.value)}
+            onChange={(e) => setSearchType(e.target.value)}
+            value={searchType}
+            className='!rounded-3xl'
             InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <DateRangeIcon />
+              endAdornment: (
+                <InputAdornment position="end">
+                  <DateRangeIcon /> 
                 </InputAdornment>
               ),
             }}
           />
 
-            {/* Status input */}
-            <FormControl variant="outlined" sx={{ minWidth: 200 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                label="Status"
-                value={searchStatus}
-                onChange={handleStatusChange}
-              >
-                {statuses.map((status) => (
-                  <MenuItem key={status} value={status}>
-                    {status}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        </div>
+          {/* Date input */}
+          <TextField
+          label="Search by Date"
+          type="date"
+          InputLabelProps={{
+            shrink: true,
+          }}
+          variant="outlined"
+          value={searchDate}
+          onChange={(e) => setSearchDate(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <DateRangeIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
 
-        <Button
-          className='!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0'
-          startIcon={<AddIcon />}
-          variant="contained"
-          onClick={() => setOpenDialog(true)}
-          aria-hidden
-        >
-          Add New Instrument
-        </Button>
+          {/* Status input */}
+          <FormControl variant="outlined" sx={{ minWidth: 200 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              label="Status"
+              value={searchStatus}
+              onChange={handleStatusChange}
+            >
+              {statuses.map((status) => (
+                <MenuItem key={status} value={status}>
+                  {status}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
       </div>
 
-      {/* <DataGrid
+      <Button
+        className='!bg-[#1D34D8] !rounded-3xl !normal-case !py-2'
+        startIcon={<AddIcon />}
+        variant="contained"
+        onClick={() => setOpenDialog(true)}
+        aria-hidden
+      >
+        Add New Instrument
+      </Button>
+
+      </div>
+
+      <DataGrid
         rows={filteredInstruments}
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5]}
         getRowId={(row) => row.id}
-      /> */}
-     <Paper
-        sx={{
-          height: 400,
-          width: '100%',
-          overflowX: 'auto', // Enable horizontal scrolling for table only
-          maxWidth: { xs: 640, sm: '100%' }, // Limit width on smaller screens
-        }}
-      >
-        <DataGrid
-          rows={filteredInstruments}
-          columns={columns}
-          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-          pageSizeOptions={[5, 10]}
-          sx={{ border: 0, minWidth: 640,
-          }} // Minimum width for DataGrid to scroll on smaller screens
-          getRowId={(row) => row.id}
-        />
-      </Paper>
+      />
 
-      {/* Dialog for Adding New Instrument */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} PaperProps={{
-          style: {
-            borderRadius: 20,
-            //height: "500px",
-            backgroundColor: "#fcfcfc"  
-          },
-        }}>
-        <DialogTitle className='!font-medium'>Select instrument for adding project</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Select Instrument</InputLabel>
-            <Select
-              value={selectedInstrumentId}
-              onChange={(e) => setSelectedInstrumentId(e.target.value)}
-              label="Select Instrument"
-            >
-              {allInstruments.map((instrument) => (
-                <MenuItem key={instrument.id} value={instrument.id}>
-                  {instrument.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions className='!px-6'>
-          <Button onClick={() => setOpenDialog(false)} className='!text-[#1D34D8] '>Cancel</Button>
-          <Button onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8] '>
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* QR Code Dialog */}
-      <Dialog open={openQRDialog} onClose={handleCloseQRDialog} fullWidth maxWidth="xs" PaperProps={{
-          style: {
-            borderRadius: 20,
-            //height: "500px",
-            backgroundColor: "#fcfcfc"  
-          },
-        }}>
-        <DialogTitle>
-    Instrument info
-    <IconButton
-      className="!text-[#1D34D8]"
-      aria-label="close"
-      onClick={handleCloseQRDialog}
-      sx={{
-        position: 'absolute',
-        right: 8,
-        top: 8,
-      }}
-    >
-      <CancelOutlinedIcon />
-    </IconButton>
-    <div className='text-sm text-gray-500 mt-3'> 
-      Scan Qr to get more information about the history of instrument you want
-    </div>
-        </DialogTitle>
-
-        <DialogContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="body1">Instrument details:</Typography>
-
-            <Button
-              className='!text-[#1D34D8] !rounded-xl'
-              startIcon={<ShareIcon />}
-              onClick={handleShare}
-              sx={{ textTransform: 'none', fontWeight: 'bold' }} 
-            >
-              Share
-            </Button>
-          </Box>
-            <Box my={2}>
-              <div className='border rounded-xl px-3'>
-                <div className='grid grid-cols-2'>
-                  <div className='flex flex-col justify-between ' >
-                    <div className='flex flex-col text-start'>
-                      <h5 className='mt-2 text-gray-500 font-medium'> 
-                        Instrument QR:
-                      </h5>
-                      <p className='mt-2 text-gray-500'>
-                        Scan Qr to get more information
-                      </p>                    
-                    </div>
-                    <div className=''>
-                      <Button
-                        className='!rounded-3xl !m-3 !text-black'
-                        onClick={handlePrint}
-                        sx={{
-                          fontWeight: 'bold',
-                          textTransform: 'none',
-                          border: '2px solid black',      
-                          borderRadius: '30px',    
-                          padding: '8px 16px',     
-                        }}>
-                         Print QR Code
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className='flex justify-center items-center'>
-                    <img
-                      className='border-[25px] rounded-xl my-5'
-                      src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
-                      alt="Instrument QR Code"
-                      style={{ width: 170, height: 170 }} 
-                    />
-                  </div>
-                </div>
-              
-       
-              {/* Print Button */}
-              
-
-              </div>
-
-            </Box>
-        </DialogContent>
-      </Dialog>
-
-      {/* Instrument History Dialog */}
-      <Dialog open={openHistoryDialog} onClose={handleCloseHistoryDialog}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          style: {
-            borderRadius: 20,
-            height: "500px",
-            backgroundColor: "#fcfcfc"  
-          },
-        }}
-      >
-        <DialogTitle>
-    Instrument History
-    <IconButton
-      className="!text-blue-700"
-      aria-label="close"
-      onClick={handleCloseHistoryDialog}
-      sx={{
-        position: "absolute",
-        right: 8,
-        top: 8,
-      }}
-    >
-      <CancelOutlinedIcon />
-    </IconButton>
-        </DialogTitle>
-
-  <DialogContent
-    className="!border !border-gray-300 rounded-xl !p-2 !m-6 !mt-0 bg-white"
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
-      alignItems: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
-      overflowY: "auto",
-      overflowX: "hidden",  
-      maxHeight: "calc(100% - 64px)",  
-      paddingRight: "8px" 
-    }}
-  >
-    {instrumentHistory && instrumentHistory.length > 0 ? (
-      <>
-        <Typography variant="h6">Photos</Typography>
-
-        <Box display="flex" gap={2} mb={2} >
-          {instrument?.images?.slice(0, 3).map((img, index) => (
-            <img
-              key={index}
-              src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${img.image}`}
-              alt="Instrument"
-              style={{
-                flexGrow: 1, 
-                width: '32%', 
-                height: 100,
-                borderRadius: 8,
-                objectFit: 'cover' 
-              }}
-            />
-          ))}
-        </Box>
-        <Typography variant="h6" dividers>Details</Typography>
-        <div className='border-b border-slate-300 w-full my-2'></div>
-        {instrumentHistory.map((entry, index) => (
-          <Box key={index} mb={2} width="100%">
-            <div className="flex justify-between items-center">
-              <Typography variant="subtitle1" className='!font-medium'>{entry.title}</Typography>
-              <Typography variant="subtitle2" color="textSecondary">
-                {formatDate(entry.eventDate)}
-              </Typography>
-            </div>
-            <Typography variant="body2" className='!text-gray-500 !ml-1'>{entry.description}</Typography>
-          </Box>
-        ))}
-      </>
-    ) : (
-      <Typography variant="body2" className='text-gray-500'>Nothing here yet...</Typography>
-    )}
-  </DialogContent>
-      </Dialog>
     </Box>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, FormHelperText } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, FormHelperText, Paper } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit'; 
 import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
@@ -92,7 +92,6 @@ export default function TeamMember({ project }) {
   const handleImageUpload = (event) => {
     const files = event.target.files;
     if (files.length > 0) {
-      // Assuming you're only handling one image, you can select the first file
       const selectedFile = files[0];
       setImageFile(selectedFile);
     }
@@ -139,14 +138,13 @@ export default function TeamMember({ project }) {
       formData.append('Name', values.name);
       formData.append('LastName', values.lastName);
       formData.append('Email', values.email);
-      formData.append('Role', values.role); // Ensure role is passed as an integer
-      formData.append('ProjectId', project.id); // ProjectId as GUID
+      formData.append('Role', values.role);
+      formData.append('ProjectId', project.id); 
   
       if (imageFile) {
-        formData.append('Image', imageFile); // Handle file upload correctly
+        formData.append('Image', imageFile); 
       }
   
-      // Use the service to send the request
       const response = await teamMemberService.add(formData);
   
       Swal.fire('Success', 'Team member has been created and added to the project!', 'success');
@@ -164,8 +162,6 @@ export default function TeamMember({ project }) {
     }
   };
   
-  
-
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
@@ -197,19 +193,17 @@ export default function TeamMember({ project }) {
       formData.append('LastName', values.lastName);
       formData.append('Email', values.email);
       formData.append('Role', values.role);
-      formData.append('TeamMemberId', teamMemberToEdit.id); // Pass the team member ID to identify which member to update
+      formData.append('TeamMemberId', teamMemberToEdit.id); 
   
       if (values.image) {
-        formData.append('Image', values.image); // Add the image to the formData if it exists
+        formData.append('Image', values.image); 
       }
   
-      // Send the request using the provided edit method
       await teamMemberService.edit(teamMemberToEdit.id, formData);
   
       Swal.fire('Success', 'Team member has been updated!', 'success');
       setIsEditDialogOpen(false);
   
-      // Refresh the team member list after the update
       const projectResponse = await projectService.getById(project.id);
       dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
   
@@ -219,7 +213,6 @@ export default function TeamMember({ project }) {
     }
   };
   
-
   const formatDate = (date) => {
     if (!date) {
       return 'N/A'; 
@@ -311,13 +304,32 @@ export default function TeamMember({ project }) {
         Add New People
       </Button>
       
-      <DataGrid
+      {/* <DataGrid
         rows={state.data || []}
         columns={columns}
         pageSize={4}
         rowsPerPageOptions={[4]}
         getRowId={(row) => row.id}
-      />
+      /> */}
+
+      <Paper
+        sx={{
+          height: 400,
+          width: '100%',
+          overflowX: 'auto', // Enable horizontal scrolling for table only
+          maxWidth: { xs: 640, sm: '100%' }, // Limit width on smaller screens
+        }}
+      >
+        <DataGrid
+        rows={state.data || []}
+        columns={columns}
+          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+          pageSizeOptions={[5, 10]}
+          sx={{ border: 0, minWidth: 640,
+          }} 
+          getRowId={(row) => row.id}
+        />
+      </Paper>
 
       {/* Modal dialog for adding team member */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth PaperProps={{

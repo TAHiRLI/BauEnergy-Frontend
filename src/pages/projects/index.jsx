@@ -88,7 +88,7 @@ export default function BasicTabs() {
   return (
     <Box sx={{ width: '100%' }}>
       
-      <div className='flex justify-between items-center pl-2 pr-6'>
+      <div className='sm:flex sm:flex-row flex-col  justify-between items-center pl-2 pr-6 pt-4 sm:pt-0'>
 
         <div>
           <div className='text-2xl font-semibold'>
@@ -99,13 +99,12 @@ export default function BasicTabs() {
           </div>
         </div>
 
-        <div className='flex items-center'>
+        <div className='flex items-center py-3 '>
           <Button
-            className='!rounded-2xl !bg-slate-200 !text-black !px-4'
+            className='!rounded-2xl !bg-slate-200 !text-black !px-4 mr-0 sm:mr-1'
             startIcon={<ShareIcon />}
             variant="contained"
             sx={{
-              marginLeft: 1,
               textTransform: 'none',
             }}
             onClick={handleShare} // Share button click event
@@ -124,8 +123,8 @@ export default function BasicTabs() {
         </Tabs>
       </Box>
 
-      <CustomTabPanel value={value} index={0}>
-        <ProjectOverview project={project}/>
+      <CustomTabPanel value={value} index={0} >
+        <ProjectOverview project={project} />
       </CustomTabPanel>
 
       <CustomTabPanel value={value} index={1}>
