@@ -312,24 +312,34 @@ export default function TeamMember({ project }) {
         getRowId={(row) => row.id}
       /> */}
 
-      <Paper
-        sx={{
-          height: 400,
-          width: '100%',
-          overflowX: 'auto', // Enable horizontal scrolling for table only
-          maxWidth: { xs: 640, sm: '100%' }, // Limit width on smaller screens
-        }}
-      >
-        <DataGrid
-        rows={state.data || []}
-        columns={columns}
-          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-          pageSizeOptions={[5, 10]}
-          sx={{ border: 0, minWidth: 640,
-          }} 
-          getRowId={(row) => row.id}
-        />
-      </Paper>
+<Paper
+  sx={{
+    height: '200px',
+    width: '100%',
+    overflowX: 'hidden',
+    maxWidth: '100vw', // Restrict Paper width to viewport
+  }}
+>
+  <Box
+    sx={{
+      maxWidth: { xs: '250px', sm: '100%' },
+      overflowX: 'auto', 
+    }}
+  >
+    <DataGrid
+      rows={state.data || []}
+      columns={columns}
+      initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+      pageSizeOptions={[5, 10]}
+      sx={{
+        border: 0,
+        minWidth: 640, // Minimum width for DataGrid to avoid squashing columns
+        overflowX: 'auto', // Enable horizontal scrolling on DataGrid
+      }}
+      getRowId={(row) => row.id}
+    />
+  </Box>
+    </Paper>
 
       {/* Modal dialog for adding team member */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth PaperProps={{

@@ -1,422 +1,677 @@
-import React, { useEffect, useState } from 'react';
-import { DataGrid } from '@mui/x-data-grid';
-import { IconButton, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, Typography, InputAdornment, TextField, Checkbox, ListItemText, Chip, Divider} from '@mui/material';
-import Swal from 'sweetalert2';
-import DateRangeIcon from '@mui/icons-material/DateRange';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit'; 
-import HistoryIcon from '@mui/icons-material/History'; 
-import { useProjects, ProjectsActions } from '../../context/projectContext';
-import { projectService } from '../../APIs/Services/project.service';
+import React, { useEffect, useState, useRef } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress,} from '@mui/material';
+import ShareIcon from '@mui/icons-material/Share';
 import { instrumentService } from '../../APIs/Services/instrument.service';
-import { instrumentHistoryService } from '../../APIs/Services/instrumentHistory.service';
+import { useInstruments, InstrumentActions } from '../../context/instrumentContext';
+import { useErrorModal } from '../../hooks/useErrorModal';
+import StatusButton from '../../components/common/statusBtn';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'; 
-import InstrumentStatusButton from '../common/actionsBtn/InstrumentUpdateButton';
+import Swal from 'sweetalert2';
+import InfoIcon from '@mui/icons-material/Info'; 
+import { Link, Routes, useNavigate } from 'react-router-dom';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { styled } from '@mui/material/styles';
+import { useLocation } from 'react-router-dom';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
-
-export default function InstrumentTab({ project }) {
-  const { state, dispatch } = useProjects();
-  const [openDialog, setOpenDialog] = useState(false);
-  const [openQRDialog, setOpenQRDialog] = useState(false); 
-  const [allInstruments, setAllInstruments] = useState([]);
-  const [selectedInstrumentId, setSelectedInstrumentId] = useState('');
-  const [instrument, setInstrument] = useState('');
-  const [qrImage, setQrImage] = useState('');
-  const [qrInstrumentName, setQrInstrumentName] = useState('');
-  const [searchType, setSearchType] = useState('');
-  const [searchDate, setSearchDate] = useState('');
-  const [searchStatus, setSearchStatus] = useState([]); 
-  const [filteredInstruments, setFilteredInstruments] = useState([]);
-  const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
-  const [instrumentHistory, setInstrumentHistory] = useState([]);
-
-  const handleDelete = async (id) => {
-    try {
-      const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'You won\'t be able to revert this!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#1D34D8',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
-      });
-
-      if (result.isConfirmed) {
-        const body = { projectId: project.id, instrumentId: id }; 
-        await projectService.removeInstrumentFromProject(body);
-        
-        Swal.fire({
-          title: 'Deleted!',
-          text: 'Instrument has been removed from the project.',
-          icon: 'success',
-          timer: 2000,
-        });
-
-        const response = await projectService.getById(project.id);
-        dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
-        setFilteredInstruments(response.data.instruments);  
-      }
-    } catch (error) {
-      console.error('Error deleting instrument:', error.message);
-      Swal.fire({
-        title: 'Error!',
-        text: 'Failed to remove instrument.', 
-        icon: 'error',
-        timer: 2000,
-      });
-    }
-  };
-
+  const VisuallyHiddenInput = styled('input')({
+    display: 'none',
+  });
   
+  const StyledBox = styled(Box)(({ theme }) => ({
+    border: '1px solid',
+    borderColor: theme.palette.grey[400],
+    padding: theme.spacing(1),
+    marginTop: theme.spacing(1),
+    borderRadius: theme.shape.borderRadius,
+    '&:hover': {
+        borderColor: theme.palette.common.black,
+    },
+  }));
 
-  const handleAddInstrument = async () => {
-    try {
-      const body = { projectId: project.id, instrumentId: selectedInstrumentId };
-      await projectService.addInstrumentToProject(body);
-      
-      Swal.fire({
-        title: 'Added!',
-        text: 'Instrument has been added to the project.',
-        icon: 'success',
-        timer: 2000,
-      });
-  
-      const response = await projectService.getById(project.id);
-      dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
-      setFilteredInstruments(response.data.instruments);
-      setSelectedInstrumentId(''); 
-      setOpenDialog(false); 
-  
-    } catch (error) {
-      setOpenDialog(false); 
-      console.error('Error adding instrument:', error);
-      
-      Swal.fire({
-        title: 'Error!',
-        text: 'Failed to add instrument.',
-        icon: 'error',
-        timer: 2000,
-      });
-      setOpenDialog(false); 
-    }
-  };
-  
-  const handleCloseHistoryDialog = () => setOpenHistoryDialog(false);
+export const Instruments = () => {
 
-  const handleShowHistory = async (id) => {
-    try {
-      const response = await instrumentHistoryService.getById(id); 
-      setInstrumentHistory(response.data);
-      setInstrument(allInstruments.find(inst => inst.id === id))
-      setOpenHistoryDialog(true);
-    } catch (error) {
-      console.error("Error fetching instrument history:", error);
-    }
-  };
+    const [isUpdated, forceUpdate] = useState(false);
+    const { state, dispatch } = useInstruments();
+    const showError = useErrorModal();
+    const [openModal, setOpenModal] = useState(false);
+    const [openQRDialog, setOpenQRDialog] = useState(false); 
+    const [qrImage, setQrImage] = useState(null); 
+    const [qrInstrumentName, setQrInstrumentName] = useState(null);
+    const [instrumentTypes, setInstrumentTypes] = useState([]);
+    const [imagePreviews, setImagePreviews] = useState([]);
+    const [searchTerm, setSearchTerm] = useState(''); 
+    const [filteredInstruments, setFilteredInstruments] = useState(state?.data || []);
+    const [uploadedFiles, setUploadedFiles] = useState([]);
 
-  const handleSearch = () => {
-    let filtered = allInstruments; 
-    if (searchType) {
-      filtered = filtered.filter((instrument) => 
-        instrument.instrumentType.toLowerCase().includes(searchType.toLowerCase())
-      );
-    }
-    if (searchDate) {
-      filtered = filtered.filter((instrument) => {
-        const instrumentDate = new Date(instrument.addedProjectDate);
-    
-        const formattedInstrumentDate = instrumentDate.toISOString().split('T')[0]; 
-        const formattedSearchDate = new Date(searchDate).toISOString().split('T')[0]; 
-    
-        return formattedInstrumentDate === formattedSearchDate;
-      });
-    }
-    
-    if (searchStatus) {
-      filtered = filtered.filter(instrument => instrument.status.split('_').join(' ').includes(searchStatus));
-    }
-
-    setFilteredInstruments(filtered);
-  };
-
-  useEffect(() => {
-    setFilteredInstruments(state.project?.instruments || []);
-  }, [state.project?.instruments]);
-
-  useEffect(() => {
-    handleSearch();
-  }, [searchType, searchDate, searchStatus]); 
-
-  const statuses = ['In use', 'Under maintenance'];
-  const handleStatusChange = (event) => {
-    const {
-      target: { value },
-    } = event;
-    setSearchStatus(typeof value === 'string' ? value.split(',') : value);
-  };
-
-
-  const fetchAllInstruments = async () => {
-    try {
-      const response = await instrumentService.getAviableInstruments(); 
-      setAllInstruments(response.data);
-      //console.log(response.data)
-    } catch (error) {
-      console.error('Error fetching available instruments:', error);
-    }
-  };
-
-  useEffect(() => {
-    const fetchInstruments = async () => {
-      dispatch({ type: ProjectsActions.start });
-      try {
-        const response = await projectService.getById(project.id);
-        setAllInstruments(response.data.instruments); 
-        setFilteredInstruments(response.data.instruments)
-        //console.log(response.data.instruments)
-        dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
-      } catch (error) {
-        console.error('Error fetching instruments:', error);
-        dispatch({ type: ProjectsActions.failure, payload: error });
-      }
+    const [newInstrument, setNewInstrument] = useState({
+        name: '',
+        images: [],
+        files: [], 
+        mainImageIndex: 0,
+        description: '',
+        shortDesc: '',
+        instrumentTypeId: '',
+    });
+    const [instrument, setInstrument] = useState(null)
+    const [loading, setLoading] = useState(true); 
+    const navigate = useNavigate();
+    const handleInstrumentInfoSelect = async (id) => {
+        try {
+            const projectResponse = await instrumentService.getById(id);
+            setInstrument(projectResponse.data); 
+            navigate(`/instruments/details/${id}`, { state: { instrument: projectResponse.data } }); 
+            } catch (error) {
+            console.error("Failed to fetch project details", error);
+        }
     };
-  
-    fetchInstruments();
-  }, [dispatch, project.id]);
-  
+    const location = useLocation();
+    // const searchInputRef = useRef(null); 
+    //console.log(location)
+    useEffect(() => {
+        //const searchParams = new URLSearchParams(location.search);
+        //const focusSearch = searchParams.get('focusSearch');        
+        if (location.state === 'true') {
+          // Use document.getElementById to focus the input by its id
+          const searchInput = document.getElementById('searchbtnax');
+          if (searchInput) {
+            searchInput.focus();
+          }
+        }
+      }, [location.search]);
 
-  useEffect(() => {
-    if (openDialog) {
-      fetchAllInstruments(); 
-    }
-  }, [openDialog]);
+    useEffect(() => {
+        if (state?.data) {
+          const filtered = state.data.filter(instrument =>
+            instrument.name.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          setFilteredInstruments(filtered);
+        }
+      }, [searchTerm, state.data]);
 
-  const handleShowQR = (instrument) => {
-    setInstrument(instrument);
-    setQrImage(instrument.qrImage); 
-    setQrInstrumentName(instrument.name);
-    setOpenQRDialog(true);
-  };
+      const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value); 
+      };
 
-  const handleCloseQRDialog = () => {
-    setOpenQRDialog(false);
-  };
+    useEffect(() => {
+        (async () => {
+            setLoading(true); 
+            dispatch({ type: InstrumentActions.start });
+            try {
+                const res = await instrumentService.getAll();
+                dispatch({ type: InstrumentActions.success, payload: res.data });
+            } catch (err) {
+                console.error('Error fetching instruments:', err);
+                dispatch({ type: InstrumentActions.failure, payload: err });
+            }finally {
+                setLoading(false);
+            }
+        })();
+    }, [dispatch, isUpdated]);
 
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const formatDate = (date) => {
-    if (!date) {
-      return 'N/A'; 
-    }
-    
-    try {
-      return new Intl.DateTimeFormat('en-GB', {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-      }).format(new Date(date));
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return 'Invalid date'; 
-    }
-  };
-  const renderStatus = (status) => {
-    let chipProps = {};
-    switch (status) {
-      case 'Available':
-        chipProps = { label: 'Available', style: { borderColor: 'green', color: 'green' }, variant: 'outlined' };
-        break;
-      case 'In use':
-        chipProps = { label: 'In use', style: { borderColor: 'blue', color: 'blue' }, variant: 'outlined' };
-        break;
-      case 'Under maintance':
-        chipProps = { label: 'Under maintance', style: { borderColor: 'red', color: 'red' }, variant: 'outlined' };
-        break;
-      default:
-        chipProps = { label: 'Unknown', style: { borderColor: 'grey', color: 'grey' }, variant: 'outlined' };
-        break;
-    }
-    return <Chip {...chipProps} />;
-  };
-  const handleShare = () => {
-    const shareData = {
-      title: instrument.name,
-      text: `Check out this project: ${project.name}`,
-      url: window.location.href,
+    const handleDelete = async (id) => {
+        try {
+            await instrumentService.remove(id);
+            forceUpdate((x) => !x);
+        } catch (err) {
+            console.error('Error deleting instrument:', err);
+            showError();
+        }
     };
-
-    if (navigator.share) {
-      navigator.share(shareData).catch((err) => {
-        console.error('Error sharing:', err);
-      });
-    } else {
-      Swal.fire({
-        icon: 'info',
-        title: 'Share Link',
-        text: `Your browser doesn't support sharing. Please copy the link manually.`,
-        footer: `<a href="${window.location.href}" target="_blank">Copy Link</a>`,
-      });
-    }
-  };
-
-  const columns = [
-    {
-      field: 'name',
-      headerName: 'Instrument Name',
-      width: 300,
-      renderCell: (params) => {
-        const mainImage = params.row.images?.find(img => img.isMain);
+    if (loading) {
         return (
-          <Box display="flex" alignItems="center" sx={{ cursor: 'pointer' }} onClick={() => handleShowQR(params.row)}>
-            {mainImage && (
-              <img
-                src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${mainImage.image}`}
-                alt={params.row.name}
-                style={{ width: 50, height: 50, marginRight: 10 }}
-              />
-            )}
-            <Typography>{params.row.name}</Typography>
-          </Box>
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <CircularProgress />
+            </Box>
         );
-      },
-    },
-    { field: 'addedProjectDate', headerName: 'Date Added', width: 200, renderCell: (params) => formatDate(params.row.addedProjectDate) },
-    { field: 'instrumentType', headerName: 'Type', width: 200 },
-    {
-      field: 'status',
-      headerName: 'Status',
-      width: 150,
-      renderCell: (params) => renderStatus(params.row.status.split('_').join(' ')), 
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 150,
-      renderCell: (params) => (
-        <>
-        <div className='text-center'>
-          <InstrumentStatusButton instrumentId={params.row.id} currentStatus={params.row.status}/>
+    }
 
-          <IconButton
-            onClick={() => handleDelete(params.row.id)}
-            sx={{
-              backgroundColor: "#f5f5f5",  
-              borderRadius: "20%",         
-              padding: "5px",               
-              border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
-              marginRight: "8px"
-            }}>            
-            <DeleteIcon sx={{ color: "#424242" }} />
-          </IconButton>
+    const handleOpenModal = () => setOpenModal(true);
+    const handleCloseModal = () => {
+        setOpenModal(false);
+    }
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewInstrument((prevState) => ({
+        ...prevState,
+        [name]: value,
+        }));
+    };
 
-          <IconButton onClick={() => handleShowHistory(params.row.id)} color="primary"
-            sx={{
-              backgroundColor: "#f5f5f5",  
-              borderRadius: "20%",         
-              padding: "5px",               
-              border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
-            }}>            
-            
-            <HistoryIcon sx={{ color: "#424242" }} />
-          </IconButton>
-        </div>
-        </>
-      ),
-    },
-  ];
+    const handlePdfUpload = (event) => {
+        const files = event.target.files;
+        setUploadedFiles(prevFiles => [...prevFiles, ...files]);
+        setNewInstrument(prevInstrument => ({
+          ...prevInstrument,
+          files: [...prevInstrument.files, ...files]
+        }));
+      };
 
-  if (state.loading) {
-    return <div>Loading...</div>;
-  }
+    const handleImageUpload = (e) => {
+        const files = Array.from(e.target.files);
+        const previews = files.map((file) => URL.createObjectURL(file));
+        console.log(files)
+        setImagePreviews(previews);
+        setNewInstrument((prevState) => ({
+        ...prevState,
+        images: files,
+        }));
+    };
+    const handleMainImageChange = (event) => {
+        setNewInstrument((prevState) => ({
+        ...prevState,
+        mainImageIndex: parseInt(event.target.value, 10),
+        }));
+    };
 
-  if (state.error) {
-    return <div>Error loading instruments</div>;
-  }
+    const handleAddInstrument = async () => {
+        const { name, images, mainImageIndex, files, description, shortDesc, projectId, instrumentType } = newInstrument;
+        const formData = new FormData();
+    
+        formData.append('Name', name);
+        formData.append('MainImageIndex', mainImageIndex);
+        formData.append('Description', description);
+        formData.append('ShortDesc', shortDesc);
+        formData.append('ProjectId', projectId || '');
+        formData.append('InstrumentType', instrumentType);    
+        images.forEach((file, index) => {
+            formData.append('Images', file);  
+        });
+        files?.forEach((file, index) => {
+            formData.append('Files', file);  
+        });
+    
+        try {
+            await instrumentService.add(formData);
+            forceUpdate((x) => !x);
+            handleCloseModal();
+        } catch (err) {
+            console.error('Error adding instrument:', err);
+            if (err.response && err.response.status === 403) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Access Denied',
+                    text: 'You do not have permission to perform this action.',
+                    confirmButtonText: 'OK'
+                });
+            } else {
+                // Handle other errors
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while adding the instrument. Please try again.',
+                    confirmButtonText: 'OK'
+                });
+            }
+            handleCloseModal();
+           // showError();
+        }
+    };
+    
+    const handleShare = () => {
+        const shareData = {
+          //title: project.name,
+          //text: `Check out this project: ${project.name}`,
+          url: window.location.href,
+        };
+    
+        if (navigator.share) {
+          navigator.share(shareData).catch((err) => {
+            console.error('Error sharing:', err);
+          });
+        } else {
+          Swal.fire({
+            icon: 'info',
+            title: 'Share Link',
+            text: `Your browser doesn't support sharing. Please copy the link manually.`,
+            footer: `<a href="${window.location.href}" target="_blank">Copy Link</a>`,
+          });
+        }
+    };
 
-  return (
-    <Box height={400} px={0} className='!px-0'>
-      <div className='flex justify-between items-center mb-5'>
-      <div>
-        <Box display="flex" gap={1}>
+    const handleShowQR = (qrImage, instrumentName) => {
+        setQrImage(qrImage);
+        setQrInstrumentName(instrumentName);
+        setOpenQRDialog(true);
+    };
+    const handleCloseQRDialog = () => setOpenQRDialog(false);
 
-          {/* Type input */}
-          <TextField
-            label="Type"
-            variant="outlined"
-            onChange={(e) => setSearchType(e.target.value)}
-            value={searchType}
-            className='!rounded-3xl'
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <DateRangeIcon /> 
-                </InputAdornment>
-              ),
-            }}
-          />
+    if (!state.data || state.data.length === 0) {
+        return (
+            <Box m={"20px"}>
+                <Button variant="contained"
+              className='!ml-6 !bg-[#1D34D8] !rounded-3xl !py-2'
+              sx={{ml: 2,textTransform: "none",}} onClick={handleOpenModal}>
+                    Add Instrument
+                </Button>
+                <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
+            style: {
+                borderRadius: 20,
+                //height: "500px",
+                backgroundColor: "#fcfcfc"  
+            },
+            }}>
+                <DialogTitle>Add New Instrument</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        name="name"
+                        label="Instrument Name"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.name}
+                        onChange={handleInputChange}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="description"
+                        label="Description"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.description}
+                        onChange={handleInputChange}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="shortDesc"
+                        label="Short Description"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.shortDesc}
+                        onChange={handleInputChange}
+                    />
 
-          {/* Date input */}
-          <TextField
-          label="Search by Date"
-          type="date"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          variant="outlined"
-          value={searchDate}
-          onChange={(e) => setSearchDate(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <DateRangeIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
+                    {/* Instrument Type */}
+                    <TextField
+                        margin="dense"
+                        name="instrumentType"
+                        label="Instrument Type"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.instrumentType || ''}
+                        onChange={handleInputChange}
+                    />                   
+                    {/* Image upload */}
+                    <StyledBox>
+                        <Button
+                        component="label"
+                        variant="contained"
+                        startIcon={<CloudUploadIcon />}
+                        >
+                        Upload Images
+                        <VisuallyHiddenInput
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                        />
+                        </Button>
+                    </StyledBox>
 
-          {/* Status input */}
-          <FormControl variant="outlined" sx={{ minWidth: 200 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              label="Status"
-              value={searchStatus}
-              onChange={handleStatusChange}
-            >
-              {statuses.map((status) => (
-                <MenuItem key={status} value={status}>
-                  {status}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+                    {/* Image Previews and Main Image Selection */}
+                    {imagePreviews.length > 0 && (
+                        <Box mt={2}>
+                        <Typography variant="h6">Select Main Image:</Typography>
+                        <Grid container spacing={2}>
+                            {imagePreviews.map((image, index) => (
+                            <Grid item xs={4} key={index}>
+                                <img src={image} alt={`Preview ${index}`} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
+                                <FormControlLabel
+                                control={<Radio
+                                    checked={newInstrument.mainImageIndex === index}
+                                    onChange={handleMainImageChange}
+                                    value={index}
+                                    name="mainImage"
+                                />}
+                                label="Main"
+                                />
+                            </Grid>
+                            ))}
+                        </Grid>
+                        </Box>
+                    )}
+
+                    {/* PDF Upload */}
+                    <StyledBox>
+                        <Button
+                            component="label"
+                            variant="contained"
+                            startIcon={<CloudUploadIcon />}
+                        >
+                            Upload files
+                            <VisuallyHiddenInput
+                            type="file"
+                            onChange={handlePdfUpload}
+                            multiple
+                            />
+                        </Button>
+                    </StyledBox>
+                </DialogContent>
+                <DialogActions className='!px-10'>
+                <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
+                <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
+                </DialogActions>
+                </Dialog>
+            </Box>
+        );
+    }
+
+    const rows = filteredInstruments.map((instrument) => ({
+        id: instrument.id,
+        name: instrument.name,
+        isActive: instrument.isActive ? 'Inactive' : 'Active',
+        shortDesc: instrument.shortDesc,
+        image: instrument.images.find((image) => image.isMain),
+        status: instrument.status,
+        qr : instrument.qrImage
+    }));
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'Under_maintance':
+                return 'red';
+            case 'In_use':
+                return 'blue';
+            case 'Available':
+                return 'green';
+            case 'Aviable':
+                return 'green';
+            default:
+                return 'gray';
+        }
+    };
+
+    return (
+        <Box m={"20px"}>
+            <div className='flex justify-between items-center' >
+                <span className='text-3xl font-semibold'>List of instruments</span>
+                <div className="flex items-center gap-4 justify-between"> 
+                <TextField
+                    id='searchbtnax'
+                    ///ref={searchInputRef} 
+                    variant="outlined"
+                    placeholder="Search Instruments..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    sx={{
+                    width: '50%', 
+                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)', 
+                    borderRadius: '30px',
+                    '& .MuiOutlinedInput-root': {
+                        borderRadius: '30px', 
+                    },
+                    '& .MuiOutlinedInput-input': {
+                        padding: '10px 15px', 
+                    },
+                    }}
+                />
+                <Button variant="contained" className='!bg-[#1D34D8] !rounded-3xl !ml-3 !py-2'  sx={{textTransform: "none",}} onClick={handleOpenModal}>
+                    Add Instrument
+                </Button>
+                </div>               
+            </div>
+            <p className='mt-4'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
+
+            <Grid container spacing={2} sx={{ marginTop: '20px' }}>
+                {rows.map((row) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={row.id}>
+                    <Box p={2} boxShadow={2} className='rounded-lg'>
+                    <img 
+                        src={`${process.env.REACT_APP_DOCUMENT_URL}${row.image?.image}`} 
+                        alt={row.name} 
+                        style={{ width: '100%', height: '200px', marginBottom: '10px', objectFit: 'fill', }}
+                        className='rounded-lg'
+                        />
+                        <StatusButton text={row.status.split('_').join(' ')} color={getStatusColor(row.status)} />
+                        <Typography className="!text-lg !mt-1 !whitespace-nowrap !overflow-hidden !text-ellipsis">{row.name}</Typography>
+                        <Typography variant="body2" color="textSecondary" 
+                            sx={{
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                        }}
+                        >{row.shortDesc} </Typography>
+                        <div className='flex justify-between'>
+                                <Button 
+                                    variant="outlined"  
+                                    startIcon={<InfoIcon />} 
+                                    sx={{ marginRight: '10px', borderColor: 'blue', color: 'blue' }}
+                                    onClick={() => handleInstrumentInfoSelect(row.id)}
+
+                                >
+                                    Info
+                                </Button>
+                            <Button 
+                            onClick={() => handleShowQR(row.qr, row.name)} 
+                            className='!underline !text-[#1D34D8] !rounded-xl' 
+                            >
+                                Scan QR code
+                            </Button>
+                        </div>
+                    </Box>
+                </Grid>
+                ))}
+            </Grid>
+
+            {/* QR Modal */}
+            <Dialog open={openQRDialog} onClose={handleCloseQRDialog}
+            PaperProps={{
+                style: {
+                  borderRadius: 20,
+                  //height: "500px",  
+                },
+              }}>
+                <DialogTitle>
+                    Qr Instrument
+                    <IconButton
+                        className="!text-blue-700"
+                        aria-label="close"
+                        onClick={handleCloseQRDialog}
+                        sx={{
+                            position: 'absolute',
+                            right: 8,
+                            top: 8,
+                            color: (theme) => theme.palette.grey[500],
+                        }}
+                    >
+                    <CancelOutlinedIcon />
+                </IconButton>
+                </DialogTitle>
+
+                <DialogContent >
+                    <div className='flex justify-between items-center'>
+                    <Typography variant="body1" >
+                        Instrument details:
+                    </Typography>
+
+                    <Button
+                        className="!text-blue-700"
+                        startIcon={<ShareIcon />}
+                        onClick={handleShare}
+                    >
+                        Share
+                    </Button>
+
+                    </div>
+
+                    {/* QR Code Image */}
+                    {qrImage && (
+                        <Box
+                            display="flex"
+                            flexDirection="column"
+                            alignItems="center"
+                            justifyContent="center"
+                            p={2}
+                            mt={2}
+                            border={1}
+                            borderColor="grey.300"
+                            borderRadius="12px"
+                        >
+                            <Typography
+                                variant="h6"
+                                align="center"
+                                gutterBottom
+                                style={{ fontWeight: 'bold' }}
+                            >
+                                {qrInstrumentName}
+                            </Typography>
+
+                            <Typography
+                                variant="body2"
+                                color="textSecondary"
+                                align="center"
+                                gutterBottom
+                            >
+                                Scan QR to get more information about instrument's history
+                            </Typography>
+
+                            <img
+                            className='border-[30px] border-gray-200 rounded-xl'
+                                src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
+                                alt="QR Code"
+                                style={{
+                                    width: '200px',
+                                    height: '200px',
+                                    margin: '10px 0',
+                                }}
+                            />
+                        </Box>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Add Instrument Modal */}
+            <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
+            style: {
+                borderRadius: 20,
+                //height: "500px",
+                backgroundColor: "#fcfcfc"  
+            },
+            }}>
+                <DialogTitle>Add New Instrument</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        name="name"
+                        label="Instrument Name"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.name}
+                        onChange={handleInputChange}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="description"
+                        label="Description"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.description}
+                        onChange={handleInputChange}
+                    />
+                    <TextField
+                        margin="dense"
+                        name="shortDesc"
+                        label="Short Description"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.shortDesc}
+                        onChange={handleInputChange}
+                    />
+
+                    {/* Instrument Type */}
+                    <TextField
+                        margin="dense"
+                        name="instrumentType"
+                        label="Instrument Type"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.instrumentType || ''}
+                        onChange={handleInputChange}
+                    />
+                    {/* Image upload */}
+                    <StyledBox>
+                        <Button
+                        component="label"
+                        variant="contained"
+                        startIcon={<CloudUploadIcon />}
+                        >
+                        Upload Images
+                        <VisuallyHiddenInput
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                        />
+                        </Button>
+                    </StyledBox>
+
+                    {/* Image Previews and Main Image Selection */}
+                    {imagePreviews.length > 0 && (
+                        <Box mt={2}>
+                        <Typography variant="h6">Select Main Image:</Typography>
+                        <Grid container spacing={2}>
+                            {imagePreviews.map((image, index) => (
+                            <Grid item xs={4} key={index}>
+                                <img src={image} alt={`Preview ${index}`} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
+                                <FormControlLabel
+                                control={<Radio
+                                    checked={newInstrument.mainImageIndex === index}
+                                    onChange={handleMainImageChange}
+                                    value={index}
+                                    name="mainImage"
+                                />}
+                                label="Main"
+                                />
+                            </Grid>
+                            ))}
+                        </Grid>
+                        </Box>
+                    )}
+                     {/* PDF Upload */}
+        <StyledBox>
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+          >
+            Upload files
+            <VisuallyHiddenInput
+              type="file"
+              onChange={handlePdfUpload}
+              multiple
+              accept="application/pdf"
+            />
+          </Button>
+        </StyledBox>
+
+        {/* Display uploaded PDF files */}
+        <Box mt={2}>
+            {uploadedFiles.length > 0 ? (
+
+              <Grid container spacing={1}>
+                {uploadedFiles.map((file, index) => (
+                  <Grid item xs={12} key={index} display="flex" alignItems="center">
+                    <PictureAsPdfIcon color="error" />
+                    <Typography variant="body2" ml={1}>
+                      {file.name}
+                    </Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Typography variant="body2" color="textSecondary">No files uploaded</Typography>
+            )}
+          </Box>
+                    
+                </DialogContent>
+                <DialogActions className='!px-10'>
+                <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
+                <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
-      </div>
+    );
+};
 
-      <Button
-        className='!bg-[#1D34D8] !rounded-3xl !normal-case !py-2'
-        startIcon={<AddIcon />}
-        variant="contained"
-        onClick={() => setOpenDialog(true)}
-        aria-hidden
-      >
-        Add New Instrument
-      </Button>
-
-      </div>
-
-      <DataGrid
-        rows={filteredInstruments}
-        columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
-        getRowId={(row) => row.id}
-      />
-
-    </Box>
-  );
-}
