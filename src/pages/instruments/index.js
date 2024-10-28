@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef  } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Select, MenuItem, InputLabel, FormControl,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress,  } from '@mui/material';
+import React, { useEffect, useState, useRef } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress,} from '@mui/material';
 import ShareIcon from '@mui/icons-material/Share';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { useInstruments, InstrumentActions } from '../../context/instrumentContext';
@@ -12,7 +12,7 @@ import { Link, Routes, useNavigate } from 'react-router-dom';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import { useLocation } from 'react-router-dom';
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'; // Import PDF icon
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
   const VisuallyHiddenInput = styled('input')({
     display: 'none',
@@ -31,7 +31,6 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'; // Import PDF i
 
 export const Instruments = () => {
 
-
     const [isUpdated, forceUpdate] = useState(false);
     const { state, dispatch } = useInstruments();
     const showError = useErrorModal();
@@ -41,7 +40,7 @@ export const Instruments = () => {
     const [qrInstrumentName, setQrInstrumentName] = useState(null);
     const [instrumentTypes, setInstrumentTypes] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
-    const [searchTerm, setSearchTerm] = useState(''); // State for search input
+    const [searchTerm, setSearchTerm] = useState(''); 
     const [filteredInstruments, setFilteredInstruments] = useState(state?.data || []);
     const [uploadedFiles, setUploadedFiles] = useState([]);
 
@@ -55,8 +54,7 @@ export const Instruments = () => {
         instrumentTypeId: '',
     });
     const [instrument, setInstrument] = useState(null)
-    const [loading, setLoading] = useState(true); // Loading state
-
+    const [loading, setLoading] = useState(true); 
     const navigate = useNavigate();
     const handleInstrumentInfoSelect = async (id) => {
         try {
@@ -97,7 +95,7 @@ export const Instruments = () => {
 
     useEffect(() => {
         (async () => {
-            setLoading(true); // Start loading
+            setLoading(true); 
             dispatch({ type: InstrumentActions.start });
             try {
                 const res = await instrumentService.getAll();
@@ -106,7 +104,7 @@ export const Instruments = () => {
                 console.error('Error fetching instruments:', err);
                 dispatch({ type: InstrumentActions.failure, payload: err });
             }finally {
-                setLoading(false); // End loading after success or failure
+                setLoading(false);
             }
         })();
     }, [dispatch, isUpdated]);
@@ -121,7 +119,6 @@ export const Instruments = () => {
         }
     };
     if (loading) {
-        // Show loading spinner while fetching data
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
                 <CircularProgress />
@@ -132,7 +129,6 @@ export const Instruments = () => {
     const handleOpenModal = () => setOpenModal(true);
     const handleCloseModal = () => {
         setOpenModal(false);
-        //setImagePreviews([]);
     }
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -141,13 +137,6 @@ export const Instruments = () => {
         [name]: value,
         }));
     };
-    // const handlePdfUpload = (event) => {
-    //     const files = event.target.files;
-    //     setNewInstrument(prevState => ({
-    //         ...prevState,
-    //         files: [...prevState.files, ...files]  
-    //     }));
-    // };
 
     const handlePdfUpload = (event) => {
         const files = event.target.files;
@@ -247,7 +236,6 @@ export const Instruments = () => {
     };
     const handleCloseQRDialog = () => setOpenQRDialog(false);
 
-    //console.log(state)
     if (!state.data || state.data.length === 0) {
         return (
             <Box m={"20px"}>
@@ -256,7 +244,6 @@ export const Instruments = () => {
               sx={{ml: 2,textTransform: "none",}} onClick={handleOpenModal}>
                     Add Instrument
                 </Button>
-                <div>No instruments found</div>
                 <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
             style: {
                 borderRadius: 20,
@@ -396,80 +383,89 @@ export const Instruments = () => {
     };
 
     return (
-        <Box m={"20px"}>
-            <div className='flex justify-between items-center' >
-                <span className='text-3xl font-semibold'>List of instruments</span>
-                <div className="flex items-center gap-4 justify-between"> {/* Flexbox layout with center alignment and gap */}
-                <TextField
-                    id='searchbtnax'
-                    ///ref={searchInputRef} 
-                    variant="outlined"
-                    placeholder="Search Instruments..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    sx={{
-                    width: '50%', // Makes it responsive, taking up available space
-                    //maxWidth: '400px', // Optional max width for better control
-                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)', // Soft shadow for a raised look
-                    borderRadius: '30px', // Rounded corners for modern look
-                    '& .MuiOutlinedInput-root': {
-                        borderRadius: '30px', // Rounded input corners
-                    },
-                    '& .MuiOutlinedInput-input': {
-                        padding: '10px 15px', // Clean padding for better readability
-                    },
-                    }}
-                />
-                <Button variant="contained" className='!bg-[#1D34D8] !rounded-3xl !ml-3 !py-2'  sx={{textTransform: "none",}} onClick={handleOpenModal}>
-                    Add Instrument
-                </Button>
-                </div>               
+        <Box m={{ xs: "0px", sm: "20px" }} mt={{ xs: "10px", sm: "20px" }}>
+            <div className="flex flex-col sm:flex-row justify-between items-center">
+                <span className="text-2xl sm:text-3xl font-semibold mb-4 sm:mb-0">List of instruments</span>
+                <div className="flex items-center gap-4 justify-between w-full sm:w-auto">
+                    <TextField
+                        id="searchbtnax"
+                        variant="outlined"
+                        placeholder="Search Instruments..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        sx={{
+                            width: { xs: '100%', sm: '50%' },
+                            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+                            borderRadius: '30px',
+                            '& .MuiOutlinedInput-root': {
+                                borderRadius: '30px',
+                            },
+                            '& .MuiOutlinedInput-input': {
+                                padding: '10px 15px',
+                            },
+                        }}
+                    />
+                    <Button
+                        variant="contained"
+                        className="!bg-[#1D34D8] !rounded-3xl !ml-0 md:!ml-3 !py-2"
+                        sx={{ width: { xs: '100%', sm: '48%' }, textTransform: "none" }}
+                        onClick={handleOpenModal}
+                    >
+                        Add Instrument
+                    </Button>
+                </div>
             </div>
-            <p className='mt-4'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. </p>
+            <p className="mt-4 text-sm sm:text-base">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
 
             <Grid container spacing={2} sx={{ marginTop: '20px' }}>
                 {rows.map((row) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={row.id}>
-                    <Box p={2} boxShadow={2} className='rounded-lg'>
-                    <img 
-                        src={`${process.env.REACT_APP_DOCUMENT_URL}${row.image?.image}`} 
-                        alt={row.name} 
-                        style={{ width: '100%', height: '200px', marginBottom: '10px', objectFit: 'fill', }}
-                        className='rounded-lg'
-                        />
-                        <StatusButton text={row.status.split('_').join(' ')} color={getStatusColor(row.status)} />
-                        <Typography className="!text-lg !mt-1 !whitespace-nowrap !overflow-hidden !text-ellipsis">{row.name}</Typography>
-                        <Typography variant="body2" color="textSecondary" 
-                            sx={{
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                        }}
-                        >{row.shortDesc} </Typography>
-                        <div className='flex justify-between'>
-                                <Button 
-                                    variant="outlined"  
-                                    startIcon={<InfoIcon />} 
-                                    sx={{ marginRight: '10px', borderColor: 'blue', color: 'blue' }}
-                                    onClick={() => handleInstrumentInfoSelect(row.id)}
-
-                                >
-                                    Info
-                                </Button>
-                            <Button 
-                            onClick={() => handleShowQR(row.qr, row.name)} 
-                            className='!underline !text-[#1D34D8] !rounded-xl' 
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={row.id}>
+                        <Box p={2} boxShadow={2} className="rounded-lg">
+                            <img
+                                src={`${process.env.REACT_APP_DOCUMENT_URL}${row.image?.image}`}
+                                alt={row.name}
+                                style={{ width: '100%', height: '200px', marginBottom: '10px', objectFit: 'cover' }}
+                                className="rounded-lg"
+                            />
+                            <StatusButton text={row.status.split('_').join(' ')} color={getStatusColor(row.status)} />
+                            <Typography className="!text-lg !mt-1 !whitespace-nowrap !overflow-hidden !text-ellipsis">
+                                {row.name}
+                            </Typography>
+                            <Typography
+                                variant="body2"
+                                color="textSecondary"
+                                sx={{
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                }}
                             >
-                                Scan QR code
-                            </Button>
-                        </div>
-                    </Box>
-                </Grid>
+                                {row.shortDesc}
+                            </Typography>
+                            <div className='flex justify-between'>
+                                        <Button 
+                                            variant="outlined"  
+                                            startIcon={<InfoIcon />} 
+                                            sx={{ marginRight: '10px', borderColor: 'blue', color: 'blue' }}
+                                            onClick={() => handleInstrumentInfoSelect(row.id)}
+
+                                        >
+                                            Info
+                                        </Button>
+                                        <Button 
+                                    onClick={() => handleShowQR(row.qr, row.name)} 
+                                    className='!underline !text-[#1D34D8] !rounded-xl' 
+                                    >
+                                        Scan QR code
+                                    </Button>
+                            </div>
+                        </Box>
+                    </Grid>
                 ))}
             </Grid>
-
-
-            {/* QR Modal */}
+                        {/* QR Modal */}
             <Dialog open={openQRDialog} onClose={handleCloseQRDialog}
             PaperProps={{
                 style: {
@@ -556,7 +552,6 @@ export const Instruments = () => {
                 </DialogContent>
             </Dialog>
 
-
             {/* Add Instrument Modal */}
             <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
             style: {
@@ -565,7 +560,21 @@ export const Instruments = () => {
                 backgroundColor: "#fcfcfc"  
             },
             }}>
-                <DialogTitle>Add New Instrument</DialogTitle>
+                <DialogTitle>Add New Instrument
+                    <IconButton
+                            className="!text-blue-700"
+                            aria-label="close"
+                            onClick={handleCloseModal}
+                            sx={{
+                                position: 'absolute',
+                                right: 8,
+                                top: 8,
+                                color: (theme) => theme.palette.grey[500],
+                            }}
+                        >
+                        <CancelOutlinedIcon />
+                    </IconButton>
+                </DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
@@ -688,6 +697,7 @@ export const Instruments = () => {
                 </DialogActions>
             </Dialog>
         </Box>
+
     );
 };
 

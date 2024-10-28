@@ -407,34 +407,34 @@ export default function InstrumentTab({ project }) {
         </Button>
       </div>
 
-    <Paper
-  sx={{
-    height: '200px',
-    width: '100%',
-    overflowX: 'hidden',
-    maxWidth: '100vw', // Restrict Paper width to viewport
-  }}
->
-  <Box
-    sx={{
-      maxWidth: { xs: '250px', sm: '100%' },
-      overflowX: 'auto', 
-    }}
-  >
-    <DataGrid
-      rows={filteredInstruments}
-      columns={columns}
-      initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-      pageSizeOptions={[5, 10]}
-      sx={{
-        border: 0,
-        minWidth: 640, // Minimum width for DataGrid to avoid squashing columns
-        overflowX: 'auto', // Enable horizontal scrolling on DataGrid
-      }}
-      getRowId={(row) => row.id}
-    />
-  </Box>
-    </Paper>
+      <Paper
+        sx={{
+          height: '200px',
+          width: '100%',
+          overflowX: 'hidden',
+          maxWidth: '100vw', // Restrict Paper width to viewport
+        }}
+      >
+        <Box
+          sx={{
+            maxWidth: { xs: '250px', sm: '100%' },
+            overflowX: 'auto', 
+          }}
+        >
+          <DataGrid
+            rows={filteredInstruments}
+            columns={columns}
+            initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+            pageSizeOptions={[5, 10]}
+            sx={{
+              border: 0,
+              minWidth: 640, // Minimum width for DataGrid to avoid squashing columns
+              overflowX: 'auto', // Enable horizontal scrolling on DataGrid
+            }}
+            getRowId={(row) => row.id}
+          />
+        </Box>
+      </Paper>
 
 
 
