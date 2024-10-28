@@ -466,7 +466,7 @@ export const Instruments = () => {
                 ))}
             </Grid>
                         {/* QR Modal */}
-                        <Dialog open={openQRDialog} onClose={handleCloseQRDialog}
+            <Dialog open={openQRDialog} onClose={handleCloseQRDialog}
             PaperProps={{
                 style: {
                   borderRadius: 20,
@@ -560,7 +560,21 @@ export const Instruments = () => {
                 backgroundColor: "#fcfcfc"  
             },
             }}>
-                <DialogTitle>Add New Instrument</DialogTitle>
+                <DialogTitle>Add New Instrument
+                    <IconButton
+                            className="!text-blue-700"
+                            aria-label="close"
+                            onClick={handleCloseModal}
+                            sx={{
+                                position: 'absolute',
+                                right: 8,
+                                top: 8,
+                                color: (theme) => theme.palette.grey[500],
+                            }}
+                        >
+                        <CancelOutlinedIcon />
+                    </IconButton>
+                </DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
