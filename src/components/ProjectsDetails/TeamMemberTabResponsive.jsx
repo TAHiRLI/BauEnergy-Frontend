@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, FormHelperText, Paper } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, FormHelperText, Paper, Grid, CardActionArea, CardContent, Card, Divider, CardActions } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit'; 
 import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
@@ -54,7 +54,6 @@ export default function TeamMember({ project }) {
       // Handle error accordingly
     }
   };
-  
 
   useEffect(() => {
     if (openDialog) {
@@ -292,57 +291,100 @@ export default function TeamMember({ project }) {
       ),
     },
   ];
-  
-  return (
-    <Box height={400} className="p-0">
-      <Button
-        className='!bg-[#1D34D8] !rounded-2xl !mb-5'
+  console.log(state.data)
+    return (
+        <Grid container spacing={2}>
+
+        <Button
+        className='!bg-[#1D34D8] !rounded-2xl !my-5 w-full !ml-4 '
         startIcon={<AddIcon />}
         variant="contained"
         onClick={() => setOpenDialog(true)}
-      >
-        Add New People
-      </Button>
-      
-      {/* <DataGrid
-        rows={state.data || []}
-        columns={columns}
-        pageSize={4}
-        rowsPerPageOptions={[4]}
-        getRowId={(row) => row.id}
-      /> */}
+        >
+            Add New People
+        </Button>
+  
+        {state.data && state.data.map((tm) => {
+            const image = tm.image ? 
+            `${tm.image}` : 
+            `defaultUser.png`; 
+          return (
+            <Grid item xs={12} sm={6} md={4} key={tm.id}>
+              <Card sx={{ maxWidth: { xs: '100%', sm: 345 }, borderRadius: 2, boxShadow: 4, overflow: 'hidden',p:2 }}>
+                <CardActionArea sx={{ 
+                position: 'relative', 
+                display: 'flex',           // Enables flex layout
+                justifyContent: 'center',   // Centers horizontally
+                alignItems: 'center'        // Centers vertically
+                }}>
+                <Box
+                    component="img"
+                    loading="lazy"
+                    src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/teammembers/${image}`}
+                    alt={tm.name}
+                    sx={{
+                    width: 150,
+                    height: 150,
+                    objectFit: 'cover',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    }}
+                />
+                </CardActionArea>
 
-<Paper
-  sx={{
-    height: '200px',
-    width: '100%',
-    overflowX: 'hidden',
-    maxWidth: '100vw', // Restrict Paper width to viewport
-  }}
->
-  <Box
-    sx={{
-      maxWidth: { xs: '250px', sm: '100%' },
-      overflowX: 'auto', 
-    }}
-  >
-    <DataGrid
-      rows={state.data || []}
-      columns={columns}
-      initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-      pageSizeOptions={[5, 10]}
-      sx={{
-        border: 0,
-        minWidth: 640, // Minimum width for DataGrid to avoid squashing columns
-        overflowX: 'auto', // Enable horizontal scrolling on DataGrid
-      }}
-      getRowId={(row) => row.id}
-    />
-  </Box>
-    </Paper>
+  
+                  {/* Card Content */}
+                <CardContent>
+                    <Box sx={{
+                        bottom: 0,
+                        width: '100%',
+                        padding: 1,
+                        color: '#fff',
+                        textAlign: 'center'
+                    }}>
+                    <Typography variant="h6" fontWeight="bold" color='black'>
+                        {tm.name} {tm.lastName}
+                    </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
+                    </Box>
+  
+                    <Divider variant="middle" sx={{ my: 1, mx:0 }} />
+  
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                        Date Added:
+                    </Typography>
+                    <Box component="span" className='font-semibold'>
+                        {formatDate(tm.dateAddedProject)}
+                    </Box>
+                    </Box>
+                    <Divider variant="middle" sx={{ my: 1, mx:0 }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                        Role:
+                    </Typography>
+                    <Box component="span" className='font-semibold'>
+                        {tm.role}
+                    </Box>
+                    </Box>
+                </CardContent>
+  
+                  {/* Actions Section */}
+                  <CardActions sx={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: 2 }}>
 
-      {/* Modal dialog for adding team member */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth PaperProps={{
+                    <Button size="small" className='!bg-[#1D34D8]' variant="contained" sx={{ textTransform: 'none' }} onClick={() => handleEdit(tm.id)}
+                    > Edit </Button>
+                    <Button size="small" color="error" variant="contained" sx={{ textTransform: 'none', ml: 1 }} onClick={() => handleDelete(tm.id)}
+                    > Delete</Button>
+                  </CardActions>
+              </Card>
+            </Grid>
+          );
+        })}
+
+        {/* Modal dialog for adding team member */}
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth PaperProps={{
           style: {
             borderRadius: 20,
             //height: "500px",
@@ -507,132 +549,131 @@ export default function TeamMember({ project }) {
           </Formik>
           )}
         </DialogContent>
-      </Dialog>
+        </Dialog>
 
-      <Dialog
-        open={isEditDialogOpen}
-        onClose={() => setIsEditDialogOpen(false)}
-        fullWidth
-        PaperProps={{
-          style: {
-            borderRadius: 20,
-            backgroundColor: "#fcfcfc"
-          },
-        }}
-      >
-        <DialogTitle className="!font-semibold">
-          Edit Team Member
-          <IconButton
-            className="!text-[#1D34D8]"
-            aria-label="close"
-            onClick={() => setIsEditDialogOpen(false)}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
+        <Dialog   
+            open={isEditDialogOpen}
+            onClose={() => setIsEditDialogOpen(false)}
+            fullWidth
+            PaperProps={{
+            style: {
+                borderRadius: 20,
+                backgroundColor: "#fcfcfc"
+            },
             }}
-          >
-            <CancelOutlinedIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Formik
-            initialValues={{
-              name: teamMemberToEdit?.name || '',
-              lastName: teamMemberToEdit?.lastName || '',
-              email: teamMemberToEdit?.email || '',
-              role: teamMemberToEdit?.role || '',
-              image: null,
-            }}
-            validationSchema={validationSchema}
-            onSubmit={async (values, { setSubmitting }) => {
-              await handleUpdateTeamMember(values);
-              setSubmitting(false);
-            }}
-          >
-            {({ setFieldValue, errors, touched, isSubmitting }) => (
-              <Form>
-                <Field
-                  as={TextField}
-                  name="name"
-                  label="Name"
-                  fullWidth
-                  margin="normal"
-                  error={touched.name && Boolean(errors.name)}
-                  helperText={touched.name && errors.name}
-                />
-
-                <Field
-                  as={TextField}
-                  name="lastName"
-                  label="Last Name"
-                  fullWidth
-                  margin="normal"
-                  error={touched.lastName && Boolean(errors.lastName)}
-                  helperText={touched.lastName && errors.lastName}
-                />
-
-                <Field
-                  as={TextField}
-                  name="email"
-                  label="Email"
-                  fullWidth
-                  margin="normal"
-                  error={touched.email && Boolean(errors.email)}
-                  helperText={touched.email && errors.email}
-                />
-
-                <Field name="role">
-                  {({ field, form }) => (
-                    <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
-                      <InputLabel id="role-label">Role</InputLabel>
-                      <Select
-                        {...field}
-                        labelId="role-label"
-                        label="Role"
-                        value={field.value}
-                      >
-                        {Object.entries(RoleEnum).map(([key, value]) => (
-                          <MenuItem key={value} value={value}>
-                            {key}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {form.touched.role && form.errors.role && (
-                        <FormHelperText>{form.errors.role}</FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                </Field>
-
-                <StyledBox>
-                  <Button
-                    component="label"
-                    variant="contained"
-                    startIcon={<CloudUploadIcon />}
-                  >
-                    Upload Image
-                    <VisuallyHiddenInput
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => {
-                        handleImageUpload(event);
-                        setFieldValue('image', event.currentTarget.files[0]);
-                      }}
+        >
+            <DialogTitle className="!font-semibold">
+            Edit Team Member
+            <IconButton
+                className="!text-[#1D34D8]"
+                aria-label="close"
+                onClick={() => setIsEditDialogOpen(false)}
+                sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                }}
+            >
+                <CancelOutlinedIcon />
+            </IconButton>
+            </DialogTitle>
+            <DialogContent>
+            <Formik
+                initialValues={{
+                name: teamMemberToEdit?.name || '',
+                lastName: teamMemberToEdit?.lastName || '',
+                email: teamMemberToEdit?.email || '',
+                role: teamMemberToEdit?.role || '',
+                image: null,
+                }}
+                validationSchema={validationSchema}
+                onSubmit={async (values, { setSubmitting }) => {
+                await handleUpdateTeamMember(values);
+                setSubmitting(false);
+                }}
+            >
+                {({ setFieldValue, errors, touched, isSubmitting }) => (
+                <Form>
+                    <Field
+                    as={TextField}
+                    name="name"
+                    label="Name"
+                    fullWidth
+                    margin="normal"
+                    error={touched.name && Boolean(errors.name)}
+                    helperText={touched.name && errors.name}
                     />
-                  </Button>
-                </StyledBox>
 
-                <DialogActions>
-                  <Button onClick={() => setIsEditDialogOpen(false)} className="!text-[#1D34D8]">Cancel</Button>
-                  <Button type="submit" disabled={isSubmitting} variant="contained" className="!bg-[#1D34D8]">Update</Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
-        </DialogContent>
-      </Dialog>
+                    <Field
+                    as={TextField}
+                    name="lastName"
+                    label="Last Name"
+                    fullWidth
+                    margin="normal"
+                    error={touched.lastName && Boolean(errors.lastName)}
+                    helperText={touched.lastName && errors.lastName}
+                    />
 
-    </Box>
-  );
-}
+                    <Field
+                    as={TextField}
+                    name="email"
+                    label="Email"
+                    fullWidth
+                    margin="normal"
+                    error={touched.email && Boolean(errors.email)}
+                    helperText={touched.email && errors.email}
+                    />
+
+                    <Field name="role">
+                    {({ field, form }) => (
+                        <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
+                        <InputLabel id="role-label">Role</InputLabel>
+                        <Select
+                            {...field}
+                            labelId="role-label"
+                            label="Role"
+                            value={field.value}
+                        >
+                            {Object.entries(RoleEnum).map(([key, value]) => (
+                            <MenuItem key={value} value={value}>
+                                {key}
+                            </MenuItem>
+                            ))}
+                        </Select>
+                        {form.touched.role && form.errors.role && (
+                            <FormHelperText>{form.errors.role}</FormHelperText>
+                        )}
+                        </FormControl>
+                    )}
+                    </Field>
+
+                    <StyledBox>
+                    <Button
+                        component="label"
+                        variant="contained"
+                        startIcon={<CloudUploadIcon />}
+                    >
+                        Upload Image
+                        <VisuallyHiddenInput
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => {
+                            handleImageUpload(event);
+                            setFieldValue('image', event.currentTarget.files[0]);
+                        }}
+                        />
+                    </Button>
+                    </StyledBox>
+
+                    <DialogActions>
+                    <Button onClick={() => setIsEditDialogOpen(false)} className="!text-[#1D34D8]">Cancel</Button>
+                    <Button type="submit" disabled={isSubmitting} variant="contained" className="!bg-[#1D34D8]">Update</Button>
+                    </DialogActions>
+                </Form>
+                )}
+            </Formik>
+            </DialogContent>
+        </Dialog>
+      </Grid>
+    );
+  }

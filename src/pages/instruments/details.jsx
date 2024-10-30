@@ -38,9 +38,12 @@ const InstrumentDetails = () => {
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
+    images: [],
+    files: [], 
+    mainImageIndex: 0,
     description: '',
     shortDesc: '',
-    status: ''
+    instrumentTypeId: '',
   });
 
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -169,6 +172,7 @@ const InstrumentDetails = () => {
   };
 
   const handleUpdateSubmit = async () => {
+    console.log(formData)
     try {
       await instrumentService.edit(id, formData);
       Swal.fire({
@@ -208,7 +212,7 @@ const InstrumentDetails = () => {
   const otherImages = instrument?.images?.filter((img) => !img.isMain);
 
   return (
-    <Box p={2}>
+    <Box p={1}>
       {/* Instrument Card */}
         <div className="bg-white shadow-lg rounded-2xl overflow-hidden mb-5">
         <div className="flex flex-col sm:flex-row">

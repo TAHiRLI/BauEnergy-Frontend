@@ -5,6 +5,9 @@ import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturi
 
 export default function ProjectOverviewTab({ project }) {
   const formatDate = (date) => {
+    if(!date){
+      return
+    }
     return new Intl.DateTimeFormat('en-GB', {
       year: 'numeric',
       month: 'long',
@@ -21,12 +24,12 @@ export default function ProjectOverviewTab({ project }) {
             Project Description
           </Typography>
           <Typography variant="body1" color="textSecondary" mt={2}>
-            {project.description}
+            {project?.description}
           </Typography>
         </Grid>
 
         {/* Project Dates - Stays on the far right */}
-        <Grid item xs={12} md={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Paper elevation={1} sx={{ padding: 4, backgroundColor: '#f0f4f8', borderRadius: '16px', width: '100%' }}>
             <Typography variant="h6" fontWeight="bold" color="#1D34D8">
               Project Timeline
@@ -36,14 +39,14 @@ export default function ProjectOverviewTab({ project }) {
               Start Date
             </Typography>
             <Typography variant="body2" color="textSecondary" gutterBottom>
-              {formatDate(project.startDate)}
+              {formatDate(project?.startDate)}
             </Typography>
 
             <Typography variant="subtitle1" gutterBottom>
               End Date
             </Typography>
             <Typography variant="body2" color="textSecondary">
-              {formatDate(project.endDate)}
+              {formatDate(project?.endDate)}
             </Typography>
           </Paper>
         </Grid>
@@ -68,7 +71,7 @@ export default function ProjectOverviewTab({ project }) {
                 Team Members
               </Typography>
               <Typography variant="h4" fontWeight="bold" color="#1D34D8" mt={1}>
-                {project.teamMembers.length}
+                {project?.teamMembers?.length}
               </Typography>
               <Typography variant="body2" color="textSecondary">
                 Members involved in this project
@@ -85,7 +88,7 @@ export default function ProjectOverviewTab({ project }) {
                 Instruments Used
               </Typography>
               <Typography variant="h4" fontWeight="bold" color="#1D34D8" mt={1}>
-                {project.instruments.length}
+                {project?.instruments?.length}
               </Typography>
               <Typography variant="body2" color="textSecondary">
                 Instruments used in the project

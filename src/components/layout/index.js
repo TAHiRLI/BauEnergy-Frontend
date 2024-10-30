@@ -1,20 +1,29 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Appbar from '../appbar/appbar'
 import Sidebar from '../sidebar/sidebar'
-import {Toolbar, Typography } from '@mui/material';
+import {Toolbar, Typography, useMediaQuery } from '@mui/material';
 
 
 function Layout({ children }) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const isMobile = useMediaQuery('(max-width:1024px)'); 
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+
+
   return (
     <div className="flex ">
       {/* Sidebar */}
       <nav className="h-screen lg:bg-blue-500">
-        <Sidebar />
+        <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       </nav>
 
       <div className="flex-grow px-5 h-full mt-3 lg:ml-[260px]">
         {/* Appbar */}
-        <Appbar position="static" className="bg-blue-200 " >
+        <Appbar position="static" className="bg-blue-200 "  toggleSidebar={toggleSidebar} >
           <Toolbar>
             <Typography variant="h6" component="div" className="flex-grow">
               App Title

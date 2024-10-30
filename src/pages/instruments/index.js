@@ -465,7 +465,7 @@ export const Instruments = () => {
                     </Grid>
                 ))}
             </Grid>
-                        {/* QR Modal */}
+            {/* QR Modal */}
             <Dialog open={openQRDialog} onClose={handleCloseQRDialog}
             PaperProps={{
                 style: {
