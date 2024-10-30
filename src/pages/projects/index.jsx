@@ -8,9 +8,11 @@ import InstrumentTab from '../../components/ProjectsDetails/ProjectInstrumentTab
 import { useLocation } from 'react-router-dom';
 import TeamMember from '../../components/ProjectsDetails/ProjectTeamMembers';
 import ProjectOverview from '../../components/ProjectsDetails/ProjectOverviewTab';
-import { Button } from '@mui/material';
+import { Button, useMediaQuery } from '@mui/material';
 import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
 import Swal from 'sweetalert2';
+import InstrumentTabResponsive from '../../components/ProjectsDetails/InstrumentTabResponsive';
+import TeamMemberTabResponsive from '../../components/ProjectsDetails/TeamMemberTabResponsive';
 
 function CustomTabPanel(props) {
   const { children, value, index } = props;
@@ -22,7 +24,7 @@ function CustomTabPanel(props) {
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && <Box sx={{ p: 1, pt: 3 }}>{children}</Box>}
     </div>
   );
 }
@@ -57,6 +59,9 @@ export default function BasicTabs() {
   };
 
   const formatDate = (date) => {
+    if(!date){
+      return
+    }
     return new Intl.DateTimeFormat('en-GB', {
       year: 'numeric',
       month: 'long',
@@ -85,6 +90,8 @@ export default function BasicTabs() {
     }
   };
 
+  const isSmallScreen = useMediaQuery('(max-width:800px)');
+
   return (
     <Box sx={{ width: '100%' }}>
       
@@ -92,10 +99,10 @@ export default function BasicTabs() {
 
         <div>
           <div className='text-2xl font-semibold'>
-            • {project.name}
+            • {project?.name}
           </div>
           <div className='text-gray-600 text-sm mt-2'>
-            {formatDate(project.startDate)} - {formatDate(project.endDate)}
+            {formatDate(project?.startDate)} - {formatDate(project?.endDate)}
           </div>
         </div>
 
@@ -116,7 +123,8 @@ export default function BasicTabs() {
       </div>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" variant="scrollable"
+        >
           <Tab label="Overview" {...a11yProps(0)} />
           <Tab label="Used Instruments" {...a11yProps(1)} />
           <Tab label="Team members" {...a11yProps(2)} />
@@ -128,11 +136,19 @@ export default function BasicTabs() {
       </CustomTabPanel>
 
       <CustomTabPanel value={value} index={1}>
-        <InstrumentTab project={project} />
+      {isSmallScreen ? (
+          <InstrumentTabResponsive project={project} />
+        ) : (
+          <InstrumentTab project={project} />
+        )}
       </CustomTabPanel>
 
       <CustomTabPanel value={value} index={2}>
-        <TeamMember project={project} />
+      {isSmallScreen ? (
+          <TeamMemberTabResponsive project={project} />
+        ) : (
+          <TeamMember project={project} />
+        )}
       </CustomTabPanel>
     </Box>
   );

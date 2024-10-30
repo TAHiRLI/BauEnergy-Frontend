@@ -4,7 +4,6 @@ import { IconButton, Box, Button, Dialog, DialogActions, DialogContent, DialogTi
 import Swal from 'sweetalert2';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit'; 
 import HistoryIcon from '@mui/icons-material/History'; 
 import { useProjects, ProjectsActions } from '../../context/projectContext';
 import { projectService } from '../../APIs/Services/project.service';
@@ -12,7 +11,6 @@ import { instrumentService } from '../../APIs/Services/instrument.service';
 import { instrumentHistoryService } from '../../APIs/Services/instrumentHistory.service';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'; 
 import InstrumentStatusButton from '../common/actionsBtn/InstrumentUpdateButton';
 
 
@@ -68,9 +66,7 @@ export default function InstrumentTab({ project }) {
         timer: 2000,
       });
     }
-  };
-
-  
+  }; 
 
   const handleAddInstrument = async () => {
     try {
@@ -339,8 +335,8 @@ export default function InstrumentTab({ project }) {
   }
 
   return  (
-    <Box height={400} px={0} className='!px-0 W-full'>
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-5">
+    <Box height={400} px={0} className='!px-0'>
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:gap-1">
             {/* Type Input */}
             <TextField
@@ -396,7 +392,7 @@ export default function InstrumentTab({ project }) {
             </FormControl>
         </div>
 
-        <Button
+        {/* <Button
           className='!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0'
           startIcon={<AddIcon />}
           variant="contained"
@@ -404,20 +400,22 @@ export default function InstrumentTab({ project }) {
           aria-hidden
         >
           Add New Instrument
-        </Button>
+        </Button> */}
       </div>
 
       <Paper
+      className='!lg:max-w-[100%]'
         sx={{
           height: '200px',
-          width: '100%',
+          //width: '800px',
           overflowX: 'hidden',
-          maxWidth: '100vw', // Restrict Paper width to viewport
+          maxWidth: { xs: '250px', sm: '700px', md:'750px', lg:'100%' },
+          //minWidth:
         }}
       >
         <Box
           sx={{
-            maxWidth: { xs: '250px', sm: '100%' },
+            maxWidth: { xs: '250px', sm: '700px', md:'750px', lg:'100%' },
             overflowX: 'auto', 
           }}
         >
@@ -435,8 +433,6 @@ export default function InstrumentTab({ project }) {
           />
         </Box>
       </Paper>
-
-
 
 
       {/* Dialog for Adding New Instrument */}
@@ -573,72 +569,72 @@ export default function InstrumentTab({ project }) {
         }}
       >
         <DialogTitle>
-    Instrument History
-    <IconButton
-      className="!text-blue-700"
-      aria-label="close"
-      onClick={handleCloseHistoryDialog}
-      sx={{
-        position: "absolute",
-        right: 8,
-        top: 8,
-      }}
-    >
-      <CancelOutlinedIcon />
-    </IconButton>
+          Instrument History
+          <IconButton
+            className="!text-blue-700"
+            aria-label="close"
+            onClick={handleCloseHistoryDialog}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+            }}
+          >
+            <CancelOutlinedIcon />
+          </IconButton>
         </DialogTitle>
 
-  <DialogContent
-    className="!border !border-gray-300 rounded-xl !p-2 !m-6 !mt-0 bg-white"
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
-      alignItems: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
-      overflowY: "auto",
-      overflowX: "hidden",  
-      maxHeight: "calc(100% - 64px)",  
-      paddingRight: "8px" 
-    }}
-  >
-    {instrumentHistory && instrumentHistory.length > 0 ? (
-      <>
-        <Typography variant="h6">Photos</Typography>
+        <DialogContent
+          className="!border !border-gray-300 rounded-xl !p-2 !m-6 !mt-0 bg-white"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
+            alignItems: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
+            overflowY: "auto",
+            overflowX: "hidden",  
+            maxHeight: "calc(100% - 64px)",  
+            paddingRight: "8px" 
+          }}
+        >
+          {instrumentHistory && instrumentHistory.length > 0 ? (
+            <>
+              <Typography variant="h6">Photos</Typography>
 
-        <Box display="flex" gap={2} mb={2} >
-          {instrument?.images?.slice(0, 3).map((img, index) => (
-            <img
-              key={index}
-              src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${img.image}`}
-              alt="Instrument"
-              style={{
-                flexGrow: 1, 
-                width: '32%', 
-                height: 100,
-                borderRadius: 8,
-                objectFit: 'cover' 
-              }}
-            />
-          ))}
-        </Box>
-        <Typography variant="h6" dividers>Details</Typography>
-        <div className='border-b border-slate-300 w-full my-2'></div>
-        {instrumentHistory.map((entry, index) => (
-          <Box key={index} mb={2} width="100%">
-            <div className="flex justify-between items-center">
-              <Typography variant="subtitle1" className='!font-medium'>{entry.title}</Typography>
-              <Typography variant="subtitle2" color="textSecondary">
-                {formatDate(entry.eventDate)}
-              </Typography>
-            </div>
-            <Typography variant="body2" className='!text-gray-500 !ml-1'>{entry.description}</Typography>
-          </Box>
-        ))}
-      </>
-    ) : (
-      <Typography variant="body2" className='text-gray-500'>Nothing here yet...</Typography>
-    )}
-  </DialogContent>
+              <Box display="flex" gap={2} mb={2} >
+                {instrument?.images?.slice(0, 3).map((img, index) => (
+                  <img
+                    key={index}
+                    src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${img.image}`}
+                    alt="Instrument"
+                    style={{
+                      flexGrow: 1, 
+                      width: '32%', 
+                      height: 100,
+                      borderRadius: 8,
+                      objectFit: 'cover' 
+                    }}
+                  />
+                ))}
+              </Box>
+              <Typography variant="h6" dividers>Details</Typography>
+              <div className='border-b border-slate-300 w-full my-2'></div>
+              {instrumentHistory.map((entry, index) => (
+                <Box key={index} mb={2} width="100%">
+                  <div className="flex justify-between items-center">
+                    <Typography variant="subtitle1" className='!font-medium'>{entry.title}</Typography>
+                    <Typography variant="subtitle2" color="textSecondary">
+                      {formatDate(entry.eventDate)}
+                    </Typography>
+                  </div>
+                  <Typography variant="body2" className='!text-gray-500 !ml-1'>{entry.description}</Typography>
+                </Box>
+              ))}
+            </>
+          ) : (
+            <Typography variant="body2" className='text-gray-500'>Nothing here yet...</Typography>
+          )}
+        </DialogContent>
       </Dialog>
     </Box>
   );

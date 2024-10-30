@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Divider,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Collapse,
-  IconButton,
-  Drawer,
-} from '@mui/material';
+import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse, IconButton, Drawer, } from '@mui/material';
 import { Menu as MenuIcon, Search, ExpandLess, ExpandMore } from '@mui/icons-material';
 import NotificationIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import Home from '@mui/icons-material/HomeOutlined';
@@ -27,20 +18,16 @@ import { useAuth } from '../../context/authContext';
 import { notificationService } from '../../APIs/Services/notification.service';
 import { useMediaQuery } from '@mui/material';
 
-const Sidebar = () => {
+const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const [openProjectsBtn, setOpenProjectsBtn] = useState(false);
   const [projects, setProjects] = useState([]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Toggle sidebar
   const { user } = useAuth();
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
   const userId = decodedToken?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
   const navigate = useNavigate();
-  const isMobile = useMediaQuery('(max-width:1024px)'); // Check if screen size is <= 1024px
   const [selectedProject, setSelectedProject] = useState(null); 
 
-  // Toggle sidebar
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
+  
   const handleProjectsClick = async () => {
     setOpenProjectsBtn(!openProjectsBtn);
     if (!openProjectsBtn && projects.length === 0) {
@@ -95,33 +82,20 @@ const Sidebar = () => {
     cookies.remove('user', { path: '/' });
     window.location.reload();
   };
+  const isMobile = useMediaQuery('(max-width:1023px)'); // Check if screen size is <= 1024px
 
   return (
     <div className="flex">
-      {/* Hamburger Menu Icon */}
-      {isMobile && (
-        <IconButton
-          edge="start"
-          color="inherit"
-          aria-label="menu"
-          onClick={toggleSidebar}
-          className="fixed top-4 left-4 z-50"
-        >
-          <MenuIcon />
-        </IconButton>
-      )}
-
-      {/* Sidebar Drawer */}
       <Drawer
         variant={isMobile ? "temporary" : "persistent"}
         anchor="left"
-        open={!isMobile || isSidebarOpen} // Open on large screens or if toggled
+        open={isMobile ? isSidebarOpen : true} 
         onClose={toggleSidebar}
         PaperProps={{ style: { width: '256px', backgroundColor: '#F8F8F8' } }}
       >
-        <div className="flex bg-[#F8F8F8] fixed overflow-y-auto z-50">
-      {/* Sidebar */}
-      <div className="w-64 bg-[#F8F8F8] text-black flex flex-col h-screen">
+      <div className="flex bg-[#F8F8F8] fixed overflow-y-auto z-50">
+        {/* Sidebar */}
+        <div className="w-64 bg-[#F8F8F8] text-black flex flex-col h-screen">
         <div>
           {/* Company Logo */}
           <div className="CompanyLogo px-4 pt-4">
@@ -229,20 +203,20 @@ const Sidebar = () => {
             <UserInfo />
           </ListItem>
         </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
+        </div>
+                  
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto">
         {/* Place the main content here */}
+        </div>
+        <NotificationModal 
+                open={isNotificationModalOpen} 
+                onClose={handleNotificationModalClose} 
+                style={{ zIndex: 2500 }}
+              />
+        </div>
+        </Drawer>
       </div>
-      <NotificationModal 
-               open={isNotificationModalOpen} 
-               onClose={handleNotificationModalClose} 
-              style={{ zIndex: 2500 }}
-            />
-    </div>
-      </Drawer>
-    </div>
   );
 };
 

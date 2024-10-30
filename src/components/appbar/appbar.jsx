@@ -7,31 +7,28 @@ import IconButton from '@mui/material/IconButton';
 import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
-import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import UserInfo from '../userinfo';
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth } from "../../context/authContext";
 import * as Yup from 'yup';
-import { useProjects, ProjectsActions } from '../../context/projectContext';
 import { projectService } from '../../APIs/Services/project.service';
 import Swal from 'sweetalert2';
 import { Formik, Form, Field } from 'formik';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel, useMediaQuery } from '@mui/material';
 import NotificationModal from '../notification/notification';
 import { notificationService } from '../../APIs/Services/notification.service';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell} from '@fortawesome/free-regular-svg-icons';
 import { faEllipsis } from '@fortawesome/free-solid-svg-icons';
 import AddIcon from '@mui/icons-material/Add';
+import MenuIcon from '@mui/icons-material/Menu';
 
 
-export default function Appbar() {
+export default function Appbar({ toggleSidebar }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
 
@@ -203,11 +200,18 @@ export default function Appbar() {
       </MenuItem>
     </Menu>
   );
+  const isMobile = useMediaQuery('(max-width:1023px)'); // Check if screen size is <= 1024px
 
   return (
     <Box sx={{ flexGrow: 1}} >
       <AppBar position="static" className='rounded-t-xl' sx={{backgroundColor: '#F1F3FD'}}>
         <Toolbar>
+              {isMobile && (
+        <IconButton onClick={toggleSidebar} aria-label="menu">
+          <MenuIcon />
+        </IconButton>
+      )}
+
           <UserInfo/>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }} className='!flex !justify-center !items-center'>
@@ -284,25 +288,25 @@ export default function Appbar() {
           </div>
           </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
-  <IconButton
-    size="large"
-    aria-label="show more"
-    aria-controls={mobileMenuId}
-    aria-haspopup="true"
-    onClick={handleMobileMenuOpen}
-    sx={{
-      bgcolor: 'white',     // white background
-      color: 'black',       // black icon color
-      borderRadius: '50%',  // circular shape
-      p: 0.5,               // reduced padding
-      '&:hover': {
-        bgcolor: 'white',   // keep background white on hover
-      },
-    }}
-  >
-    <MoreIcon />
-  </IconButton>
-</Box>
+            <IconButton
+              size="large"
+              aria-label="show more"
+              aria-controls={mobileMenuId}
+              aria-haspopup="true"
+              onClick={handleMobileMenuOpen}
+              sx={{
+                bgcolor: 'white',     // white background
+                color: 'black',       // black icon color
+                borderRadius: '50%',  // circular shape
+                p: 0.5,               // reduced padding
+                '&:hover': {
+                  bgcolor: 'white',   // keep background white on hover
+                },
+              }}
+            >
+              <MoreIcon />
+            </IconButton>
+          </Box>
 
 
         </Toolbar>
