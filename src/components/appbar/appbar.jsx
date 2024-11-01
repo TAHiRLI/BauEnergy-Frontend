@@ -94,7 +94,6 @@ export default function Appbar({ toggleSidebar }) {
       formData.append('StartDate', values.StartDate);
       formData.append('EndDate', values.EndDate);
 
-      console.log(formData)
       await projectService.add(formData ); 
       Swal.fire('Success', 'Project has been added!', 'success');
       window.location.reload(); 

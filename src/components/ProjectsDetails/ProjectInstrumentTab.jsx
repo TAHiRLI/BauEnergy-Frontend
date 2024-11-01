@@ -12,6 +12,8 @@ import { instrumentHistoryService } from '../../APIs/Services/instrumentHistory.
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
 import InstrumentStatusButton from '../common/actionsBtn/InstrumentUpdateButton';
+import InstrumentStatusModal from '../common/actionsBtn/InstrumentUpdateButton';
+import EditIcon from '@mui/icons-material/Edit';
 
 
 export default function InstrumentTab({ project }) {
@@ -29,6 +31,10 @@ export default function InstrumentTab({ project }) {
   const [filteredInstruments, setFilteredInstruments] = useState([]);
   const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
   const [instrumentHistory, setInstrumentHistory] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedInstrumentStatus, setSelectedInstrumentStatus] = useState("");
 
   const handleDelete = async (id) => {
     try {
@@ -181,7 +187,7 @@ export default function InstrumentTab({ project }) {
     };
   
     fetchInstruments();
-  }, [dispatch, project.id]);
+  }, [dispatch, project.id,refresh]);
   
 
   useEffect(() => {
@@ -260,11 +266,22 @@ export default function InstrumentTab({ project }) {
     }
   };
 
+  const handleEditOpen = (instrumentId, currentStatus) => {
+    console.log(instrumentId)
+    setSelectedInstrumentId(instrumentId);
+    setSelectedInstrumentStatus(currentStatus);
+    setEditOpen(true);
+  };
+  const handleEditClose = () => {
+    setEditOpen(false);
+    setRefresh(prev => !prev);
+  }
+
   const columns = [
     {
       field: 'name',
       headerName: 'Instrument Name',
-      width: 300,
+      width: 200,
       renderCell: (params) => {
         const mainImage = params.row.images?.find(img => img.isMain);
         return (
@@ -281,8 +298,8 @@ export default function InstrumentTab({ project }) {
         );
       },
     },
-    { field: 'addedProjectDate', headerName: 'Date Added', width: 200, renderCell: (params) => formatDate(params.row.addedProjectDate) },
-    { field: 'instrumentType', headerName: 'Type', width: 200 },
+    { field: 'addedProjectDate', headerName: 'Date Added', width: 150, renderCell: (params) => formatDate(params.row.addedProjectDate) },
+    { field: 'instrumentType', headerName: 'Type', width: 150 },
     {
       field: 'status',
       headerName: 'Status',
@@ -292,12 +309,20 @@ export default function InstrumentTab({ project }) {
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 150,
+      width: 180,
       renderCell: (params) => (
         <>
         <div className='text-center'>
-          <InstrumentStatusButton instrumentId={params.row.id} currentStatus={params.row.status}/>
-
+          <IconButton size="small"  variant="contained" onClick={() => handleEditOpen(params.row.id, params.row.status)}
+            sx={{
+              backgroundColor: "#f5f5f5",  
+              borderRadius: "20%",         
+              padding: "5px",               
+              border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
+              marginRight: "8px"
+            }}>  
+            <EditIcon style={{ color: '#424242' }} />
+          </IconButton>
           <IconButton
             onClick={() => handleDelete(params.row.id)}
             sx={{
@@ -392,7 +417,7 @@ export default function InstrumentTab({ project }) {
             </FormControl>
         </div>
 
-        {/* <Button
+        <Button
           className='!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0'
           startIcon={<AddIcon />}
           variant="contained"
@@ -400,7 +425,7 @@ export default function InstrumentTab({ project }) {
           aria-hidden
         >
           Add New Instrument
-        </Button> */}
+        </Button>
       </div>
 
       <Paper
@@ -636,6 +661,13 @@ export default function InstrumentTab({ project }) {
           )}
         </DialogContent>
       </Dialog>
+
+      <InstrumentStatusModal
+            instrumentId={selectedInstrumentId} 
+            currentStatus={selectedInstrumentStatus} 
+            open={editOpen} 
+            onClose={handleEditClose} 
+        />
     </Box>
   );
 }

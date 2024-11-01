@@ -23,6 +23,7 @@ const InstrumentTabResponsive = ({ project }) => {
   const [filteredInstruments, setFilteredInstruments] = useState([]);
   const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
   const [instrumentHistory, setInstrumentHistory] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
 
     const [editOpen, setEditOpen] = useState(false);
@@ -37,6 +38,7 @@ const InstrumentTabResponsive = ({ project }) => {
     };
     const handleEditClose = () => {
       setEditOpen(false);
+      setRefresh(prev => !prev);
     };
   
     const handleDelete = async (id) => {
@@ -193,7 +195,7 @@ const InstrumentTabResponsive = ({ project }) => {
       };
     
       fetchInstruments();
-    }, [dispatch, project.id]);
+    }, [dispatch, project.id,refresh]);
     
   
     useEffect(() => {

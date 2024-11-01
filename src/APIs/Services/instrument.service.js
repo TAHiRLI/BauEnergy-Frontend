@@ -54,19 +54,29 @@ class InstrumentService extends HttpClient {
         });
     }
     
-async updateStatus(id,body) {
-    //console.log( body)
-
-        console.log(id,body)
-    return await this.put(`Instrument`, id , body, 
-    {
-        headers: {
-            authorization: `Bearer ${cookies.get('user')?.token}`
-        }
-    });
-}
-
-
+    async updateStatus(id,body) {
+        console.log(body)
+        return await this.putStatus(`Instrument`, id , body, 
+        {
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`
+            }
+        });
+    }
+    async removePdf(id1, id2) {
+        return await this.deletePdf('Instrument',id1, id2, {
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`
+            }
+        });
+    }
+    async removeImage(id1, id2) {
+        return await this.deleteImage('Instrument',id1, id2, {
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`
+            }
+        });
+    }
 }
 
 export const instrumentService = new InstrumentService();
