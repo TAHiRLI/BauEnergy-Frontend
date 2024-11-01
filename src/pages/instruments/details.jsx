@@ -6,12 +6,23 @@ import { instrumentService } from '../../APIs/Services/instrument.service';
 import { instrumentHistoryService } from '../../APIs/Services/instrumentHistory.service';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DescriptionIcon from '@mui/icons-material/Description';
-import StatusButton from '../../components/common/statusBtn';
 import ShareIcon from '@mui/icons-material/Share';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import Swal from 'sweetalert2';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import axios from 'axios';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
 import { styled } from '@mui/material/styles';
+
+const validationSchema = Yup.object().shape({
+  name: Yup.string().required('Instrument name is required'),
+  description: Yup.string().required('Description is required'),
+  shortDesc: Yup.string().required('Short description is required'),
+  instrumentType: Yup.string().required('Instrument type is required'),
+  //status: Yup.string().required('Status is required'),
+});
 
 const VisuallyHiddenInput = styled('input')({
   display: 'none',
@@ -36,33 +47,36 @@ const InstrumentDetails = () => {
   const [error, setError] = useState(null);
   const [openQRDialog, setOpenQRDialog] = useState(false);
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    images: [],
-    files: [], 
-    mainImageIndex: 0,
-    description: '',
-    shortDesc: '',
-    instrumentTypeId: '',
-  });
+  const [refresh, setRefresh] = useState(false); // Step 1: Define refresh state
 
   const [imagePreviews, setImagePreviews] = useState([]);
   const [newInstrument, setNewInstrument] = useState({ mainImageIndex: null });
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [existingPdfs, setExistingPdfs] = useState([]);
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = (e, setFieldValue) => {
     const files = Array.from(e.target.files);
     const previews = files.map((file) => URL.createObjectURL(file));
     setImagePreviews(previews);
+    setFieldValue('images', files); // Set the files in Formik's values
   };
 
-  const handleMainImageChange = (e) => {
-    setNewInstrument({ ...newInstrument, mainImageIndex: parseInt(e.target.value) });
+  // const handleMainImageChange = (e, setFieldValue) => {
+  //   setNewInstrument({ ...newInstrument, mainImageIndex: parseInt(e.target.value) });
+  //   console.log(e.target.value)
+  //       setFieldValue('mainImageIndex', parseInt(e.target.value)); // Set the files in Formik's values
+  // };
+
+  const handleMainImageChange = (e, setFieldValue) => {
+    const selectedIndex = parseInt(e.target.value);
+    setFieldValue('mainImageIndex', selectedIndex); // Update Formik's mainImageIndex value
   };
 
-  const handlePdfUpload = (e) => {
+  const handlePdfUpload = (e, setFieldValue) => {
     const files = Array.from(e.target.files);
-    setUploadedFiles(files);
+    setUploadedFiles(prevFiles => [...prevFiles, ...files]);
+    setFieldValue('files', files); // Set the files in Formik's values
   };
 
 
@@ -71,11 +85,11 @@ const InstrumentDetails = () => {
       try {
         const response = await instrumentService.getById(id);
         setInstrument(response.data);
-        setFormData({
-          name: response.data.name,
-          description: response.data.description,
-          status: response.data.status
-        });
+        // setFormData({
+        //   name: response.data.name,
+        //   description: response.data.description,
+        //   status: response.data.status
+        // });
         setLoading(false);
       } catch (error) {
         setError('Error fetching instrument details');
@@ -84,7 +98,7 @@ const InstrumentDetails = () => {
     };
   
     fetchInstrument();
-  }, [id]);
+  }, [id,refresh]);
   
   useEffect(() => {
     const fetchHistory = async () => {
@@ -164,33 +178,37 @@ const InstrumentDetails = () => {
     setOpenUpdateModal(false);
   };
 
-  const handleFormChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleUpdateSubmit = async () => {
-    console.log(formData)
+  const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
+    console.log(values);
+    const formData = new FormData();
+    formData.append('Name', values.name);
+    formData.append('Description', values.description);
+    formData.append('ShortDesc', values.shortDesc);
+    formData.append('InstrumentType', values.instrumentType);
+    if (values?.mainImageIndex != null) {
+      formData.append('MainImageIndex', values.mainImageIndex);
+    }    
+    values.images?.forEach((image) => formData.append(`Images`, image));
+    values.files?.forEach((file) => formData.append(`Files`, file));
+    console.log(formData);
+    
     try {
-      await instrumentService.edit(id, formData);
-      Swal.fire({
-        icon: 'success',
-        title: 'Instrument updated successfully',
-        timer: 1500,
-        showConfirmButton: false
-      });
-      setOpenUpdateModal(false);
+      const response = await instrumentService.edit(id, formData);
+      if (response.status !== 200) throw new Error('Failed to submit data');
+      Swal.fire('Success', 'Instrument has been updated!', 'success');
+      handleCloseUpdateModal();
+      resetForm();
+      setRefresh(!refresh); 
+
+      console.log('Data submitted successfully');
     } catch (error) {
-      console.error('Error updating instrument:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error updating instrument',
-        text: error.message,
-      });
+      handleCloseUpdateModal();
+      Swal.fire('Error', 'Failed to update instrument.', 'error');
+      console.error('Error submitting data:', error);
     }
   };
+  
+  
 
   if (loading) {
     return (
@@ -207,14 +225,40 @@ const InstrumentDetails = () => {
       </Box>
     );
   }
-
   const mainImage = instrument?.images?.find((img) => img.isMain);
   const otherImages = instrument?.images?.filter((img) => !img.isMain);
 
+  const handleDeleteImage = async (imageId) => {
+    try {
+      await instrumentService.removeImage(instrument.id, imageId)
+      // Update state to remove deleted image from UI
+      setExistingImages(existingImages.filter(image => image.id !== imageId));
+      handleCloseUpdateModal();
+      Swal.fire('Success', 'Document deleted successfully!', 'success');
+      setRefresh(!refresh); 
+    } catch (error) {
+      console.error("Failed to delete image:", error);
+    }
+  };
+  
+  const handleDeletePdf = async (pdfId) => {
+    try {
+      await instrumentService.removePdf(instrument.id, pdfId)
+      // Update state to remove deleted PDF from UI
+      setExistingPdfs(existingPdfs.filter(pdf => pdf.id !== pdfId));
+      handleCloseUpdateModal();
+      Swal.fire('Success', 'Document deleted successfully!', 'success');
+      setRefresh(!refresh); 
+
+    } catch (error) {
+      console.error("Failed to delete PDF:", error);
+    }
+  };
+  
   return (
     <Box p={1}>
       {/* Instrument Card */}
-        <div className="bg-white shadow-lg rounded-2xl overflow-hidden mb-5">
+      <div className="bg-white shadow-lg rounded-2xl overflow-hidden mb-5">
         <div className="flex flex-col sm:flex-row">
           <div className="sm:w-1/3 p-4">
             {mainImage && (
@@ -261,7 +305,7 @@ const InstrumentDetails = () => {
               </span>
             </div>
 
-            <div className="mt-4">
+            <div className="mt-4 flex gap-4">
               <button
                 onClick={handleShowQR}
                 className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
@@ -270,7 +314,7 @@ const InstrumentDetails = () => {
               </button>
               <button
                 onClick={handleOpenUpdateModal}
-                className="ml-4 bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
+                className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
               >
                 Update Instrument
               </button>
@@ -279,7 +323,6 @@ const InstrumentDetails = () => {
         </div>
       </div>
 
-      
       {/* Document Section */}
       <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8', mb: 2 }}>
@@ -345,7 +388,7 @@ const InstrumentDetails = () => {
           backgroundColor: "#fcfcfc"  
       },
       }}>
-        <DialogTitle>Add New Instrument
+        <DialogTitle>Update Instrument
           <IconButton
                           className="!text-blue-700"
                           aria-label="close"
@@ -362,128 +405,202 @@ const InstrumentDetails = () => {
         </DialogTitle>
 
         <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          name="name"
-          label="Instrument Name"
-          type="text"
-          fullWidth
-          value={formData.name}
-          onChange={handleFormChange}
-        />
-        <TextField
-          margin="dense"
-          name="description"
-          label="Description"
-          type="text"
-          fullWidth
-          value={formData.description}
-          onChange={handleFormChange}
-        />
-        <TextField
-          margin="dense"
-          name="shortDesc"
-          label="Short Description"
-          type="text"
-          fullWidth
-          value={formData.shortDesc}
-          onChange={handleFormChange}
-        />
-        <Select
-          label="Status"
-          name="status"
-          value={formData.status}
-          onChange={handleFormChange}
-          fullWidth
-          margin="normal"
+        <Formik
+          initialValues={{
+            name: instrument?.name || '',
+            description: instrument?.description || '',
+            shortDesc: instrument?.shortDesc || '',
+            instrumentType: instrument?.instrumentType || '',
+            images: instrument.images || null,
+            files: instrument.files || null,
+            mainImageIndex: instrument.mainImageIndex || null,
+          }}
+          validationSchema={validationSchema}
+          onSubmit={handleUpdateSubmit}
         >
-          <MenuItem value="Under_maintenance">Under Maintenance</MenuItem>
-          <MenuItem value="In_use">In Use</MenuItem>
-          <MenuItem value="Available">Available</MenuItem>
-        </Select>
+          {({ setFieldValue, errors, touched }) => (
+            <Form>
+              <Box mb={2}>
+                <Field
+                  as={TextField}
+                  name="name"
+                  label="Instrument Name"
+                  fullWidth
+                  error={touched.name && !!errors.name}
+                  helperText={touched.name && errors.name}
+                />
+              </Box>
+              <Box mb={2}>
+                <Field
+                  as={TextField}
+                  name="description"
+                  label="Description"
+                  fullWidth
+                  error={touched.description && !!errors.description}
+                  helperText={touched.description && errors.description}
+                />
+              </Box>
+              <Box mb={2}>
+                <Field
+                  as={TextField}
+                  name="shortDesc"
+                  label="Short Description"
+                  fullWidth
+                  error={touched.shortDesc && !!errors.shortDesc}
+                  helperText={touched.shortDesc && errors.shortDesc}
+                />
+              </Box>
+              <Box mb={2}>
+                <Field
+                  as={TextField}
+                  name="instrumentType"
+                  label="Instrument Type"
+                  fullWidth
+                  error={touched.instrumentType && !!errors.instrumentType}
+                  helperText={touched.instrumentType && errors.instrumentType}
+                />
+              </Box>
 
-        {/* Image Upload */}
-        <Box mt={2}>
-          <Button
-            component="label"
-            variant="contained"
-            startIcon={<CloudUploadIcon />}
-          >
-            Upload Images
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageUpload}
-              hidden
-            />
-          </Button>
-        </Box>
+              {/* Image upload */}
+              <StyledBox>
+                <Button
+                component="label"
+                variant="contained"
+                startIcon={<CloudUploadIcon />}
+                >
+                Upload Images
+                <VisuallyHiddenInput
+                  name="images"
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, setFieldValue)}
+                />
+                </Button>
+              </StyledBox>
+               {/* Image Previews and Main Image Selection */}
+              {imagePreviews.length > 0 && (
+                <Box mt={2}>
+                  <Typography variant="h6">Select Main Image:</Typography>
+                  <Grid container spacing={2}>
+                      {imagePreviews.map((image, index) => (
+                      <Grid item xs={4} key={index}>
+                          <img src={image} alt={`Preview ${index}`} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
+                          <FormControlLabel
+                          control={<Radio
+                              checked={newInstrument?.mainImageIndex === index}
+                              onChange={(e) => handleMainImageChange(e, setFieldValue)}
+                              value={index}
+                              name="mainImageIndex"
+                          />}
+                          label="Main"
+                          />
+                      </Grid>
+                      ))}
+                  </Grid>
+                  
+                </Box>
+              )}
 
-        {/* Image Previews and Main Image Selection */}
-        {imagePreviews.length > 0 && (
-          <Box mt={2}>
-            <Typography variant="h6">Select Main Image:</Typography>
-            <Grid container spacing={2}>
-              {imagePreviews.map((image, index) => (
-                <Grid item xs={4} key={index}>
-                  <img src={image} alt={`Preview ${index}`} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
-                  <FormControlLabel
-                    control={<Radio
-                      checked={newInstrument.mainImageIndex === index}
-                      onChange={handleMainImageChange}
-                      value={index}
-                      name="mainImage"
-                    />}
-                    label="Main"
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        )}
+              {/* PDF Upload */}
+              <StyledBox>
+                  <Button
+                    component="label"
+                    variant="contained"
+                    startIcon={<CloudUploadIcon />}
+                  >
+                    Upload files
+                    <VisuallyHiddenInput
+                      name="files"
+                      type="file"
+                      onChange={(e) => handlePdfUpload(e, setFieldValue)}
+                      multiple
+                      accept="application/pdf"
+                    />
+                  </Button>
+              </StyledBox>
+              {/* Display uploaded PDF files */}
+              <Box mt={2}>
+                    {uploadedFiles.length > 0 ? (
 
-        {/* PDF Upload */}
-        <Box mt={2}>
-          <Button
-            component="label"
-            variant="contained"
-            startIcon={<CloudUploadIcon />}
-          >
-            Upload PDFs
-            <input
-              type="file"
-              onChange={handlePdfUpload}
-              multiple
-              accept="application/pdf"
-              hidden
-            />
-          </Button>
-        </Box>
+                      <Grid container spacing={1}>
+                        {uploadedFiles.map((file, index) => (
+                          <Grid item xs={12} key={index} display="flex" alignItems="center">
+                            <PictureAsPdfIcon color="error" />
+                            <Typography variant="body2" ml={1}>
+                              {file.name}
+                            </Typography>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    ) : (
+                      <Typography variant="body2" color="textSecondary">No files uploaded</Typography>
+                    )}          
+              </Box>
 
-        {/* Display Uploaded PDF files */}
-        <Box mt={2}>
-          {uploadedFiles.length > 0 ? (
-            <Grid container spacing={1}>
-              {uploadedFiles.map((file, index) => (
-                <Grid item xs={12} key={index} display="flex" alignItems="center">
-                  <PictureAsPdfIcon color="error" />
-                  <Typography variant="body2" ml={1}>
-                    {file.name}
-                  </Typography>
-                </Grid>
-              ))}
-            </Grid>
-          ) : (
-            <Typography variant="body2" color="textSecondary">No files uploaded</Typography>
+              {instrument.images.length > 0 && (
+                <Box mt={2}>
+                  <Typography variant="h6">Images:</Typography>
+                  <Grid container spacing={2}>
+                    {instrument.images.map((image, index) => (
+                      <Grid item xs={4} key={index}>
+                        <img
+                          src={`${process.env.REACT_APP_DOCUMENT_URL}${image.image}`}
+                          alt={`Image ${index}`}
+                          style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px' }}
+                          loading='lazy'
+                        />
+                        <IconButton
+                          color="error"
+                          onClick={() => handleDeleteImage(image.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              {/* PDF Display and Delete */}
+              {instrument.documents.length > 0 && (
+                <Box mt={2}>
+                  <Typography variant="h6">PDFs:</Typography>
+                  <Grid container spacing={1}>
+                    {instrument.documents.map((pdf, index) => (
+                      <Grid item xs={12} key={index} display="flex" alignItems="center">
+                        <PictureAsPdfIcon color="error" />
+                        <Typography variant="body2" ml={1}>
+                          {formatFileName(pdf.fileName)}
+                        </Typography>
+                        <IconButton
+                          color="error"
+                          onClick={() => handleDeletePdf(pdf.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+              )}
+
+              <Button type="submit" variant="contained">
+                Update
+              </Button>
+            </Form>
           )}
-        </Box>
+  
+        </Formik>
+
       </DialogContent>
 
         <DialogActions className='!px-10'>
           <Button onClick={handleCloseUpdateModal} className='!text-[#1D34D8] '>Cancel</Button>
-          <Button type="submit" onClick={handleUpdateSubmit} variant="contained" className='!bg-[#1D34D8]'>Update</Button>
+          <Button type="submit" onSubmit={(values) => {
+      console.log('Submitting values:', values);  // Check values here
+      handleUpdateSubmit(values);
+    }} variant="contained" className='!bg-[#1D34D8]'>Update</Button>
         </DialogActions>
       </Dialog>
 

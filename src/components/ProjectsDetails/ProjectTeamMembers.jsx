@@ -233,7 +233,7 @@ export default function TeamMember({ project }) {
     {
       field: 'name',
       headerName: 'Name & Last name',
-      width: 300,
+      minWidth: 300,
       renderCell: (params) => {
         const fullName = `${params.row.name} ${params.row.lastName}`; 
         const image = params.row.image ? 
@@ -254,14 +254,14 @@ export default function TeamMember({ project }) {
     {
       field: 'role',
       headerName: 'Role',
-      width: 150,
+      minWidth: 130,
       renderCell: (params) => params.row.role,
     },
-    { field: 'dateAddedProject', headerName: 'Joined date', width: 200, renderCell: (params) => formatDate(params.row.dateAddedProject),  },
+    { field: 'dateAddedProject', headerName: 'Joined date', minWidth: 150, renderCell: (params) => formatDate(params.row.dateAddedProject),  },
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 150,
+      minWidth: 130,
       renderCell: (params) => (
         <>
         <div className='text-center'>
@@ -303,14 +303,7 @@ export default function TeamMember({ project }) {
       >
         Add New People
       </Button>
-      
-      {/* <DataGrid
-        rows={state.data || []}
-        columns={columns}
-        pageSize={4}
-        rowsPerPageOptions={[4]}
-        getRowId={(row) => row.id}
-      /> */}
+
 
 <Paper
   sx={{
