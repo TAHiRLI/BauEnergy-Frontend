@@ -420,7 +420,7 @@ const InstrumentDetails = () => {
         >
           {({ setFieldValue, errors, touched }) => (
             <Form>
-              <Box mb={2}>
+              <Box my={2}>
                 <Field
                   as={TextField}
                   name="name"
@@ -585,9 +585,14 @@ const InstrumentDetails = () => {
                 </Box>
               )}
 
-              <Button type="submit" variant="contained">
-                Update
-              </Button>
+              <DialogActions className='!px-0'>
+              <Button variant="outlined" className='!text-[#1D34D8]' onClick={handleCloseUpdateModal}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="contained" className='!bg-[#1D34D8]'>
+                  Update
+                </Button>
+        </DialogActions>
             </Form>
           )}
   
@@ -595,13 +600,13 @@ const InstrumentDetails = () => {
 
       </DialogContent>
 
-        <DialogActions className='!px-10'>
+        {/* <DialogActions className='!px-10'>
           <Button onClick={handleCloseUpdateModal} className='!text-[#1D34D8] '>Cancel</Button>
           <Button type="submit" onSubmit={(values) => {
       console.log('Submitting values:', values);  // Check values here
       handleUpdateSubmit(values);
     }} variant="contained" className='!bg-[#1D34D8]'>Update</Button>
-        </DialogActions>
+        </DialogActions> */}
       </Dialog>
 
       {/* QR Code Dialog */}
