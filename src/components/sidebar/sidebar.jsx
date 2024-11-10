@@ -7,6 +7,7 @@ import PollOutlinedIcon from '@mui/icons-material/PollOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../pages/routes/routes';
 import UserInfo from '../userinfo';
@@ -185,6 +186,14 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                 <ListItemText primary="Instruments" />
               </ListItem>
 
+              <ListItem button component={Link} to={ROUTES.DOCUMENTS} className='!rounded-xl'>
+                <ListItemIcon>
+                  <DeleteOutlinedIcon className="text-black" /> {/* Changed to trash bin icon */}
+                </ListItemIcon>
+                <ListItemText primary="Trash Bin" /> {/* Updated text */}
+              </ListItem>
+
+
               <ListItem button component={Link} onClick={handleLogout} className='!rounded-xl'>
                 <ListItemIcon>
                   <LogoutOutlinedIcon className="text-black" />
@@ -210,10 +219,10 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
         {/* Place the main content here */}
         </div>
         <NotificationModal 
-                open={isNotificationModalOpen} 
-                onClose={handleNotificationModalClose} 
-                style={{ zIndex: 2500 }}
-              />
+            open={isNotificationModalOpen} 
+            onClose={handleNotificationModalClose} 
+            style={{ zIndex: 2500 }}
+          />
         </div>
         </Drawer>
       </div>

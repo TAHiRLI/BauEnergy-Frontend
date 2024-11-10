@@ -3,6 +3,8 @@ import React from 'react';
 import { AuthProvider } from './authContext';
 import { InstrumentProvider } from './instrumentContext';
 import { ProjectProvider } from './projectContext';
+import { DocumentsProvider } from './documentsContext';
+
 
 export const Providers = ({ children }) => {
     return (
@@ -10,7 +12,9 @@ export const Providers = ({ children }) => {
             <AuthProvider>
                 <ProjectProvider>
                     <InstrumentProvider>
-                        {children}
+                        <DocumentsProvider>
+                            {children}
+                        </DocumentsProvider>
                     </InstrumentProvider>
                 </ProjectProvider>
             </AuthProvider>

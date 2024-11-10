@@ -14,6 +14,7 @@ import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
 import InstrumentStatusButton from '../common/actionsBtn/InstrumentUpdateButton';
 import InstrumentStatusModal from '../common/actionsBtn/InstrumentUpdateButton';
 import EditIcon from '@mui/icons-material/Edit';
+import { teamMemberService } from '../../APIs/Services/teammember.service';
 
 
 export default function InstrumentTab({ project }) {
@@ -32,10 +33,11 @@ export default function InstrumentTab({ project }) {
   const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
   const [instrumentHistory, setInstrumentHistory] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [projectManagers, setProjectManagers] = useState([]);
+  const [selectedManager, setSelectedManager] = useState('');
 
   const [editOpen, setEditOpen] = useState(false);
   const [selectedInstrumentStatus, setSelectedInstrumentStatus] = useState("");
-
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
@@ -76,9 +78,9 @@ export default function InstrumentTab({ project }) {
 
   const handleAddInstrument = async () => {
     try {
-      const body = { projectId: project.id, instrumentId: selectedInstrumentId };
+      const body = { projectId: project.id, instrumentId: selectedInstrumentId, projectManagerId: selectedManager };
+      console.log(selectedManager)
       await projectService.addInstrumentToProject(body);
-      
       Swal.fire({
         title: 'Added!',
         text: 'Instrument has been added to the project.',
@@ -143,6 +145,28 @@ export default function InstrumentTab({ project }) {
 
     setFilteredInstruments(filtered);
   };
+
+  useEffect(() => {
+    const fetchProjectManagers = async () => {
+        try {
+          const response = await teamMemberService.getAllProjectManagers(project.id)
+          //const data = await response.json();
+          setProjectManagers(response.data);
+          if (response.data && response.data.length > 0) {
+            setSelectedManager(response.data[0].id); // Set first manager's ID as the default
+        }} catch (error) {
+            console.error("Failed to fetch project managers:", error);
+        }
+    };
+
+    if (openDialog) {
+        fetchProjectManagers();
+    }
+}, [openDialog]);
+
+const handleManagerChange = (event) => {
+    setSelectedManager(event.target.value);
+};
 
   useEffect(() => {
     setFilteredInstruments(state.project?.instruments || []);
@@ -481,6 +505,23 @@ export default function InstrumentTab({ project }) {
                 <MenuItem key={instrument.id} value={instrument.id}>
                   {instrument.name}
                 </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Project Manager Selection */}
+          <FormControl fullWidth margin="dense">
+            <InputLabel id="project-manager-label">Project Manager</InputLabel>
+            <Select
+              labelId="project-manager-label"
+              value={selectedManager}
+              onChange={handleManagerChange}
+              label="Project Manager"
+            >
+              {projectManagers.map((manager) => (
+                  <MenuItem key={manager.id} value={manager.id}>
+                      {manager.name} {manager.lastName}
+                  </MenuItem>
               ))}
             </Select>
           </FormControl>

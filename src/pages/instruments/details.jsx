@@ -10,11 +10,12 @@ import ShareIcon from '@mui/icons-material/Share';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import Swal from 'sweetalert2';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import axios from 'axios';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { styled } from '@mui/material/styles';
+import Cookies from 'universal-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Instrument name is required'),
@@ -54,6 +55,21 @@ const InstrumentDetails = () => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [existingPdfs, setExistingPdfs] = useState([]);
+
+  const cookies = new Cookies();
+  let user = cookies.get('user'); 
+  //console.log(user)
+  let token = user?.token
+
+  let decodedToken;
+  try {
+      decodedToken = jwtDecode(token);
+  } catch (error) {
+      console.error("Invalid token:", error);
+  }
+  const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
+  const canViewPrice = userRoles.includes('Admin') || userRoles.includes('ProjectManager');
+
 
   const handleImageUpload = (e, setFieldValue) => {
     const files = Array.from(e.target.files);
@@ -297,6 +313,9 @@ const InstrumentDetails = () => {
             <div className="text-gray-600">
               Instrument Type: <span className="font-bold text-blue-700">{instrument.instrumentType}</span>
             </div>
+            {canViewPrice && (
+              <div className="text-gray-600 my-2">Price: {instrument.price}</div>
+            )}
             <div className="text-gray-600 my-2">Project: {instrument.projectName}</div>
             <div className="text-gray-600 my-2">
               Added to project:{" "}
