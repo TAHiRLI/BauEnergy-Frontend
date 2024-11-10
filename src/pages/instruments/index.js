@@ -702,7 +702,7 @@ export const Instruments = () => {
                     />
 
                     {/* Tag Selection Dropdown */}
-                    <FormControl fullWidth margin="dense">
+                    {/* <FormControl fullWidth margin="dense">
                         <InputLabel>Tags</InputLabel>
                         <Select
                             multiple
@@ -725,7 +725,7 @@ export const Instruments = () => {
                                 </MenuItem>
                             ))}
                         </Select>
-                    </FormControl>
+                    </FormControl> */}
 
                     <TextField
                         label="Number of Instruments to Add"
