@@ -13,6 +13,8 @@ import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
 import Swal from 'sweetalert2';
 import InstrumentTabResponsive from '../../components/ProjectsDetails/InstrumentTabResponsive';
 import TeamMemberTabResponsive from '../../components/ProjectsDetails/TeamMemberTabResponsive';
+import ProjectDocuments from '../../components/ProjectsDetails/ProjectDocuments';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 function CustomTabPanel(props) {
   const { children, value, index } = props;
@@ -91,7 +93,7 @@ export default function BasicTabs() {
   };
 
   const isSmallScreen = useMediaQuery('(max-width:800px)');
-
+  console.log(project)
   return (
     <Box sx={{ width: '100%' }}>
       
@@ -119,7 +121,9 @@ export default function BasicTabs() {
             Share project link
           </Button>
         </div>
-
+      </div>
+      <div className='text-gray-500 text-lg mt-1'>
+          <LocationOnIcon/> {project?.address}
       </div>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -128,6 +132,7 @@ export default function BasicTabs() {
           <Tab label="Overview" {...a11yProps(0)} />
           <Tab label="Used Instruments" {...a11yProps(1)} />
           <Tab label="Team members" {...a11yProps(2)} />
+          <Tab label="Documents" {...a11yProps(3)} />
         </Tabs>
       </Box>
 
@@ -149,6 +154,9 @@ export default function BasicTabs() {
         ) : (
           <TeamMember project={project} />
         )}
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={3}>
+        <ProjectDocuments project={project} />
       </CustomTabPanel>
     </Box>
   );

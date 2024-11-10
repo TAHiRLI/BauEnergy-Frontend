@@ -7,6 +7,7 @@ import { IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { projectService } from '../../APIs/Services/project.service';
 
 const NotificationModal = ({ open, onClose }) => {
   const [notifications, setNotifications] = useState([]);
@@ -83,6 +84,11 @@ const NotificationModal = ({ open, onClose }) => {
 
   const selectedNotification = filteredNotifications[selectedNotificationIndex];
 
+  const InstrumentApprovalStatus = {
+    Approved: 1,
+    Rejected: 2,
+  };
+  
   const handleDeleteNotification = async (id) => {
     try {
       await notificationService.remove(id); 
@@ -104,6 +110,26 @@ const NotificationModal = ({ open, onClose }) => {
       console.error('Error marking notification as unread:', error);
     }
   };
+  const handleApprove = async (instrumentId) => {
+    try {
+      const result = await projectService.approveOrRejectInstrument(instrumentId, InstrumentApprovalStatus.Approved);
+      console.log(result); // Show success message or handle the response accordingly
+      // Optionally, refetch notifications or update local state to reflect the change
+    } catch (error) {
+      console.error("Failed to approve instrument:", error);
+    }
+  };
+  
+  const handleReject = async (instrumentId) => {
+    try {
+      const result = await projectService.approveOrRejectInstrument(instrumentId, InstrumentApprovalStatus.Rejected);
+      console.log(result); // Show success message or handle the response accordingly
+      // Optionally, refetch notifications or update local state to reflect the change
+    } catch (error) {
+      console.error("Failed to reject instrument:", error);
+    }
+  };
+
 
   return (
     <>
@@ -141,102 +167,141 @@ const NotificationModal = ({ open, onClose }) => {
 
             {/* Notification List or No Notifications Message */}
             {filteredNotifications.length === 0 ? (
-              <div className="text-center text-gray-500">You have no notifications</div>
-            ) : (
-              <ul className="space-y-4 border rounded-xl overflow-y-auto max-h-96">
-                {filteredNotifications
-                  .sort((a, b) => Number(a.isRead) - Number(b.isRead))
-                  .map((notification, index) => (
-                    <li
-                      key={notification.id}
-                      className="flex items-center justify-between p-2 cursor-pointer"
-                      onClick={() => handleNotificationClick(index, notification.id)}
-                    >
-                      <div className="flex items-center space-x-2 w-full">
-                        {!notification.isRead && (
-                          <span className="text-blue-500">
-                            <svg
-                              className="w-2.5 h-2.5 fill-current"
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle cx="12" cy="12" r="12" />
-                            </svg>
-                          </span>
-                        )}
-                        <div className='w-full'>
-                          <div className='flex justify-between items-center'>
-                            <div className="font-bold text-sm">{notification.title}</div>
-                            <div className="text-gray-400 text-xs ">{formatDate(notification.createdAt)}</div>
-                          </div>
-                          <p className="text-gray-500 text-xs">{notification.description}</p>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-              </ul>
+  <div className="text-center text-gray-500">You have no notifications</div>
+) : (
+  <ul className="space-y-4 border rounded-xl overflow-y-auto max-h-96">
+    {filteredNotifications
+      .sort((a, b) => Number(a.isRead) - Number(b.isRead))
+      .map((notification, index) => (
+        <li
+          key={notification.id}
+          className="flex items-center justify-between p-2 cursor-pointer"
+          onClick={() => handleNotificationClick(index, notification.id)}
+        >
+          <div className="flex items-center space-x-2 w-full">
+            {!notification.isRead && (
+              <span className="text-blue-500">
+                <svg
+                  className="w-2.5 h-2.5 fill-current"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="12" cy="12" r="12" />
+                </svg>
+              </span>
             )}
+            <div className="w-full">
+              <div className="flex justify-between items-center">
+                <div className="font-bold text-sm">{notification.title}</div>
+                <div className="text-gray-400 text-xs">
+                  {formatDate(notification.createdAt)}
+                </div>
+              </div>
+              <p className="text-gray-500 text-xs">{notification.description}</p>
+
+              {/* Conditionally render Approve and Reject icons if hasAction is true */}
+              {notification.hasAction && (
+                <div className="flex space-x-2 mt-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent the main click handler
+                      handleApprove(notification.instrumentId);
+                    }}
+                    className="text-green-500 hover:text-green-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="w-5 h-5 fill-current"
+                    >
+                      <path d="M9 16.2l-3.5-3.5L4 14.2l5 5 10-10-1.5-1.5L9 16.2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent the main click handler
+                      handleReject(notification.instrumentId);
+                    }}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      className="w-5 h-5 fill-current"
+                    >
+                      <path d="M18.3 5.71L16.89 4.3 12 9.17 7.11 4.3 5.7 5.71l4.88 4.88-4.88 4.88 1.41 1.41L12 11.99l4.89 4.88 1.41-1.41-4.88-4.88z" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </li>
+      ))}
+  </ul>
+)}
+
           </div>
         </div>
       </div>
 
       {/* Second Modal for Notification Content */}
       {openNotificationContent && selectedNotification && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg p-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-medium">Notification content</h2>
-        <div className="flex items-center space-x-2">
-          <div className="text-gray-500 text-sm">
-            {formatDate(selectedNotification.createdAt)}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg p-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-medium">Notification content</h2>
+              <div className="flex items-center space-x-2">
+                <div className="text-gray-500 text-sm">
+                  {formatDate(selectedNotification.createdAt)}
+                </div>
+                {/* Delete Notification Button */}
+                <IconButton className="!text-blue-700" onClick={() => handleDeleteNotification(selectedNotification.id)}>
+                  <DeleteIcon />
+                </IconButton>
+                {/* Close Modal Button */}
+                <IconButton className="!text-blue-700" onClick={() => setOpenNotificationContent(false)}>
+                  <CancelOutlinedIcon />
+                </IconButton>
+              </div>
+            </div>
+
+            <div className="flex justify-between mb-4">
+              <IconButton
+                className={`border ${selectedNotificationIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={handlePreviousNotification}
+                disabled={selectedNotificationIndex === 0}
+                style={{ borderRadius: "8px" }}
+              >
+                <ArrowBackIosNewIcon className="!text-sm" />
+                <span className="text-sm ml-3 font-medium">Previous notice</span>
+              </IconButton>
+
+              <IconButton
+                className={`relative border ${selectedNotificationIndex === filteredNotifications.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={handleNextNotification}
+                disabled={selectedNotificationIndex === filteredNotifications.length - 1}
+                style={{ borderRadius: "8px" }}
+              >
+                <span className="text-sm mr-3 font-medium">Next notice</span>
+                <ArrowForwardIosIcon className="!text-sm" />
+              </IconButton>
+            </div>
+
+            <div className="text-sm mb-4 border p-2 rounded-xl">
+              {selectedNotification?.description}
+            </div>
+
+            {/* Mark as Unread Button */}
+              <IconButton
+                className="!text-blue-700"
+                onClick={() => handleMarkAsUnRead(selectedNotification.id)}
+              >
+                <span className="text-sm font-medium">Mark as Unread</span>
+              </IconButton>
           </div>
-          {/* Delete Notification Button */}
-          <IconButton className="!text-blue-700" onClick={() => handleDeleteNotification(selectedNotification.id)}>
-            <DeleteIcon />
-          </IconButton>
-          {/* Close Modal Button */}
-          <IconButton className="!text-blue-700" onClick={() => setOpenNotificationContent(false)}>
-            <CancelOutlinedIcon />
-          </IconButton>
         </div>
-      </div>
-
-      <div className="flex justify-between mb-4">
-        <IconButton
-          className={`border ${selectedNotificationIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-          onClick={handlePreviousNotification}
-          disabled={selectedNotificationIndex === 0}
-          style={{ borderRadius: "8px" }}
-        >
-          <ArrowBackIosNewIcon className="!text-sm" />
-          <span className="text-sm ml-3 font-medium">Previous notice</span>
-        </IconButton>
-
-        <IconButton
-          className={`relative border ${selectedNotificationIndex === filteredNotifications.length - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-          onClick={handleNextNotification}
-          disabled={selectedNotificationIndex === filteredNotifications.length - 1}
-          style={{ borderRadius: "8px" }}
-        >
-          <span className="text-sm mr-3 font-medium">Next notice</span>
-          <ArrowForwardIosIcon className="!text-sm" />
-        </IconButton>
-      </div>
-
-      <div className="text-sm mb-4 border p-2 rounded-xl">
-        {selectedNotification?.description}
-      </div>
-
-      {/* Mark as Unread Button */}
-        <IconButton
-          className="!text-blue-700"
-          onClick={() => handleMarkAsUnRead(selectedNotification.id)}
-        >
-          <span className="text-sm font-medium">Mark as Unread</span>
-        </IconButton>
-    </div>
-  </div>
-)}
+      )}
     </>
   );
 };

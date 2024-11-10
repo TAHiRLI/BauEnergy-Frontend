@@ -62,5 +62,13 @@ class ProjectService extends HttpClient {
             }
         });
     }
+
+    async approveOrRejectInstrument(id, status) {
+        return await this.customPost(`Project/${id}/approveOrReject?status=${status}`, {
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`
+            }
+        });
+    }
 }
 export const projectService = new ProjectService();

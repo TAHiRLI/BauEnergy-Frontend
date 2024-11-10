@@ -93,6 +93,7 @@ export default function Appbar({ toggleSidebar }) {
       formData.append('Description', values.Description);
       formData.append('StartDate', values.StartDate);
       formData.append('EndDate', values.EndDate);
+      formData.append('Address', values.Address);
 
       await projectService.add(formData ); 
       Swal.fire('Success', 'Project has been added!', 'success');
@@ -329,6 +330,7 @@ export default function Appbar({ toggleSidebar }) {
               Description: '',
               StartDate: '',
               EndDate: '',
+              Address: '',
             }}
             //validationSchema={validationSchema}
             onSubmit={handleFormSubmit}
@@ -352,6 +354,15 @@ export default function Appbar({ toggleSidebar }) {
                   margin="dense"
                   error={touched.Description && !!errors.Description}
                   helperText={touched.Description && errors.Description}
+                />
+                <Field
+                  as={TextField}
+                  label="Address"
+                  name="Address"
+                  fullWidth
+                  margin="dense"
+                  error={touched.Address && !!errors.Address}
+                  helperText={touched.Address && errors.Address}
                 />
                 <Field
                   as={TextField}

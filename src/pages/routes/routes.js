@@ -21,7 +21,7 @@ export const ROUTES = {
     //TeamMembers
   ADD_TEAMMEMBERS: '/addteammember',
 
-
+  DOCUMENTS: '/documents',
 
   DASHBOARD :{
       BASE: "/dashboard"

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress,} from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText,} from '@mui/material';
 import ShareIcon from '@mui/icons-material/Share';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { useInstruments, InstrumentActions } from '../../context/instrumentContext';
@@ -13,6 +13,9 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import { useLocation } from 'react-router-dom';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import Cookies from 'universal-cookie';
+import { jwtDecode } from 'jwt-decode';
+import { instrumentTagService } from '../../APIs/Services/instrumentTag.service';
 
   const VisuallyHiddenInput = styled('input')({
     display: 'none',
@@ -38,11 +41,14 @@ export const Instruments = () => {
     const [openQRDialog, setOpenQRDialog] = useState(false); 
     const [qrImage, setQrImage] = useState(null); 
     const [qrInstrumentName, setQrInstrumentName] = useState(null);
-    const [instrumentTypes, setInstrumentTypes] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
     const [searchTerm, setSearchTerm] = useState(''); 
     const [filteredInstruments, setFilteredInstruments] = useState(state?.data || []);
     const [uploadedFiles, setUploadedFiles] = useState([]);
+    const [availableTags, setAvailableTags] = useState([]);
+    const [selectedTags, setSelectedTags] = useState([]);
+    const [newTag, setNewTag] = useState('');
+    const [isAdding, setIsAdding] = useState(false);
 
     const [newInstrument, setNewInstrument] = useState({
         name: '',
@@ -52,6 +58,9 @@ export const Instruments = () => {
         description: '',
         shortDesc: '',
         instrumentTypeId: '',
+        price: '',
+        tags: [],
+        count: 1
     });
     const [instrument, setInstrument] = useState(null)
     const [loading, setLoading] = useState(true); 
@@ -92,7 +101,7 @@ export const Instruments = () => {
       const handleSearchChange = (event) => {
         setSearchTerm(event.target.value); 
       };
-
+    
     useEffect(() => {
         (async () => {
             setLoading(true); 
@@ -125,8 +134,23 @@ export const Instruments = () => {
             </Box>
         );
     }
+        const fetchTags = async () => {
+            if (!availableTags.length) { // Add a condition to prevent unnecessary calls
+                try {
+                    const response = await instrumentTagService.getAll();
+                    console.log(response)
+                    setAvailableTags(response.data);
+                } catch (error) {
+                    console.error('Error fetching available tags:', error);
+                }
+            }
+        };
+        
 
-    const handleOpenModal = () => setOpenModal(true);
+    const handleOpenModal = () => {
+        setOpenModal(true);
+        fetchTags();
+    }
     const handleCloseModal = () => {
         setOpenModal(false);
     }
@@ -135,6 +159,19 @@ export const Instruments = () => {
         setNewInstrument((prevState) => ({
         ...prevState,
         [name]: value,
+        }));
+    };
+
+    // const handleTagChange = (event) => {
+    //     const value = Array.from(event.target.selectedOptions, option => option.value);
+    //     setSelectedTags(value);
+    // };
+    const handleTagChange = (event) => {
+        const selectedIds = event.target.value;
+        //console.log(event.target.value)
+        setNewInstrument((prevState) => ({
+            ...prevState,
+            tags: selectedIds, // Directly setting the list of selected tag IDs
         }));
     };
 
@@ -150,7 +187,6 @@ export const Instruments = () => {
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
         const previews = files.map((file) => URL.createObjectURL(file));
-        console.log(files)
         setImagePreviews(previews);
         setNewInstrument((prevState) => ({
         ...prevState,
@@ -165,7 +201,7 @@ export const Instruments = () => {
     };
 
     const handleAddInstrument = async () => {
-        const { name, images, mainImageIndex, files, description, shortDesc, projectId, instrumentType } = newInstrument;
+        const { name, images, mainImageIndex, files, description, shortDesc, projectId, instrumentType, count, price, tags } = newInstrument;
         const formData = new FormData();
     
         formData.append('Name', name);
@@ -173,12 +209,22 @@ export const Instruments = () => {
         formData.append('Description', description);
         formData.append('ShortDesc', shortDesc);
         formData.append('ProjectId', projectId || '');
-        formData.append('InstrumentType', instrumentType);    
-        images.forEach((file, index) => {
-            formData.append('Images', file);  
+        formData.append('InstrumentType', instrumentType);
+        formData.append('Count', count);
+        formData.append('Price', price); // Add price to form data
+    
+        images.forEach((file) => {
+            formData.append('Images', file);
         });
-        files?.forEach((file, index) => {
-            formData.append('Files', file);  
+    
+        files?.forEach((file) => {
+            formData.append('Files', file);
+        });
+    
+        // Add each tag to form data (assuming tags is an array of strings)
+        tags.forEach((tag) => {
+            console.log(tag)
+            formData.append('Tags', tag);
         });
     
         try {
@@ -195,7 +241,6 @@ export const Instruments = () => {
                     confirmButtonText: 'OK'
                 });
             } else {
-                // Handle other errors
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -204,9 +249,9 @@ export const Instruments = () => {
                 });
             }
             handleCloseModal();
-           // showError();
         }
     };
+    
     
     const handleShare = () => {
         const shareData = {
@@ -239,11 +284,16 @@ export const Instruments = () => {
     if (!state.data || state.data.length === 0) {
         return (
             <Box m={"20px"}>
-                <Button variant="contained"
-              className='!ml-6 !bg-[#1D34D8] !rounded-3xl !py-2'
-              sx={{ml: 2,textTransform: "none",}} onClick={handleOpenModal}>
+                {isAdmin && (
+                <Button
+                    variant="contained"
+                    className="!bg-[#1D34D8] !rounded-3xl !ml-0 md:!ml-3 !py-2 !w-full"
+                    sx={{ width: { xs: '100%', sm: '48%' }, textTransform: "none" }}
+                    onClick={handleOpenModal}
+                >
                     Add Instrument
                 </Button>
+                )}
                 <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
             style: {
                 borderRadius: 20,
@@ -382,6 +432,27 @@ export const Instruments = () => {
         }
     };
 
+    
+    const cookies = new Cookies();
+    let user = cookies.get('user'); 
+    //console.log(user)
+    let token = user?.token
+
+    let decodedToken;
+    try {
+        decodedToken = jwtDecode(token);
+        //console.log("Decoded token:", decodedToken);
+    } catch (error) {
+        console.error("Invalid token:", error);
+    }
+
+    var isAdmin = false
+    const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
+    //console.log(userRoles)
+    if (userRoles.includes("Admin")) {
+        isAdmin = true;
+    }
+
     return (
         <Box m={{ xs: "0px", sm: "20px" }} mt={{ xs: "10px", sm: "20px" }}>
             <div className="flex flex-col sm:flex-row justify-between items-center">
@@ -394,7 +465,7 @@ export const Instruments = () => {
                         value={searchTerm}
                         onChange={handleSearchChange}
                         sx={{
-                            width: { xs: '100%', sm: '50%' },
+                            width: { xs: '100%' , sm: {isAdmin} ? "100%" : "50%" },
                             boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
                             borderRadius: '30px',
                             '& .MuiOutlinedInput-root': {
@@ -405,14 +476,16 @@ export const Instruments = () => {
                             },
                         }}
                     />
+                    {isAdmin && (
                     <Button
                         variant="contained"
-                        className="!bg-[#1D34D8] !rounded-3xl !ml-0 md:!ml-3 !py-2"
+                        className="!bg-[#1D34D8] !rounded-3xl !ml-0 md:!ml-3 !py-2 !w-full"
                         sx={{ width: { xs: '100%', sm: '48%' }, textTransform: "none" }}
                         onClick={handleOpenModal}
                     >
                         Add Instrument
                     </Button>
+                    )}
                 </div>
             </div>
             <p className="mt-4 text-sm sm:text-base">
@@ -614,6 +687,55 @@ export const Instruments = () => {
                         fullWidth
                         value={newInstrument.instrumentType || ''}
                         onChange={handleInputChange}
+                    />
+
+                    {/* Price Input */}
+                    <TextField
+                        margin="dense"
+                        name="price"
+                        label="Price"
+                        type="number"
+                        fullWidth
+                        value={newInstrument.price || ''}
+                        onChange={handleInputChange}
+                        inputProps={{ min: 0, step: "0.01" }}
+                    />
+
+                    {/* Tag Selection Dropdown */}
+                    <FormControl fullWidth margin="dense">
+                        <InputLabel>Tags</InputLabel>
+                        <Select
+                            multiple
+                            name="tags"
+                            value={newInstrument.tags || []}
+                            onChange={handleTagChange}
+                            renderValue={(selected) =>
+                                selected
+                                    .map((tagId) => {
+                                        const tag = availableTags.find((t) => t.title === tagId);
+                                        return tag ? tag.title : '';
+                                    })
+                                    .join(', ')
+                            }
+                        >
+                            {availableTags.map((tag) => (
+                                <MenuItem key={tag.id} value={tag.title}>
+                                    <Checkbox checked={newInstrument.tags?.includes(tag.title)} />
+                                    <ListItemText primary={tag.title} />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                    <TextField
+                        label="Number of Instruments to Add"
+                        name="count"
+                        type="number"
+                        fullWidth
+                        value={newInstrument.count}
+                        onChange={handleInputChange}
+                        margin="normal"
+                        inputProps={{ min: 1 }}
                     />
                     {/* Image upload */}
                     <StyledBox>

@@ -10,6 +10,8 @@ import ProjectPage from "../projects";
 import RegistrationView from "../Register";
 import ResetPassword from "../login/resetPassword";
 import InstrumentDetails from "../instruments/details" ;
+import { Documents } from "../documentspage" ;
+
 
 
 export const router = createBrowserRouter([
@@ -38,7 +40,7 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.INSTRUMENTS,
     element:
-    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.superAdmin, Roles.projectManager]}
+    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.user, Roles.projectManager]}
     >
       <Layout>
         <Instruments />
@@ -87,6 +89,17 @@ export const router = createBrowserRouter([
     >
               <Layout>
                 <ProjectPage />
+              </Layout>
+            </PrivateRoute>
+  },
+
+  {
+    path: ROUTES.DOCUMENTS,
+    element:
+    <PrivateRoute loginPath={ROUTES.DOCUMENTS} allowedRoles={[Roles.admin, Roles.projectManager]}
+    >
+              <Layout>
+                <Documents />
               </Layout>
             </PrivateRoute>
   },

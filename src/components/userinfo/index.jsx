@@ -24,7 +24,7 @@ const UserInfo = () => {
       <div>
         {/* <Typography className="text-sm text-gray-500">{email}</Typography>*/}
         <Typography className="font-bold text-black">
-          {fullName || 'Team Construction'} 
+          {fullName } 
         </Typography>
         <Typography className="text-sm text-gray-500">{role}</Typography> 
       </div>
