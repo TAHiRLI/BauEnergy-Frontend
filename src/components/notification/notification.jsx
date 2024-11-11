@@ -18,16 +18,17 @@ const NotificationModal = ({ open, onClose }) => {
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
   const userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
 
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await notificationService.getAll(userId);
+      setNotifications(response.data);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
   useEffect(() => {
     if (open) {
-      const fetchNotifications = async () => {
-        try {
-          const response = await notificationService.getAll(userId);
-          setNotifications(response.data);
-        } catch (error) {
-          console.error('Error fetching notifications:', error);
-        }
-      };
       fetchNotifications();
     }
   }, [open]);
@@ -53,6 +54,7 @@ const NotificationModal = ({ open, onClose }) => {
         i === index ? { ...n, isRead: true } : n
       );
       setNotifications(updatedNotifications);
+      fetchNotifications()
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -110,21 +112,21 @@ const NotificationModal = ({ open, onClose }) => {
       console.error('Error marking notification as unread:', error);
     }
   };
-  const handleApprove = async (instrumentId) => {
+  const handleApprove = async (instrumentId , notificationId) => {
     try {
-      const result = await projectService.approveOrRejectInstrument(instrumentId, InstrumentApprovalStatus.Approved);
-      console.log(result); // Show success message or handle the response accordingly
-      // Optionally, refetch notifications or update local state to reflect the change
+      const result = await projectService.approveOrRejectInstrument(instrumentId, InstrumentApprovalStatus.Approved, notificationId);
+      console.log(result); 
+      fetchNotifications();
     } catch (error) {
       console.error("Failed to approve instrument:", error);
     }
   };
   
-  const handleReject = async (instrumentId) => {
+  const handleReject = async (instrumentId , notificationId) => {
     try {
-      const result = await projectService.approveOrRejectInstrument(instrumentId, InstrumentApprovalStatus.Rejected);
-      console.log(result); // Show success message or handle the response accordingly
-      // Optionally, refetch notifications or update local state to reflect the change
+      const result = await projectService.approveOrRejectInstrument(instrumentId, InstrumentApprovalStatus.Rejected, notificationId);
+      console.log(result); 
+      fetchNotifications();
     } catch (error) {
       console.error("Failed to reject instrument:", error);
     }
@@ -167,79 +169,79 @@ const NotificationModal = ({ open, onClose }) => {
 
             {/* Notification List or No Notifications Message */}
             {filteredNotifications.length === 0 ? (
-  <div className="text-center text-gray-500">You have no notifications</div>
-) : (
-  <ul className="space-y-4 border rounded-xl overflow-y-auto max-h-96">
-    {filteredNotifications
-      .sort((a, b) => Number(a.isRead) - Number(b.isRead))
-      .map((notification, index) => (
-        <li
-          key={notification.id}
-          className="flex items-center justify-between p-2 cursor-pointer"
-          onClick={() => handleNotificationClick(index, notification.id)}
-        >
-          <div className="flex items-center space-x-2 w-full">
-            {!notification.isRead && (
-              <span className="text-blue-500">
-                <svg
-                  className="w-2.5 h-2.5 fill-current"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                >
-                  <circle cx="12" cy="12" r="12" />
-                </svg>
-              </span>
-            )}
-            <div className="w-full">
-              <div className="flex justify-between items-center">
-                <div className="font-bold text-sm">{notification.title}</div>
-                <div className="text-gray-400 text-xs">
-                  {formatDate(notification.createdAt)}
-                </div>
-              </div>
-              <p className="text-gray-500 text-xs">{notification.description}</p>
+              <div className="text-center text-gray-500">You have no notifications</div>
+            ) : (
+              <ul className="space-y-4 border rounded-xl overflow-y-auto max-h-96">
+                {filteredNotifications
+                  .sort((a, b) => Number(a.isRead) - Number(b.isRead))
+                  .map((notification, index) => (
+                    <li
+                      key={notification.id}
+                      className="flex items-center justify-between p-2 cursor-pointer"
+                      onClick={() => handleNotificationClick(index, notification.id)}
+                    >
+                      <div className="flex items-center space-x-2 w-full">
+                        {!notification.isRead && (
+                          <span className="text-blue-500">
+                            <svg
+                              className="w-2.5 h-2.5 fill-current"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle cx="12" cy="12" r="12" />
+                            </svg>
+                          </span>
+                        )}
+                        <div className="w-full">
+                          <div className="flex justify-between items-center">
+                            <div className="font-bold text-sm">{notification.title}</div>
+                            <div className="text-gray-400 text-xs">
+                              {formatDate(notification.createdAt)}
+                            </div>
+                          </div>
+                          <p className="text-gray-500 text-xs">{notification.description}</p>
 
-              {/* Conditionally render Approve and Reject icons if hasAction is true */}
-              {notification.hasAction && (
-                <div className="flex space-x-2 mt-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent the main click handler
-                      handleApprove(notification.instrumentId);
-                    }}
-                    className="text-green-500 hover:text-green-600"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      className="w-5 h-5 fill-current"
-                    >
-                      <path d="M9 16.2l-3.5-3.5L4 14.2l5 5 10-10-1.5-1.5L9 16.2z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent the main click handler
-                      handleReject(notification.instrumentId);
-                    }}
-                    className="text-red-500 hover:text-red-600"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      className="w-5 h-5 fill-current"
-                    >
-                      <path d="M18.3 5.71L16.89 4.3 12 9.17 7.11 4.3 5.7 5.71l4.88 4.88-4.88 4.88 1.41 1.41L12 11.99l4.89 4.88 1.41-1.41-4.88-4.88z" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </li>
-      ))}
-  </ul>
-)}
+                          {/* Conditionally render Approve and Reject icons if hasAction is true */}
+                          {notification.hasAction && notification.approvalStatus === 0 && (
+                            <div className="flex space-x-2 mt-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent the main click handler
+                                  handleApprove(notification.instrumentId, notification.id);
+                                }}
+                                className="text-green-500 hover:text-green-600"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  className="w-5 h-5 fill-current"
+                                >
+                                  <path d="M9 16.2l-3.5-3.5L4 14.2l5 5 10-10-1.5-1.5L9 16.2z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent the main click handler
+                                  handleReject(notification.instrumentId, notification.id);
+                                }}
+                                className="text-red-500 hover:text-red-600"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  className="w-5 h-5 fill-current"
+                                >
+                                  <path d="M18.3 5.71L16.89 4.3 12 9.17 7.11 4.3 5.7 5.71l4.88 4.88-4.88 4.88 1.41 1.41L12 11.99l4.89 4.88 1.41-1.41-4.88-4.88z" />
+                                </svg>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+              </ul>
+            )}
 
           </div>
         </div>

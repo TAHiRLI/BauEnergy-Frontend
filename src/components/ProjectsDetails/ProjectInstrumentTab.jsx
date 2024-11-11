@@ -260,8 +260,8 @@ const handleManagerChange = (event) => {
       case 'In use':
         chipProps = { label: 'In use', style: { borderColor: 'blue', color: 'blue' }, variant: 'outlined' };
         break;
-      case 'Under maintance':
-        chipProps = { label: 'Under maintance', style: { borderColor: 'red', color: 'red' }, variant: 'outlined' };
+      case 'Under maintenance':
+        chipProps = { label: 'Under maintenance', style: { borderColor: 'red', color: 'red' }, variant: 'outlined' };
         break;
       default:
         chipProps = { label: 'Unknown', style: { borderColor: 'grey', color: 'grey' }, variant: 'outlined' };
@@ -327,7 +327,7 @@ const handleManagerChange = (event) => {
     {
       field: 'status',
       headerName: 'Status',
-      width: 150,
+      width: 160,
       renderCell: (params) => renderStatus(params.row.status.split('_').join(' ')), 
     },
     {

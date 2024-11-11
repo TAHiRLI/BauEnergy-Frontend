@@ -23,6 +23,14 @@ class InstrumentTagService extends HttpClient {
             }
         });
     }
+    
+    async GetProjectsTagsInstruments() {
+        return await this.get(`InstrumentTags/projects-tags-instruments`, {
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`
+            }
+        });
+    }
     async getById(id) {
         return await this.get(`Instrument/${id}`, {
             headers: {
@@ -53,10 +61,6 @@ class InstrumentTagService extends HttpClient {
             }
         });
     }
-
-
-
-
 }
 
 export const instrumentTagService = new InstrumentTagService();

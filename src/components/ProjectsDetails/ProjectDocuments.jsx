@@ -147,8 +147,8 @@ export default function ProjectDocuments({ project }) {
             </Grid>
           ))
         ) : (
-          <Typography variant="body2" color="textSecondary">
-            No documents available for this instrument.
+          <Typography variant="body2" color="textSecondary" className='!pl-4'>
+            No documents found for this project.
           </Typography>
         )}
       </Grid>

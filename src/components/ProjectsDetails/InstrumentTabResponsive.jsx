@@ -10,6 +10,7 @@ import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
 import InstrumentStatusModal from '../common/actionsBtn/InstrumentUpdateButton';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import { instrumentService } from '../../APIs/Services/instrument.service';
+import { teamMemberService } from '../../APIs/Services/teammember.service';
 
 const InstrumentTabResponsive = ({ project }) => {
   const { state, dispatch } = useProjects();
@@ -24,7 +25,8 @@ const InstrumentTabResponsive = ({ project }) => {
   const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
   const [instrumentHistory, setInstrumentHistory] = useState([]);
   const [refresh, setRefresh] = useState(false);
-
+  const [projectManagers, setProjectManagers] = useState([]);
+  const [selectedManager, setSelectedManager] = useState('');
 
     const [editOpen, setEditOpen] = useState(false);
     const [selectedInstrumentId, setSelectedInstrumentId] = useState(null);
@@ -81,9 +83,9 @@ const InstrumentTabResponsive = ({ project }) => {
   
     const handleAddInstrument = async () => {
       try {
-        const body = { projectId: project.id, instrumentId: selectedInstrumentId };
+        const body = { projectId: project.id, instrumentId: selectedInstrumentId, projectManagerId: selectedManager };
+        console.log(selectedManager)
         await projectService.addInstrumentToProject(body);
-        
         Swal.fire({
           title: 'Added!',
           text: 'Instrument has been added to the project.',
@@ -125,7 +127,28 @@ const InstrumentTabResponsive = ({ project }) => {
         console.error("Error fetching instrument history:", error);
       }
     };
-    
+
+    useEffect(() => {
+      const fetchProjectManagers = async () => {
+          try {
+            const response = await teamMemberService.getAllProjectManagers(project.id)
+            //const data = await response.json();
+            setProjectManagers(response.data);
+            if (response.data && response.data.length > 0) {
+              setSelectedManager(response.data[0].id); // Set first manager's ID as the default
+          }} catch (error) {
+              console.error("Failed to fetch project managers:", error);
+          }
+      };
+  
+      if (openDialog) {
+          fetchProjectManagers();
+      }
+  }, [openDialog]);
+  
+  const handleManagerChange = (event) => {
+      setSelectedManager(event.target.value);
+  };
   
     const handleSearch = () => {
       let filtered = allInstruments; 
@@ -229,8 +252,8 @@ const InstrumentTabResponsive = ({ project }) => {
         case 'In use':
           chipProps = { label: 'In use', style: { borderColor: 'blue', color: 'blue' }, variant: 'outlined' };
           break;
-        case 'Under maintance':
-          chipProps = { label: 'Under maintance', style: { borderColor: 'red', color: 'red' }, variant: 'outlined' };
+        case 'Under maintenance':
+          chipProps = { label: 'Under maintenance', style: { borderColor: 'red', color: 'red' }, variant: 'outlined' };
           break;
         default:
           chipProps = { label: 'Unknown', style: { borderColor: 'grey', color: 'grey' }, variant: 'outlined' };
@@ -591,6 +614,23 @@ const InstrumentTabResponsive = ({ project }) => {
               ))}
             </Select>
           </FormControl>
+
+          {/* Project Manager Selection */}
+          <FormControl fullWidth margin="dense">
+            <InputLabel id="project-manager-label">Project Manager</InputLabel>
+            <Select
+              labelId="project-manager-label"
+              value={selectedManager}
+              onChange={handleManagerChange}
+              label="Project Manager"
+            >
+              {projectManagers.map((manager) => (
+                  <MenuItem key={manager.id} value={manager.id}>
+                      {manager.name} {manager.lastName}
+                  </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions className='!px-6'>
           <Button onClick={() => setOpenDialog(false)} className='!text-[#1D34D8] '>Cancel</Button>
@@ -598,7 +638,7 @@ const InstrumentTabResponsive = ({ project }) => {
             Add
           </Button>
         </DialogActions>
-        </Dialog>
+      </Dialog>
 
         <InstrumentStatusModal
             instrumentId={selectedInstrumentId} 

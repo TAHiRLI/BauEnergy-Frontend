@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText,} from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, OutlinedInput, InputAdornment,} from '@mui/material';
 import ShareIcon from '@mui/icons-material/Share';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { useInstruments, InstrumentActions } from '../../context/instrumentContext';
@@ -16,6 +16,7 @@ import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import Cookies from 'universal-cookie';
 import { jwtDecode } from 'jwt-decode';
 import { instrumentTagService } from '../../APIs/Services/instrumentTag.service';
+import AddIcon from '@mui/icons-material/Add';
 
   const VisuallyHiddenInput = styled('input')({
     display: 'none',
@@ -46,9 +47,9 @@ export const Instruments = () => {
     const [filteredInstruments, setFilteredInstruments] = useState(state?.data || []);
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const [availableTags, setAvailableTags] = useState([]);
-    const [selectedTags, setSelectedTags] = useState([]);
-    const [newTag, setNewTag] = useState('');
-    const [isAdding, setIsAdding] = useState(false);
+    const [tagInput, setTagInput] = useState('');
+    const [isAddingNewTag, setIsAddingNewTag] = useState(false);
+
 
     const [newInstrument, setNewInstrument] = useState({
         name: '',
@@ -77,6 +78,24 @@ export const Instruments = () => {
     const location = useLocation();
     // const searchInputRef = useRef(null); 
     //console.log(location)
+
+    const cookies = new Cookies();
+    let user = cookies.get('user'); 
+    let token = user?.token
+
+    let decodedToken;
+    try {
+        decodedToken = jwtDecode(token);
+    } catch (error) {
+        console.error("Invalid token:", error);
+    }
+
+    var isAdmin = false
+    const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
+    if (userRoles.includes("Admin")) {
+        isAdmin = true;
+    }
+
     useEffect(() => {
         //const searchParams = new URLSearchParams(location.search);
         //const focusSearch = searchParams.get('focusSearch');        
@@ -135,7 +154,7 @@ export const Instruments = () => {
         );
     }
         const fetchTags = async () => {
-            if (!availableTags.length) { // Add a condition to prevent unnecessary calls
+            if (!availableTags.length) { 
                 try {
                     const response = await instrumentTagService.getAll();
                     console.log(response)
@@ -162,18 +181,31 @@ export const Instruments = () => {
         }));
     };
 
-    // const handleTagChange = (event) => {
-    //     const value = Array.from(event.target.selectedOptions, option => option.value);
-    //     setSelectedTags(value);
-    // };
     const handleTagChange = (event) => {
-        const selectedIds = event.target.value;
-        //console.log(event.target.value)
+        const selectedTags = event.target.value;
         setNewInstrument((prevState) => ({
-            ...prevState,
-            tags: selectedIds, // Directly setting the list of selected tag IDs
+          ...prevState,
+          tags: selectedTags
         }));
     };
+
+
+    const handleAddNewTag = () => {
+        if (tagInput.trim() && !newInstrument.tags.includes(tagInput)
+        ) {
+          setNewInstrument((prevState) => ({
+            ...prevState,
+            tags: [...prevState.tags, tagInput]
+          }));
+    
+          setAvailableTags((prevTags) => [
+            ...prevTags,
+            { id: `new-${tagInput}`, title: tagInput } 
+          ]);
+          setTagInput("");
+        }
+    };
+    
 
     const handlePdfUpload = (event) => {
         const files = event.target.files;
@@ -221,11 +253,9 @@ export const Instruments = () => {
             formData.append('Files', file);
         });
     
-        // Add each tag to form data (assuming tags is an array of strings)
-        tags.forEach((tag) => {
-            console.log(tag)
+        newInstrument.tags.forEach((tag) => {
             formData.append('Tags', tag);
-        });
+          });
     
         try {
             await instrumentService.add(formData);
@@ -286,13 +316,13 @@ export const Instruments = () => {
             <Box m={"20px"}>
                 {isAdmin && (
                 <Button
-                    variant="contained"
-                    className="!bg-[#1D34D8] !rounded-3xl !ml-0 md:!ml-3 !py-2 !w-full"
-                    sx={{ width: { xs: '100%', sm: '48%' }, textTransform: "none" }}
-                    onClick={handleOpenModal}
-                >
-                    Add Instrument
-                </Button>
+                variant="contained"
+                className="!bg-[#1D34D8] !rounded-3xl !ml-0 md:!ml-3 !py-2"
+                sx={{ width: "auto", textTransform: "none", padding: "10px 20px" }} // Adjust padding if needed
+                onClick={handleOpenModal}
+              >
+                Add Instrument
+              </Button>
                 )}
                 <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
             style: {
@@ -301,7 +331,21 @@ export const Instruments = () => {
                 backgroundColor: "#fcfcfc"  
             },
             }}>
-                <DialogTitle>Add New Instrument</DialogTitle>
+                <DialogTitle>Add New Instrument
+                    <IconButton
+                            className="!text-blue-700"
+                            aria-label="close"
+                            onClick={handleCloseModal}
+                            sx={{
+                                position: 'absolute',
+                                right: 8,
+                                top: 8,
+                                color: (theme) => theme.palette.grey[500],
+                            }}
+                        >
+                        <CancelOutlinedIcon />
+                    </IconButton>
+                </DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
@@ -341,7 +385,102 @@ export const Instruments = () => {
                         fullWidth
                         value={newInstrument.instrumentType || ''}
                         onChange={handleInputChange}
-                    />                   
+                    />
+
+                    {/* Price Input */}
+                    <TextField
+                        margin="dense"
+                        name="price"
+                        label="Price"
+                        type="number"
+                        fullWidth
+                        value={newInstrument.price || ''}
+                        onChange={handleInputChange}
+                        inputProps={{ min: 0, step: "0.01" }}
+                    />
+
+                    {/* <FormControl fullWidth margin="dense">
+                    <InputLabel>Tags</InputLabel>
+                    <Select
+                        multiple
+                        value={newInstrument.tags}
+                        onChange={handleTagChange}
+                        renderValue={(selected) => selected.join(', ')}
+                    >
+                        {availableTags.map((tag) => (
+                        <MenuItem key={tag.id} value={tag.title}>
+                            <Checkbox checked={newInstrument.tags.includes(tag.title)} />
+                            <ListItemText primary={tag.title} />
+                        </MenuItem>
+                        ))}
+                        <FormControl fullWidth margin="dense" className="!px-5">
+                            <OutlinedInput 
+                            id="outlined-adornment-password"
+                            type='text'
+                            onChange={e => setTagInput(e?.target?.value)}
+                            value={tagInput}
+                            endAdornment={
+                            <InputAdornment position="end" >
+                                <IconButton
+                                onClick= {() => handleAddNewTag()}
+                                edge="end"
+                                >
+                                    <AddIcon />
+                                </IconButton>
+                            </InputAdornment>
+                            }
+                            />
+                        </FormControl>
+                    </Select>
+                    </FormControl> */}
+
+                    <FormControl fullWidth margin="dense">
+                    <InputLabel>Tags</InputLabel>
+                    <Select
+                        multiple
+                        label="Tags"
+                        value={newInstrument.tags}
+                        onChange={handleTagChange}
+                        renderValue={(selected) => selected.join(', ')}
+                    >
+                        {availableTags.map((tag) => (
+                        <MenuItem key={tag.id} value={tag.title}>
+                            <Checkbox checked={newInstrument.tags.includes(tag.title)} />
+                            <ListItemText primary={tag.title} />
+                        </MenuItem>
+                        ))}
+                    </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth margin="dense" variant="outlined">
+                    <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
+                    <OutlinedInput
+                        id="add-new-tag"
+                        type="text"
+                        onChange={(e) => setTagInput(e.target.value)}
+                        value={tagInput}
+                        label="Add new tag (optional)"
+                        placeholder="Type a new tag"
+                        endAdornment={
+                        <InputAdornment position="end">
+                            <IconButton onClick={handleAddNewTag} edge="end">
+                            <AddIcon />
+                            </IconButton>
+                        </InputAdornment>
+                        }
+                    />
+                    </FormControl>
+
+                    <TextField
+                        label="Number of Instruments to Add"
+                        name="count"
+                        type="number"
+                        fullWidth
+                        value={newInstrument.count}
+                        onChange={handleInputChange}
+                        margin="normal"
+                        inputProps={{ min: 1 }}
+                    />
                     {/* Image upload */}
                     <StyledBox>
                         <Button
@@ -381,28 +520,48 @@ export const Instruments = () => {
                         </Grid>
                         </Box>
                     )}
+                     {/* PDF Upload */}
+        <StyledBox>
+          <Button
+            component="label"
+            variant="contained"
+            startIcon={<CloudUploadIcon />}
+          >
+            Upload files
+            <VisuallyHiddenInput
+              type="file"
+              onChange={handlePdfUpload}
+              multiple
+              accept="application/pdf"
+            />
+          </Button>
+        </StyledBox>
 
-                    {/* PDF Upload */}
-                    <StyledBox>
-                        <Button
-                            component="label"
-                            variant="contained"
-                            startIcon={<CloudUploadIcon />}
-                        >
-                            Upload files
-                            <VisuallyHiddenInput
-                            type="file"
-                            onChange={handlePdfUpload}
-                            multiple
-                            />
-                        </Button>
-                    </StyledBox>
+        {/* Display uploaded PDF files */}
+        <Box mt={2}>
+            {uploadedFiles.length > 0 ? (
+
+              <Grid container spacing={1}>
+                {uploadedFiles.map((file, index) => (
+                  <Grid item xs={12} key={index} display="flex" alignItems="center">
+                    <PictureAsPdfIcon color="error" />
+                    <Typography variant="body2" ml={1}>
+                      {file.name}
+                    </Typography>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Typography variant="body2" color="textSecondary">No files uploaded</Typography>
+            )}
+          </Box>
+                    
                 </DialogContent>
                 <DialogActions className='!px-10'>
                 <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
                 <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
                 </DialogActions>
-                </Dialog>
+            </Dialog>
             </Box>
         );
     }
@@ -419,7 +578,7 @@ export const Instruments = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Under_maintance':
+            case 'Under_maintenance':
                 return 'red';
             case 'In_use':
                 return 'blue';
@@ -432,26 +591,6 @@ export const Instruments = () => {
         }
     };
 
-    
-    const cookies = new Cookies();
-    let user = cookies.get('user'); 
-    //console.log(user)
-    let token = user?.token
-
-    let decodedToken;
-    try {
-        decodedToken = jwtDecode(token);
-        //console.log("Decoded token:", decodedToken);
-    } catch (error) {
-        console.error("Invalid token:", error);
-    }
-
-    var isAdmin = false
-    const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
-    //console.log(userRoles)
-    if (userRoles.includes("Admin")) {
-        isAdmin = true;
-    }
 
     return (
         <Box m={{ xs: "0px", sm: "20px" }} mt={{ xs: "10px", sm: "20px" }}>
@@ -701,31 +840,77 @@ export const Instruments = () => {
                         inputProps={{ min: 0, step: "0.01" }}
                     />
 
-                    {/* Tag Selection Dropdown */}
                     {/* <FormControl fullWidth margin="dense">
-                        <InputLabel>Tags</InputLabel>
-                        <Select
-                            multiple
-                            name="tags"
-                            value={newInstrument.tags || []}
-                            onChange={handleTagChange}
-                            renderValue={(selected) =>
-                                selected
-                                    .map((tagId) => {
-                                        const tag = availableTags.find((t) => t.title === tagId);
-                                        return tag ? tag.title : '';
-                                    })
-                                    .join(', ')
+                    <InputLabel>Tags</InputLabel>
+                    <Select
+                        multiple
+                        value={newInstrument.tags}
+                        onChange={handleTagChange}
+                        renderValue={(selected) => selected.join(', ')}
+                    >
+                        {availableTags.map((tag) => (
+                        <MenuItem key={tag.id} value={tag.title}>
+                            <Checkbox checked={newInstrument.tags.includes(tag.title)} />
+                            <ListItemText primary={tag.title} />
+                        </MenuItem>
+                        ))}
+                        <FormControl fullWidth margin="dense" className="!px-5">
+                            <OutlinedInput 
+                            id="outlined-adornment-password"
+                            type='text'
+                            onChange={e => setTagInput(e?.target?.value)}
+                            value={tagInput}
+                            endAdornment={
+                            <InputAdornment position="end" >
+                                <IconButton
+                                onClick= {() => handleAddNewTag()}
+                                edge="end"
+                                >
+                                    <AddIcon />
+                                </IconButton>
+                            </InputAdornment>
                             }
-                        >
-                            {availableTags.map((tag) => (
-                                <MenuItem key={tag.id} value={tag.title}>
-                                    <Checkbox checked={newInstrument.tags?.includes(tag.title)} />
-                                    <ListItemText primary={tag.title} />
-                                </MenuItem>
-                            ))}
-                        </Select>
+                            />
+                        </FormControl>
+                    </Select>
                     </FormControl> */}
+
+                    <FormControl fullWidth margin="dense">
+                    <InputLabel>Tags</InputLabel>
+                    <Select
+                        multiple
+                        label="Tags"
+                        value={newInstrument.tags}
+                        onChange={handleTagChange}
+                        renderValue={(selected) => selected.join(', ')}
+                    >
+                        {availableTags.map((tag) => (
+                        <MenuItem key={tag.id} value={tag.title}>
+                            <Checkbox checked={newInstrument.tags.includes(tag.title)} />
+                            <ListItemText primary={tag.title} />
+                        </MenuItem>
+                        ))}
+                    </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth margin="dense" variant="outlined">
+                    <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
+                    <OutlinedInput
+                        id="add-new-tag"
+                        type="text"
+                        onChange={(e) => setTagInput(e.target.value)}
+                        value={tagInput}
+                        label="Add new tag (optional)"
+                        placeholder="Type a new tag"
+                        endAdornment={
+                        <InputAdornment position="end">
+                            <IconButton onClick={handleAddNewTag} edge="end">
+                            <AddIcon />
+                            </IconButton>
+                        </InputAdornment>
+                        }
+                    />
+                    </FormControl>
 
                     <TextField
                         label="Number of Instruments to Add"
