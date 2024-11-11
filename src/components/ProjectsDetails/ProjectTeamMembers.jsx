@@ -84,10 +84,11 @@ export default function TeamMember({ project }) {
    image: Yup.mixed().nullable(),
   });
   const RoleEnum = {
-    Admin: 0,
     User: 1,
-    ProjectManager: 2,
+    Project_Manager: 2,
   };
+
+
 
   const handleImageUpload = (event) => {
     const files = event.target.files;
@@ -255,7 +256,7 @@ export default function TeamMember({ project }) {
       field: 'role',
       headerName: 'Role',
       minWidth: 130,
-      renderCell: (params) => params.row.role,
+      renderCell: (params) => params.row.role.split('_').join(' '),
     },
     { field: 'dateAddedProject', headerName: 'Joined date', minWidth: 150, renderCell: (params) => formatDate(params.row.dateAddedProject),  },
     {
@@ -305,7 +306,7 @@ export default function TeamMember({ project }) {
       </Button>
 
 
-<Paper
+    <Paper
   sx={{
     height: '200px',
     width: '100%',
@@ -326,8 +327,8 @@ export default function TeamMember({ project }) {
       pageSizeOptions={[5, 10]}
       sx={{
         border: 0,
-        minWidth: 640, // Minimum width for DataGrid to avoid squashing columns
-        overflowX: 'auto', // Enable horizontal scrolling on DataGrid
+        minWidth: 640,
+        overflowX: 'auto', 
       }}
       getRowId={(row) => row.id}
     />
@@ -462,7 +463,7 @@ export default function TeamMember({ project }) {
                       >
                         {Object.entries(RoleEnum).map(([key, value]) => (
                           <MenuItem key={value} value={value}>
-                            {key}
+                          {key.split('_').join(' ')}
                           </MenuItem>
                         ))}
                       </Select>
@@ -587,7 +588,7 @@ export default function TeamMember({ project }) {
                       >
                         {Object.entries(RoleEnum).map(([key, value]) => (
                           <MenuItem key={value} value={value}>
-                            {key}
+                            {key.split('_').join(' ')}
                           </MenuItem>
                         ))}
                       </Select>

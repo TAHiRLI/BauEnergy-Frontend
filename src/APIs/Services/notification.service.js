@@ -31,7 +31,7 @@ class NotificationService extends HttpClient {
     }
 
     async remove(id) {
-        return await this.delete('TeamMember',id,{
+        return await this.delete('Notification/notifications',id,{
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }

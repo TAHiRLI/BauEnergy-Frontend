@@ -63,8 +63,8 @@ class ProjectService extends HttpClient {
         });
     }
 
-    async approveOrRejectInstrument(id, status) {
-        return await this.customPost(`Project/${id}/approveOrReject?status=${status}`, {
+    async approveOrRejectInstrument(id, status, notificationId) {
+        return await this.customPost(`Project/${id}/approveOrReject/${notificationId}?status=${status}`, {
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }
