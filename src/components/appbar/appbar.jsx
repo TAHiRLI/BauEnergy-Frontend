@@ -78,13 +78,31 @@ export default function Appbar({ toggleSidebar }) {
     fetchNotifications();
   };
 
-  // const validationSchema = Yup.object({
-  //   name: Yup.string().required('Required'),
-  //   lastName: Yup.string().required('Required'),
-  //   email: Yup.string().email('Invalid email').required('Required'),
-  //   role: Yup.number().required('Required'),
-  //   image: Yup.mixed().nullable(),
-  // });
+  const validationSchema = Yup.object({
+    Name: Yup.string()
+      .required('Name is required')
+      .min(2, 'Name must be at least 2 characters')
+      .max(50, 'Name must be at most 50 characters'),
+    
+    Description: Yup.string()
+      .required('Description is required')
+      .min(10, 'Description must be at least 10 characters')
+      .max(600, 'Description must be at most 200 characters'),
+    
+    Address: Yup.string()
+      .required('Address is required')
+      .min(5, 'Address must be at least 5 characters')
+      .max(100, 'Address must be at most 100 characters'),
+    
+    StartDate: Yup.date()
+      .required('Start date is required')
+      .typeError('Invalid date format'),
+    
+    EndDate: Yup.date()
+      .required('End date is required')
+      .typeError('Invalid date format')
+      .min(Yup.ref('StartDate'), 'End date cannot be before start date')
+  });
 
   const handleFormSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
@@ -332,7 +350,7 @@ export default function Appbar({ toggleSidebar }) {
               EndDate: '',
               Address: '',
             }}
-            //validationSchema={validationSchema}
+            validationSchema={validationSchema}
             onSubmit={handleFormSubmit}
           >
             {({ setFieldValue, isSubmitting, errors, touched }) => (

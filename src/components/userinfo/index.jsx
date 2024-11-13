@@ -26,7 +26,7 @@ const UserInfo = () => {
         <Typography className="font-bold text-black">
           {fullName } 
         </Typography>
-        <Typography className="text-sm text-gray-500">{role}</Typography> 
+        <Typography className="text-sm text-gray-500">{role.split('_').join(' ')}</Typography> 
       </div>
     </div>
   );

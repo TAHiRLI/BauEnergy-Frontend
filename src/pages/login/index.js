@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import * as yup from 'yup';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { loginService } from '../../APIs/Services/login.service';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ROUTES } from '../routes/routes';
 import { AuthActions, useAuth } from '../../context/authContext';
 import Cookies from 'universal-cookie';
@@ -20,6 +20,7 @@ const validationSchema = yup.object().shape({
 export const LoginPage = () => {
   const { dispatch } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();  // Get location to access redirect state
   const cookies = new Cookies();
   const [renderReset, setRenderReset] = useState(false);
   const [token, setToken] = useState(false);
@@ -42,7 +43,9 @@ export const LoginPage = () => {
         
         dispatch({ type: AuthActions.success, payload: user });
 
-        navigate(ROUTES.BASE, { replace: true });
+        // Redirect to the original path if it exists, otherwise go to the home page
+        const redirectPath = location.state?.from?.pathname || ROUTES.BASE;
+        navigate(redirectPath, { replace: true });
       }
     } catch (err) {
       if (err.response?.status === 403) {
@@ -68,7 +71,7 @@ export const LoginPage = () => {
         validationSchema={validationSchema}
         onSubmit={(values, actions) => handleLogin(values, actions)}
       >
-        {({ isSubmitting, errors, touched, isValid, validateOnChange, validateOnBlur, submitCount }) => (
+        {({ isSubmitting, errors, submitCount }) => (
           <Form className="bg-white p-6 rounded shadow-md w-full max-w-sm">
             <h2 className="text-2xl font-bold mb-4">Login</h2>
 

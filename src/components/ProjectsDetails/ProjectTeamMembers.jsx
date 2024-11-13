@@ -256,7 +256,7 @@ export default function TeamMember({ project }) {
       field: 'role',
       headerName: 'Role',
       minWidth: 130,
-      renderCell: (params) => params.row.role.split('_').join(' '),
+      renderCell: (params) => params.row?.role?.split('_').join(' '),
     },
     { field: 'dateAddedProject', headerName: 'Joined date', minWidth: 150, renderCell: (params) => formatDate(params.row.dateAddedProject),  },
     {
@@ -463,7 +463,7 @@ export default function TeamMember({ project }) {
                       >
                         {Object.entries(RoleEnum).map(([key, value]) => (
                           <MenuItem key={value} value={value}>
-                          {key.split('_').join(' ')}
+                          {key?.split('_').join(' ')}
                           </MenuItem>
                         ))}
                       </Select>
