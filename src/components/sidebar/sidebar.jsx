@@ -64,7 +64,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   
   const fetchNotifications = async () => {
     try {
-      console.log(userId)
+      //console.log(userId)
       const response = await notificationService.getAll(userId);
       //console.log(response.data)
       const unreadNotifications = response.data.filter(notification => !notification.isRead);

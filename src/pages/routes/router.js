@@ -96,7 +96,7 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.DOCUMENTS,
     element:
-    <PrivateRoute loginPath={ROUTES.DOCUMENTS} allowedRoles={[Roles.admin, Roles.projectManager]}
+    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin, Roles.projectManager]}
     >
               <Layout>
                 <Documents />
