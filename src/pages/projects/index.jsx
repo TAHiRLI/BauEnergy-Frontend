@@ -93,7 +93,7 @@ export default function BasicTabs() {
   };
 
   const isSmallScreen = useMediaQuery('(max-width:800px)');
-  console.log(project)
+  //console.log(project)
   return (
     <Box sx={{ width: '100%' }}>
       

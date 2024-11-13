@@ -11,7 +11,6 @@ import { teamMemberService } from '../../APIs/Services/teammember.service';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { TextField } from '@mui/material';
-import axios from 'axios';
 import Cookies from "universal-cookie";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { styled } from '@mui/material/styles';
@@ -48,7 +47,7 @@ export default function TeamMember({ project }) {
     try {
       const response = await teamMemberService.getAllByCompany(project.id); // Pass the projectId to the service
       setAllTeamMembers(response.data);
-      console.log(response.data)
+      //console.log(response.data)
     } catch (error) {
       console.error('Error fetching all team members:', error);
       // Handle error accordingly
@@ -79,7 +78,6 @@ export default function TeamMember({ project }) {
   const validationSchema = Yup.object({
    name: Yup.string().required('Required'),
     lastName: Yup.string().required('Required'),
-    email: Yup.string().email('Invalid email').required('Required'),
     role: Yup.number().required('Required'),
    image: Yup.mixed().nullable(),
   });
@@ -100,9 +98,9 @@ export default function TeamMember({ project }) {
 
   const handleEdit = (teamMember) => {
     setTeamMemberToEdit(teamMember); 
-    setIsEditDialogOpen(true);       
+    setIsEditDialogOpen(true);  
   };
-  
+
 
   const handleAddExistingTeamMember = async () => {
     try {
@@ -192,18 +190,17 @@ export default function TeamMember({ project }) {
       const formData = new FormData();
       formData.append('Name', values.name);
       formData.append('LastName', values.lastName);
-      formData.append('Email', values.email);
       formData.append('Role', values.role);
       formData.append('TeamMemberId', teamMemberToEdit.id); 
-  
+
       if (values.image) {
         formData.append('Image', values.image); 
-      }
+      } 
   
       await teamMemberService.edit(teamMemberToEdit.id, formData);
   
-      Swal.fire('Success', 'Team member has been updated!', 'success');
       setIsEditDialogOpen(false);
+      Swal.fire('Success', 'Team member has been updated!', 'success');
   
       const projectResponse = await projectService.getById(project.id);
       dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
@@ -534,9 +531,8 @@ export default function TeamMember({ project }) {
             initialValues={{
               name: teamMemberToEdit?.name || '',
               lastName: teamMemberToEdit?.lastName || '',
-              email: teamMemberToEdit?.email || '',
-              role: teamMemberToEdit?.role || '',
-              image: null,
+              role: teamMemberToEdit?.role === 'Project_Manager' ? RoleEnum.Project_Manager : RoleEnum.User,
+              image: teamMemberToEdit?.image,
             }}
             validationSchema={validationSchema}
             onSubmit={async (values, { setSubmitting }) => {
@@ -566,16 +562,6 @@ export default function TeamMember({ project }) {
                   helperText={touched.lastName && errors.lastName}
                 />
 
-                <Field
-                  as={TextField}
-                  name="email"
-                  label="Email"
-                  fullWidth
-                  margin="normal"
-                  error={touched.email && Boolean(errors.email)}
-                  helperText={touched.email && errors.email}
-                />
-
                 <Field name="role">
                   {({ field, form }) => (
                     <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
@@ -585,6 +571,9 @@ export default function TeamMember({ project }) {
                         labelId="role-label"
                         label="Role"
                         value={field.value}
+                        onChange={(event) => {
+                          setFieldValue('role', event.target.value);
+                        }}
                       >
                         {Object.entries(RoleEnum).map(([key, value]) => (
                           <MenuItem key={value} value={value}>
