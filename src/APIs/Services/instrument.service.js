@@ -8,13 +8,19 @@ class InstrumentService extends HttpClient {
     }
     
 
-    async getAll() {
+    async getAll(search = "", page = 1, pageSize = 16) {
         return await this.get(`Instrument`, {
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
+            },
+            params: {
+                search,
+                page,
+                pageSize
             }
         });
     }
+    
     async getById(id) {
         return await this.get(`Instrument/${id}`, {
             headers: {

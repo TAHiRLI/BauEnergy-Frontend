@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Card, CardMedia, CardContent, Button, CircularProgress, List, ListItem, ListItemText, Divider, TextField, FormControlLabel, Radio } from '@mui/material';
+import { Box, Typography, Grid, Card, CardMedia, CardContent, Button, CircularProgress, List, ListItem, ListItemText, Divider, TextField, FormControlLabel, Radio, FormControl, InputLabel, Checkbox, OutlinedInput, InputAdornment } from '@mui/material';
 import { Dialog, DialogTitle, DialogContent, IconButton, DialogActions, Select, MenuItem } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { instrumentService } from '../../APIs/Services/instrument.service';
@@ -16,13 +16,15 @@ import * as Yup from 'yup';
 import { styled } from '@mui/material/styles';
 import Cookies from 'universal-cookie';
 import { jwtDecode } from 'jwt-decode';
+import AddIcon from '@mui/icons-material/Add';
+import { instrumentTagService } from '../../APIs/Services/instrumentTag.service';
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Instrument name is required'),
   description: Yup.string().required('Description is required'),
   shortDesc: Yup.string().required('Short description is required'),
   instrumentType: Yup.string().required('Instrument type is required'),
-  //status: Yup.string().required('Status is required'),
+  price: Yup.string().required('Price is required'),
 });
 
 const VisuallyHiddenInput = styled('input')({
@@ -48,13 +50,16 @@ const InstrumentDetails = () => {
   const [error, setError] = useState(null);
   const [openQRDialog, setOpenQRDialog] = useState(false);
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
-  const [refresh, setRefresh] = useState(false); // Step 1: Define refresh state
+  const [refresh, setRefresh] = useState(false); 
 
   const [imagePreviews, setImagePreviews] = useState([]);
   const [newInstrument, setNewInstrument] = useState({ mainImageIndex: null });
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [existingPdfs, setExistingPdfs] = useState([]);
+
+  const [availableTags, setAvailableTags] = useState([]);
+  const [tagInput, setTagInput] = useState('');
 
   const cookies = new Cookies();
   let user = cookies.get('user'); 
@@ -75,24 +80,18 @@ const InstrumentDetails = () => {
     const files = Array.from(e.target.files);
     const previews = files.map((file) => URL.createObjectURL(file));
     setImagePreviews(previews);
-    setFieldValue('images', files); // Set the files in Formik's values
+    setFieldValue('images', files); 
   };
-
-  // const handleMainImageChange = (e, setFieldValue) => {
-  //   setNewInstrument({ ...newInstrument, mainImageIndex: parseInt(e.target.value) });
-  //   console.log(e.target.value)
-  //       setFieldValue('mainImageIndex', parseInt(e.target.value)); // Set the files in Formik's values
-  // };
 
   const handleMainImageChange = (e, setFieldValue) => {
     const selectedIndex = parseInt(e.target.value);
-    setFieldValue('mainImageIndex', selectedIndex); // Update Formik's mainImageIndex value
+    setFieldValue('mainImageIndex', selectedIndex); 
   };
 
   const handlePdfUpload = (e, setFieldValue) => {
     const files = Array.from(e.target.files);
     setUploadedFiles(prevFiles => [...prevFiles, ...files]);
-    setFieldValue('files', files); // Set the files in Formik's values
+    setFieldValue('files', files); 
   };
 
 
@@ -101,11 +100,6 @@ const InstrumentDetails = () => {
       try {
         const response = await instrumentService.getById(id);
         setInstrument(response.data);
-        // setFormData({
-        //   name: response.data.name,
-        //   description: response.data.description,
-        //   status: response.data.status
-        // });
         setLoading(false);
       } catch (error) {
         setError('Error fetching instrument details');
@@ -188,11 +182,48 @@ const InstrumentDetails = () => {
 
   const handleOpenUpdateModal = () => {
     setOpenUpdateModal(true);
+    fetchTags();
   };
 
   const handleCloseUpdateModal = () => {
     setOpenUpdateModal(false);
   };
+  const fetchTags = async () => {
+    // if (!availableTags.length) { 
+        try {
+            const response = await instrumentTagService.getAll();
+            //console.log(response)
+            setAvailableTags(response.data);
+        } catch (error) {
+            console.error('Error fetching available tags:', error);
+        }
+    // }
+};
+
+  const handleTagChange = (event) => {
+    const selectedTags = event.target.value;
+    setInstrument((prevState) => ({
+      ...prevState,
+      tags: selectedTags
+    }));
+    console.log(selectedTags)
+};
+
+const handleAddNewTag = () => {
+    if (tagInput.trim() && !instrument.tags.includes(tagInput)
+    ) {
+      setInstrument((prevState) => ({
+        ...prevState,
+        tags: [...prevState.tags, tagInput]
+      }));
+
+      setAvailableTags((prevTags) => [
+        ...prevTags,
+        { id: `new-${tagInput}`, title: tagInput } 
+      ]);
+      setTagInput("");
+    }
+};
 
   const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     console.log(values);
@@ -201,13 +232,14 @@ const InstrumentDetails = () => {
     formData.append('Description', values.description);
     formData.append('ShortDesc', values.shortDesc);
     formData.append('InstrumentType', values.instrumentType);
+    formData.append('Price', values.price); 
     if (values?.mainImageIndex != null) {
       formData.append('MainImageIndex', values.mainImageIndex);
     }    
     values.images?.forEach((image) => formData.append(`Images`, image));
     values.files?.forEach((file) => formData.append(`Files`, file));
-    console.log(formData);
-    
+    //console.log(instrument.tags)
+    instrument.tags.forEach((tag) => formData.append(`Tags`, tag))
     try {
       const response = await instrumentService.edit(id, formData);
       if (response.status !== 200) throw new Error('Failed to submit data');
@@ -320,7 +352,7 @@ const InstrumentDetails = () => {
             <div className="text-gray-600 my-2">
               Added to project:{" "}
               <span className="font-bold text-blue-600">
-                {new Date(instrument.addedProjectDate).toLocaleDateString()}
+                {instrument.addedProjectDate ? new Date(instrument.addedProjectDate).toLocaleDateString() : ""}              
               </span>
             </div>
 
@@ -399,7 +431,7 @@ const InstrumentDetails = () => {
         )}
       </Box>
 
-      {/* Update Instrument Modal */}
+      {/* Edit Instrument Modal */}
       <Dialog open={openUpdateModal} onClose={handleCloseUpdateModal} fullWidth maxWidth="sm" PaperProps={{
       style: {
           borderRadius: 20,
@@ -433,6 +465,8 @@ const InstrumentDetails = () => {
             images: instrument.images || null,
             files: instrument.files || null,
             mainImageIndex: instrument.mainImageIndex || null,
+            tags: instrument.tags || [],
+            price: instrument.price || ''
           }}
           validationSchema={validationSchema}
           onSubmit={handleUpdateSubmit}
@@ -479,6 +513,55 @@ const InstrumentDetails = () => {
                   helperText={touched.instrumentType && errors.instrumentType}
                 />
               </Box>
+              <Box mb={2}>
+                <Field
+                  as={TextField}
+                  name="price"
+                  label="Price"
+                  fullWidth
+                  error={touched.price && !!errors.price}
+                  helperText={touched.price && errors.price}
+                  type="number"
+                  InputProps={{ inputProps: { min: 0 , step: "0.01"} }} 
+                />
+              </Box>
+
+              <FormControl fullWidth margin="dense">
+                    <InputLabel>Tags</InputLabel>
+                    <Select
+                        multiple
+                        label="Tags"
+                        value={instrument.tags}
+                        onChange={handleTagChange}
+                        renderValue={(selected) => selected.join(', ')}
+                    >
+                        {availableTags.map((tag) => (
+                        <MenuItem key={tag.id} value={tag.title}>
+                            <Checkbox checked={instrument.tags.includes(tag.title)} />
+                            <ListItemText primary={tag.title} />
+                        </MenuItem>
+                        ))}
+                    </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth margin="dense" variant="outlined">
+                    <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
+                    <OutlinedInput
+                        id="add-new-tag"
+                        type="text"
+                        onChange={(e) => setTagInput(e.target.value)}
+                        value={tagInput}
+                        label="Add new tag (optional)"
+                        placeholder="Type a new tag"
+                        endAdornment={
+                        <InputAdornment position="end">
+                            <IconButton onClick={handleAddNewTag} edge="end">
+                            <AddIcon />
+                            </IconButton>
+                        </InputAdornment>
+                        }
+                    />
+                    </FormControl>
 
               {/* Image upload */}
               <StyledBox>

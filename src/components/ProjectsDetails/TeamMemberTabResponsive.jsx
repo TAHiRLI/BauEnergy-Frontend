@@ -254,7 +254,7 @@ export default function TeamMember({ project }) {
       field: 'role',
       headerName: 'Role',
       width: 150,
-      renderCell: (params) => params.row.role,
+      renderCell: (params) => params?.row?.role?.split('_').join(' '),
     },
     { field: 'dateAddedProject', headerName: 'Joined date', width: 200, renderCell: (params) => formatDate(params.row.dateAddedProject),  },
     {

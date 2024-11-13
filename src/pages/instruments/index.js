@@ -44,12 +44,15 @@ export const Instruments = () => {
     const [qrInstrumentName, setQrInstrumentName] = useState(null);
     const [imagePreviews, setImagePreviews] = useState([]);
     const [searchTerm, setSearchTerm] = useState(''); 
-    const [filteredInstruments, setFilteredInstruments] = useState(state?.data || []);
     const [uploadedFiles, setUploadedFiles] = useState([]);
     const [availableTags, setAvailableTags] = useState([]);
     const [tagInput, setTagInput] = useState('');
-    const [isAddingNewTag, setIsAddingNewTag] = useState(false);
 
+
+    const [instruments, setInstruments] = useState([]);
+    const [page, setPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
 
     const [newInstrument, setNewInstrument] = useState({
         name: '',
@@ -96,6 +99,48 @@ export const Instruments = () => {
         isAdmin = true;
     }
 
+    const fetchInstruments = async (newSearch = false) => {
+        if (newSearch) {
+            setInstruments([]);
+            setPage(1);
+        }
+        setLoading(true);
+        try {
+            const res = await instrumentService.getAll(searchTerm, page);
+            const { instruments: newInstruments, totalCount } = res.data;
+            setInstruments(prevInstruments => 
+                newSearch ? newInstruments : [...prevInstruments, ...newInstruments]
+            );
+            setTotalCount(totalCount);
+            setHasMore((page * 16) < totalCount);
+        } catch (err) {
+            console.error('Error fetching instruments:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchInstruments(page === 1);
+    }, [page]);
+
+    const handleSearchChange = (event) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            setPage(1);
+            fetchInstruments(true);
+        }
+    };
+
+    const loadMore = () => {
+        setPage(prevPage => prevPage + 1);
+    };
+
+    //
+
     useEffect(() => {
         //const searchParams = new URLSearchParams(location.search);
         //const focusSearch = searchParams.get('focusSearch');        
@@ -106,20 +151,7 @@ export const Instruments = () => {
             searchInput.focus();
           }
         }
-      }, [location.search]);
-
-    useEffect(() => {
-        if (state?.data) {
-          const filtered = state.data.filter(instrument =>
-            instrument.name.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-          setFilteredInstruments(filtered);
-        }
-      }, [searchTerm, state.data]);
-
-      const handleSearchChange = (event) => {
-        setSearchTerm(event.target.value); 
-      };
+    }, [location.search]);
     
     useEffect(() => {
         (async () => {
@@ -153,7 +185,7 @@ export const Instruments = () => {
             </Box>
         );
     }
-        const fetchTags = async () => {
+    const fetchTags = async () => {
             if (!availableTags.length) { 
                 try {
                     const response = await instrumentTagService.getAll();
@@ -163,8 +195,7 @@ export const Instruments = () => {
                     console.error('Error fetching available tags:', error);
                 }
             }
-        };
-        
+    };
 
     const handleOpenModal = () => {
         setOpenModal(true);
@@ -189,7 +220,6 @@ export const Instruments = () => {
         }));
     };
 
-
     const handleAddNewTag = () => {
         if (tagInput.trim() && !newInstrument.tags.includes(tagInput)
         ) {
@@ -206,7 +236,6 @@ export const Instruments = () => {
         }
     };
     
-
     const handlePdfUpload = (event) => {
         const files = event.target.files;
         setUploadedFiles(prevFiles => [...prevFiles, ...files]);
@@ -243,7 +272,7 @@ export const Instruments = () => {
         formData.append('ProjectId', projectId || '');
         formData.append('InstrumentType', instrumentType);
         formData.append('Count', count);
-        formData.append('Price', price); // Add price to form data
+        formData.append('Price', price); 
     
         images.forEach((file) => {
             formData.append('Images', file);
@@ -281,8 +310,7 @@ export const Instruments = () => {
             handleCloseModal();
         }
     };
-    
-    
+
     const handleShare = () => {
         const shareData = {
           //title: project.name,
@@ -566,7 +594,7 @@ export const Instruments = () => {
         );
     }
 
-    const rows = filteredInstruments.map((instrument) => ({
+    const rows = instruments.map((instrument) => ({
         id: instrument.id,
         name: instrument.name,
         isActive: instrument.isActive ? 'Inactive' : 'Active',
@@ -603,6 +631,7 @@ export const Instruments = () => {
                         placeholder="Search Instruments..."
                         value={searchTerm}
                         onChange={handleSearchChange}
+                        onKeyDown={handleKeyDown}
                         sx={{
                             width: { xs: '100%' , sm: {isAdmin} ? "100%" : "50%" },
                             boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
@@ -676,7 +705,20 @@ export const Instruments = () => {
                         </Box>
                     </Grid>
                 ))}
+
+            {loading && <CircularProgress />}
+
+
+
             </Grid>
+
+            {!loading && hasMore && (
+                <div className='text-center mt-5 px-2'>
+                    <Button onClick={loadMore} variant="contained" sx={{ marginTop: 2 }} className="!bg-[#1D34D8] !rounded-3xl !py-2 !px-8">
+                        Load More
+                    </Button>
+                </div>
+            )}
             {/* QR Modal */}
             <Dialog open={openQRDialog} onClose={handleCloseQRDialog}
             PaperProps={{

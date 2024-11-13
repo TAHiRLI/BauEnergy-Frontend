@@ -4,7 +4,7 @@ export const ROUTES = {
   LOGIN: "/login",
   REGISTER: "/register",
   CONTACT_US: "/contactUs",
-  RESET_PASSWORD: '/reset-password',
+  RESET_PASSWORD: '/resetPassword',
   // İnstruments
   INSTRUMENTS: '/instruments',
   ADD_INSTRUMENTS: '/addinstrument',
