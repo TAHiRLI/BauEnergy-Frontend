@@ -302,6 +302,21 @@ const handleAddNewTag = () => {
       console.error("Failed to delete PDF:", error);
     }
   };
+
+  
+  const handleDelete = async (id) => {
+    try {
+        var response =  await instrumentService.remove(id);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Instrument Deleted',
+          text: response.data?.message || 'The instrument has been successfully deleted...',
+        });
+    } catch (err) {
+        console.error('Error deleting instrument:', err);
+    }
+};
   
   return (
     <Box p={1}>
@@ -368,6 +383,13 @@ const handleAddNewTag = () => {
                 className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
               >
                 Update Instrument
+              </button>
+
+              <button
+                onClick={() =>handleDelete(instrument.id)}
+                className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
+              >
+                Delete Instrument
               </button>
             </div>
           </div>

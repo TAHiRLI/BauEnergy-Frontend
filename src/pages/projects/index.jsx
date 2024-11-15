@@ -15,6 +15,9 @@ import InstrumentTabResponsive from '../../components/ProjectsDetails/Instrument
 import TeamMemberTabResponsive from '../../components/ProjectsDetails/TeamMemberTabResponsive';
 import ProjectDocuments from '../../components/ProjectsDetails/ProjectDocuments';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { projectService } from '../../APIs/Services/project.service';
+import { useNavigate } from 'react-router-dom';
+
 
 function CustomTabPanel(props) {
   const { children, value, index } = props;
@@ -92,6 +95,41 @@ export default function BasicTabs() {
     }
   };
 
+  const navigate = useNavigate();
+  const handleDelete = async (id) => {
+    try {
+      const response = await projectService.remove(id);
+      console.log(response);
+    
+      // Check if the response status is not 200
+      if (response.status !== 200) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: response.data?.message || 'Failed to delete the project. Please try again later.',
+        });
+        return;
+      }
+    
+      Swal.fire({
+        icon: 'success',
+        title: 'Project Deleted',
+        text: response.data?.message || 'The project has been successfully deleted.',
+      });
+      navigate('/'); // Redirect to the projects list
+    } catch (err) {
+      console.error('Error deleting project:', err);
+    
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err.response?.data?.message || 'An unexpected error occurred. Please try again later.',
+      });
+    }
+    
+  };
+  
+
   const isSmallScreen = useMediaQuery('(max-width:800px)');
   //console.log(project)
   return (
@@ -108,7 +146,18 @@ export default function BasicTabs() {
           </div>
         </div>
 
-        <div className='flex items-center py-3 '>
+        <div className='flex items-center py-3 gap-3'>
+        <Button
+            className='!rounded-2xl !bg-slate-200 !text-black !px-4 mr-0 sm:mr-1'
+            //startIcon={<DeleteIcon />}
+            variant="contained"
+            sx={{
+              textTransform: 'none',
+            }}
+            onClick={() => handleDelete(project.id)} // Share button click event
+          >
+            Delete Project
+          </Button>
           <Button
             className='!rounded-2xl !bg-slate-200 !text-black !px-4 mr-0 sm:mr-1'
             startIcon={<ShareIcon />}
@@ -120,6 +169,7 @@ export default function BasicTabs() {
           >
             Share project link
           </Button>
+
         </div>
       </div>
       <div className='text-gray-500 text-lg mt-1'>
