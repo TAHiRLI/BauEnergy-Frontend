@@ -155,7 +155,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                 </ListItemIcon>
                 <ListItemText primary="Home" />
               </ListItem>
-
+              <ListItem button component={Link} to={ROUTES.CERTIFICATE} className='!rounded-xl'>
+                <ListItemIcon>
+                  <Home className="text-black" />
+                </ListItemIcon>
+                <ListItemText primary="Home" />
+              </ListItem>
               <ListItem button component={Link} onClick={handleProjectsClick} className='!rounded-xl'>
                 <ListItemIcon>
                   <PollOutlinedIcon className="text-black" />
