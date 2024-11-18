@@ -325,7 +325,7 @@ export const Instruments = () => {
         try {
             await instrumentService.add(formData);
             forceUpdate((x) => !x);
-            //handleCloseModal();
+            handleCloseModal();
             fetchInstrumentsByName();
         } catch (err) {
             console.error('Error adding instrument:', err);
