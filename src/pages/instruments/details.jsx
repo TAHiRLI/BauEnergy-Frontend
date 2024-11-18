@@ -76,29 +76,6 @@ const InstrumentDetails = () => {
   const [isFirstEffectComplete, setIsFirstEffectComplete] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  const arrowStyles = {
-    prev: {
-      width: '30px',
-      height: '30px',
-      color: '#000',
-      position: 'absolute',
-      top: '50%',
-      left: '-40px',
-      transform: 'translateY(-50%)',
-      cursor: 'pointer',
-    },
-    next: {
-      width: '30px',
-      height: '30px',
-      color: '#000',
-      position: 'absolute',
-      top: '50%',
-      right: '-40px',
-      transform: 'translateY(-50%)',
-      cursor: 'pointer',
-    },
-  };
-
   const [expanded, setExpanded] = React.useState(false);
 
   const handleChange = (panel) => (event, isExpanded) => {
@@ -162,7 +139,7 @@ const InstrumentDetails = () => {
       try {
         const response = await instrumentService.getAll(instrument.name);
         setfilteredInstrument(response.data.instruments)
-        console.log(response);
+        //console.log(response);
       } catch (error) {
         setError('Error fetching instrument details');
       } finally {
@@ -195,7 +172,7 @@ const InstrumentDetails = () => {
       try {
         setLoadingHistory(true);
         const response = await instrumentHistoryService.getById(instrumentId);
-        console.log(response)
+        //console.log(response)
         setHistory((prevHistory) => ({
           ...prevHistory,
           [instrumentId]: response.data,
@@ -386,7 +363,6 @@ const handleAddNewTag = () => {
       console.error("Failed to delete PDF:", error);
     }
   };
-
   
   const handleDelete = async (id) => {
     try {
@@ -416,7 +392,7 @@ const handleAddNewTag = () => {
                 pagination={{ clickable: true }}
                 spaceBetween={10}
                 slidesPerView={1}
-                style={{ maxWidth: "100%", overflow: "hidden" }}
+                style={{ maxWidth: "430px", overflow: "hidden" }}
               >
                 {allImages.map((img, index) => (
                   <SwiperSlide key={index}>

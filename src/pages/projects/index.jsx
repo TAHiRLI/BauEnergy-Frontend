@@ -62,15 +62,15 @@ function a11yProps(index) {
 export default function BasicTabs() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [project, setProject] = useState(location.state?.project || null);
+  const [project, setProject] = useState(location.state?.project || "null13213132132");
   const [value, setValue] = useState(0);
-  const [openEditDialog, setOpenEditDialog] = useState(false); // Edit Dialog State
+  const [openEditDialog, setOpenEditDialog] = useState(false);
 
   useEffect(() => {
-    if (project) {
-      // Directly update state with project data
+    if (location.state?.project) {
+        setProject(location.state.project);
     }
-  }, [project]);
+}, [location.state]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
