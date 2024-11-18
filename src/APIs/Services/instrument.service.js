@@ -20,6 +20,14 @@ class InstrumentService extends HttpClient {
             }
         });
     }
+
+    async getAllByName() {
+        return await this.get(`Instrument/filteredbyname`, {
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`
+            }
+        });
+    }
     
     async getById(id) {
         return await this.get(`Instrument/${id}`, {

@@ -382,6 +382,7 @@ const handleManagerChange = (event) => {
   if (state.error) {
     return <div>Error loading instruments</div>;
   }
+  console.log(filteredInstruments)
 
   return  (
     <Box height={400} px={0} className='!px-0'>
@@ -393,14 +394,7 @@ const handleManagerChange = (event) => {
               variant="outlined"
               onChange={(e) => setSearchType(e.target.value)}
               value={searchType}
-              className="rounded-3xl w-full sm:w-auto"
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <DateRangeIcon />
-                  </InputAdornment>
-                ),
-              }}
+              className="rounded-3xl w-full sm:w-[200px]"
             />
 
             {/* Date Input */}
@@ -413,18 +407,11 @@ const handleManagerChange = (event) => {
               variant="outlined"
               value={searchDate}
               onChange={(e) => setSearchDate(e.target.value)}
-              className="rounded-3xl w-full sm:w-auto"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <DateRangeIcon />
-                  </InputAdornment>
-                ),
-              }}
+              className="rounded-3xl w-full sm:w-[200px]"
             />
 
             {/* Status Input */}
-            <FormControl variant="outlined" className="w-full sm:w-48">
+            <FormControl variant="outlined" className="w-full sm:w-[200px]">
               <InputLabel>Status</InputLabel>
               <Select
                 label="Status"
@@ -442,7 +429,7 @@ const handleManagerChange = (event) => {
         </div>
 
         <Button
-          className='!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0'
+          className='!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0 !mr-3'
           startIcon={<AddIcon />}
           variant="contained"
           onClick={() => setOpenDialog(true)}

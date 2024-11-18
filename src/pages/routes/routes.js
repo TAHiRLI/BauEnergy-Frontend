@@ -23,6 +23,8 @@ export const ROUTES = {
 
   DOCUMENTS: '/documents',
 
+  SETTINGSANDTEAMS: '/settingsandteams',
+
   DASHBOARD :{
       BASE: "/dashboard"
   }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Card, CardMedia, CardContent, Button, CircularProgress, List, ListItem, ListItemText, Divider, TextField, FormControlLabel, Radio, FormControl, InputLabel, Checkbox, OutlinedInput, InputAdornment } from '@mui/material';
+import { Box, Typography, Grid, Card, CardMedia, CardContent, Button, CircularProgress, List, ListItem, ListItemText, Divider, TextField, FormControlLabel, Radio, FormControl, InputLabel, Checkbox, OutlinedInput, InputAdornment, AccordionActions } from '@mui/material';
 import { Dialog, DialogTitle, DialogContent, IconButton, DialogActions, Select, MenuItem } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { instrumentService } from '../../APIs/Services/instrument.service';
@@ -17,7 +17,19 @@ import { styled } from '@mui/material/styles';
 import Cookies from 'universal-cookie';
 import { jwtDecode } from 'jwt-decode';
 import AddIcon from '@mui/icons-material/Add';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { instrumentTagService } from '../../APIs/Services/instrumentTag.service';
+import StatusButton from '../../components/common/statusBtn';
+import { Swiper, SwiperSlide } from "swiper/react";
+// import { Navigation } from 'swiper/modules';
+import { Pagination } from 'swiper/modules';
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Instrument name is required'),
@@ -45,6 +57,7 @@ const StyledBox = styled(Box)(({ theme }) => ({
 const InstrumentDetails = () => {
   const { id } = useParams();
   const [instrument, setInstrument] = useState(null);
+  const [filteredInstrument, setfilteredInstrument] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -60,6 +73,37 @@ const InstrumentDetails = () => {
 
   const [availableTags, setAvailableTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
+  const [isFirstEffectComplete, setIsFirstEffectComplete] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const arrowStyles = {
+    prev: {
+      width: '30px',
+      height: '30px',
+      color: '#000',
+      position: 'absolute',
+      top: '50%',
+      left: '-40px',
+      transform: 'translateY(-50%)',
+      cursor: 'pointer',
+    },
+    next: {
+      width: '30px',
+      height: '30px',
+      color: '#000',
+      position: 'absolute',
+      top: '50%',
+      right: '-40px',
+      transform: 'translateY(-50%)',
+      cursor: 'pointer',
+    },
+  };
+
+  const [expanded, setExpanded] = React.useState(false);
+
+  const handleChange = (panel) => (event, isExpanded) => {
+    setExpanded(isExpanded ? panel : false);
+  };
 
   const cookies = new Cookies();
   let user = cookies.get('user'); 
@@ -100,15 +144,34 @@ const InstrumentDetails = () => {
       try {
         const response = await instrumentService.getById(id);
         setInstrument(response.data);
-        setLoading(false);
+        setIsFirstEffectComplete(true); // Signal that the first useEffect has completed
       } catch (error) {
         setError('Error fetching instrument details');
+      } finally {
         setLoading(false);
       }
     };
   
     fetchInstrument();
-  }, [id,refresh]);
+  }, [id, refresh]);
+  
+  useEffect(() => {
+    if (!isFirstEffectComplete || !instrument) return; 
+  
+    const fetchInstrumentsByName = async () => {
+      try {
+        const response = await instrumentService.getAll(instrument.name);
+        setfilteredInstrument(response.data.instruments)
+        console.log(response);
+      } catch (error) {
+        setError('Error fetching instrument details');
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchInstrumentsByName();
+  }, [isFirstEffectComplete, instrument, refresh]);
   
   useEffect(() => {
     const fetchHistory = async () => {
@@ -124,6 +187,26 @@ const InstrumentDetails = () => {
       fetchHistory();
     }
   }, [id, instrument]);
+
+  const handleChangeAccardion = (panel, instrumentId) => async (event, isExpanded) => {
+    setExpanded(isExpanded ? panel : false);
+
+    if (isExpanded) {
+      try {
+        setLoadingHistory(true);
+        const response = await instrumentHistoryService.getById(instrumentId);
+        console.log(response)
+        setHistory((prevHistory) => ({
+          ...prevHistory,
+          [instrumentId]: response.data,
+        }));
+      } catch (error) {
+        console.error('Error fetching instrument history:', error);
+      } finally {
+        setLoadingHistory(false);
+      }
+    }
+  };
   
   const handleShowQR = () => {
     setOpenQRDialog(true);
@@ -275,6 +358,7 @@ const handleAddNewTag = () => {
   }
   const mainImage = instrument?.images?.find((img) => img.isMain);
   const otherImages = instrument?.images?.filter((img) => !img.isMain);
+  const allImages = mainImage ? [mainImage, ...otherImages] : otherImages;
 
   const handleDeleteImage = async (imageId) => {
     try {
@@ -313,6 +397,7 @@ const handleAddNewTag = () => {
           title: 'Instrument Deleted',
           text: response.data?.message || 'The instrument has been successfully deleted...',
         });
+        setRefresh((prev) => !prev);
     } catch (err) {
         console.error('Error deleting instrument:', err);
     }
@@ -323,54 +408,49 @@ const handleAddNewTag = () => {
       {/* Instrument Card */}
       <div className="bg-white shadow-lg rounded-2xl overflow-hidden mb-5">
         <div className="flex flex-col sm:flex-row">
-          <div className="sm:w-1/3 p-4">
-            {mainImage && (
-              <img
-                src={`${process.env.REACT_APP_DOCUMENT_URL}${mainImage.image}`}
-                alt={instrument.name}
-                className="rounded-lg w-full h-auto shadow-md mb-3"
-              />
-            )}
-
-            {/* Secondary Images */}
-            <div className="grid grid-cols-2 gap-2">
-              {otherImages &&
-                otherImages.map((img, index) => (
-                  <img
-                    key={index}
-                    src={`${process.env.REACT_APP_DOCUMENT_URL}${img.image}`}
-                    alt={`${instrument.name} image ${index + 1}`}
-                    className="rounded-md shadow-sm"
-                  />
+        <div className="sm:w-1/4 p-4">
+            {/* Swiper Slider */}
+            {allImages?.length > 0 ? (
+              <Swiper
+                modules={[ Pagination]}
+                pagination={{ clickable: true }}
+                spaceBetween={10}
+                slidesPerView={1}
+                style={{ maxWidth: "100%", overflow: "hidden" }}
+              >
+                {allImages.map((img, index) => (
+                  <SwiperSlide key={index}>
+                    <img
+                      src={`${process.env.REACT_APP_DOCUMENT_URL}${img.image}`}
+                      alt={`${instrument.name} image ${index + 1}`}
+                      className="rounded-lg w-full h-auto shadow-md"
+                      style={{
+                        objectFit: "contain",
+                        maxHeight: "430px",
+                      }}
+                    />
+                  </SwiperSlide>
                 ))}
-            </div>
+              </Swiper>
+            ) : (
+              <Typography>No images available</Typography>
+            )}
           </div>
           <div className="sm:w-2/3 p-5">
             <div className="text-2xl font-bold text-blue-600 mb-2">
               {instrument.name}
             </div>
-            <div className="text-gray-600 mb-2">
-              Status:{" "}
-              <span className="font-bold" style={{ color: getStatusColor(instrument.status) }}>
-                {instrument.status.split('_').join(' ')}
-              </span>
-            </div>
+
             <p className="text-gray-700 my-2">{instrument.shortDesc}</p>
             <p className="text-gray-600 mb-2">{instrument.description}</p>
             <div className="text-gray-600">
               Instrument Type: <span className="font-bold text-blue-700">{instrument.instrumentType}</span>
             </div>
             {canViewPrice && (
-              <div className="text-gray-600 my-2">Price: {instrument.price}</div>
+              <div className="text-gray-600 my-2">
+                Price: {instrument.price.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>            
             )}
-            <div className="text-gray-600 my-2">Project: {instrument.projectName}</div>
-            <div className="text-gray-600 my-2">
-              Added to project:{" "}
-              <span className="font-bold text-blue-600">
-                {instrument.addedProjectDate ? new Date(instrument.addedProjectDate).toLocaleDateString() : ""}              
-              </span>
-            </div>
-
             <div className="mt-4 flex gap-4">
               <button
                 onClick={handleShowQR}
@@ -383,13 +463,6 @@ const handleAddNewTag = () => {
                 className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
               >
                 Update Instrument
-              </button>
-
-              <button
-                onClick={() =>handleDelete(instrument.id)}
-                className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
-              >
-                Delete Instrument
               </button>
             </div>
           </div>
@@ -426,31 +499,75 @@ const handleAddNewTag = () => {
         </Grid>
       </Box>
 
-      {/* Instrument History */}
       <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8', mb: 2 }}>
-          Instrument History
-        </Typography>
+        <div>
+          {filteredInstrument?.map((instrument, index) => (
+            <Accordion
+              key={instrument.id}
+              expanded={expanded === `panel${index}`}
+              onChange={handleChangeAccardion(`panel${index}`, instrument.id)}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls={`panel${index}bh-content`}
+                id={`panel${index}bh-header`}
+              >
+                <Typography sx={{ width: '25%', flexShrink: 0 }}>
+                  {instrument.name}
+                </Typography>
+                <Typography sx={{ width: '25%', color: 'text.secondary' }}>
+                  Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+                </Typography>
+                <Typography sx={{ width: '25%', color: 'text.secondary' }}>
+                  Project: {instrument.projectName || 'Not assigned'}
+                </Typography>
 
-        {history.length > 0 ? (
-          <List>
-            {history.map((event, index) => (
-              <React.Fragment key={index}>
-                <ListItem className="!px-0">
-                  <ListItemText
-                    primary={`Event: ${event.description}`}
-                    secondary={`Date: ${new Date(event.eventDate).toLocaleDateString()}`}
-                  />
-                </ListItem>
-                {index < history.length - 1 && <Divider />}
-              </React.Fragment>
-            ))}
-          </List>
-        ) : (
-          <Typography variant="body2" color="textSecondary">
-            No history available for this instrument.
-          </Typography>
-        )}
+                <IconButton
+                onClick={() => handleDelete(instrument.id)}
+                sx={{
+                  backgroundColor: "#f5f5f5",  
+                  borderRadius: "20%",         
+                  padding: "5px",               
+                  border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
+                  marginRight: "8px"
+                }}>            
+                <DeleteIcon sx={{ color: "#424242" }} />
+              </IconButton>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box mt={0} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8', mb: 2 }}>
+                    Instrument History
+                  </Typography>
+
+                  {loadingHistory ? (
+                    <Typography variant="body2" color="textSecondary">
+                      Loading history...
+                    </Typography>
+                  ) : history[instrument.id]?.length > 0 ? (
+                    <List>
+                      {history[instrument.id].map((event, idx) => (
+                        <React.Fragment key={idx}>
+                          <ListItem className="!px-0">
+                            <ListItemText
+                              primary={`Event: ${event.description}`}
+                              secondary={`Date: ${new Date(event.eventDate).toLocaleDateString()}`}
+                            />
+                          </ListItem>
+                          {idx < history[instrument.id].length - 1 && <Divider />}
+                        </React.Fragment>
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography variant="body2" color="textSecondary">
+                      No history available for this instrument.
+                    </Typography>
+                  )}
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          ))}
+        </div>
       </Box>
 
       {/* Edit Instrument Modal */}

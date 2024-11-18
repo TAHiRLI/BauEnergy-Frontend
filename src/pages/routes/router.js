@@ -11,6 +11,7 @@ import RegistrationView from "../Register";
 import ResetPassword from "../login/resetPassword";
 import InstrumentDetails from "../instruments/details" ;
 import { Documents } from "../documentspage" ;
+import SettingsAndTeams from "../SettingsAndTeams";
 
 
 
@@ -103,6 +104,17 @@ export const router = createBrowserRouter([
               </Layout>
             </PrivateRoute>
   },
+  {
+    path: ROUTES.SETTINGSANDTEAMS,
+    element:
+    <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin]}
+    >
+              <Layout>
+                <SettingsAndTeams/>
+              </Layout>
+            </PrivateRoute>
+  },
+
 ]);
 
 export default ROUTES;

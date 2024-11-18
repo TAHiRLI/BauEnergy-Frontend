@@ -282,13 +282,6 @@ const InstrumentTabResponsive = ({ project }) => {
               onChange={(e) => setSearchType(e.target.value)}
               value={searchType}
               className="rounded-3xl w-full sm:w-auto"
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <DateRangeIcon />
-                  </InputAdornment>
-                ),
-              }}
             />
 
             {/* Date Input */}
@@ -302,13 +295,6 @@ const InstrumentTabResponsive = ({ project }) => {
               value={searchDate}
               onChange={(e) => setSearchDate(e.target.value)}
               className="rounded-3xl w-full sm:w-auto"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <DateRangeIcon />
-                  </InputAdornment>
-                ),
-              }}
             />
 
             {/* Status Input */}

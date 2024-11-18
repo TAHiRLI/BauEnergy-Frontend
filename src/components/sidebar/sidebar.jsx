@@ -135,7 +135,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
             </List>
 
             <List>
-              <ListItem button className='!rounded-xl' component={Link}>
+              <ListItem button className='!rounded-xl' component={Link} to={ROUTES.SETTINGSANDTEAMS}>
                 <ListItemIcon style={{ minWidth: '20px' }} className="mr-3">
                   <SettingsOutlinedIcon className="text-black" />
                 </ListItemIcon>
