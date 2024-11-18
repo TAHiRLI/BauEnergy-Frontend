@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, OutlinedInput, InputAdornment,} from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, OutlinedInput, InputAdornment, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Switch, useMediaQuery,} from '@mui/material';
 import ShareIcon from '@mui/icons-material/Share';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { useInstruments, InstrumentActions } from '../../context/instrumentContext';
@@ -17,6 +17,8 @@ import Cookies from 'universal-cookie';
 import { jwtDecode } from 'jwt-decode';
 import { instrumentTagService } from '../../APIs/Services/instrumentTag.service';
 import AddIcon from '@mui/icons-material/Add';
+import { DataGrid } from '@mui/x-data-grid';
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 
   const VisuallyHiddenInput = styled('input')({
     display: 'none',
@@ -50,9 +52,19 @@ export const Instruments = () => {
 
 
     const [instruments, setInstruments] = useState([]);
+    const [instrumentsByName, setInstrumentsByName] = useState([]);
     const [page, setPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [hasMore, setHasMore] = useState(true);
+    const [error, setError] = useState('');
+    const [viewMode, setViewMode] = useState("card"); // 'card' or 'table'
+
+    const handleViewChange = (event) => {
+        setViewMode(event.target.checked ? "table" : "card");
+    };
+
+    const isSmallScreen = useMediaQuery('(max-width:800px)');
+
 
     const [newInstrument, setNewInstrument] = useState({
         name: '',
@@ -120,6 +132,23 @@ export const Instruments = () => {
         }
     };
 
+    const fetchInstrumentsByName = async () => {
+        setLoading(true);
+        try {
+            const res = await instrumentService.getAllByName();
+            setInstrumentsByName(res)
+            //console.log(res)
+        } catch (err) {
+            console.error('Error fetching instruments:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+    useEffect(() => {
+        fetchInstrumentsByName();
+    }, []);
+    
+
     useEffect(() => {
         fetchInstruments(page === 1);
     }, [page]);
@@ -185,17 +214,18 @@ export const Instruments = () => {
             </Box>
         );
     }
+
     const fetchTags = async () => {
             if (!availableTags.length) { 
                 try {
                     const response = await instrumentTagService.getAll();
-                    console.log(response)
+                    //console.log(response)
                     setAvailableTags(response.data);
                 } catch (error) {
                     console.error('Error fetching available tags:', error);
                 }
             }
-    };
+    };        
 
     const handleOpenModal = () => {
         setOpenModal(true);
@@ -206,10 +236,16 @@ export const Instruments = () => {
     }
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        //console.log(value)
+        if (value === '+' || value === '-') {
+            setError('Invalid input: Price cannot be just "+" or "-"');
+            setNewInstrument((prev) => ({ ...prev, [name]: '' })); // Clear invalid input
+          }else{
         setNewInstrument((prevState) => ({
         ...prevState,
         [name]: value,
         }));
+    }
     };
 
     const handleTagChange = (event) => {
@@ -290,6 +326,7 @@ export const Instruments = () => {
             await instrumentService.add(formData);
             forceUpdate((x) => !x);
             handleCloseModal();
+            fetchInstrumentsByName();
         } catch (err) {
             console.error('Error adding instrument:', err);
             if (err.response && err.response.status === 403) {
@@ -417,15 +454,31 @@ export const Instruments = () => {
 
                     {/* Price Input */}
                     <TextField
-                        margin="dense"
-                        name="price"
-                        label="Price"
-                        type="number"
-                        fullWidth
-                        value={newInstrument.price || ''}
-                        onChange={handleInputChange}
-                        inputProps={{ min: 0, step: "0.01" }}
-                    />
+    margin="dense"
+    name="price"
+    label="Price"
+    type="text" // Use 'text' to enforce custom validation
+    fullWidth
+    value={newInstrument.price || ''}
+    onChange={(e) => {
+        const value = e.target.value;
+        // Filter input to allow only numbers and one decimal point
+        const sanitizedValue = value.replace(/[^0-9.]/g, ''); // Remove any non-numeric or non-decimal characters
+        if (/^\d*\.?\d*$/.test(sanitizedValue)) {
+            handleInputChange({
+                target: { name: 'price', value: sanitizedValue }
+            });
+        }
+    }}
+    inputProps={{
+        inputMode: "decimal", // Suggest numeric keyboard on mobile devices
+        min: 0,
+        step: "0.01",
+    }}
+/>
+
+
+
 
                     {/* <FormControl fullWidth margin="dense">
                     <InputLabel>Tags</InputLabel>
@@ -603,6 +656,19 @@ export const Instruments = () => {
         status: instrument.status,
         qr : instrument.qrImage
     }));
+    const instrumentsFilteredByName = instrumentsByName.data?.map((instrument) => ({
+        id: instrument.id,
+        name: instrument.name,
+        isActive: instrument.isActive ? 'Inactive' : 'Active',
+        shortDesc: instrument.shortDesc,
+        image: instrument.images.find((image) => image.isMain),
+        status: instrument.status,
+        qr : instrument.qrImage,
+        count: instrument.count,
+        usedInstrumentCount: instrument.usedInstrumentsCount
+    }));
+
+    console.log(instrumentsByName)
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -619,11 +685,92 @@ export const Instruments = () => {
         }
     };
 
+    const rowss = instrumentsByName.data?.map((instrument, index) => ({
+        id: instrument.id || index, // Use `id` from the object or fallback to the index
+        ...instrument,
+    })); 
+
+    const columns = [
+        {
+            field: 'name',
+            headerName: 'Instrument Name',
+            width: 200,
+            renderCell: (params) => {
+              const mainImage = params.row.images?.find(img => img.isMain);
+              console.log(params)
+              return (
+                <Box display="flex" alignItems="center" sx={{ cursor: 'pointer' }} onClick={() => handleShowQR(params.row)}>
+                  {mainImage && (
+                    <img
+                      src={`${process.env.REACT_APP_DOCUMENT_URL}${mainImage.image}`}
+                      alt={params.row.name}
+                      style={{ width: 50, height: 50, marginRight: 10 }}
+                    />
+                  )}
+                  <Typography>{params.row.name}</Typography>
+                </Box>
+              );
+            },
+        },
+        {
+            field: "availability",
+            headerName: "Available",
+            flex: 0.5,
+            renderCell: (params) => {
+                const count = params.row.count ?? 0; // Use 0 if undefined
+                const usedCount = params.row.usedInstrumentsCount ?? 0; // Use 0 if undefined
+                return `${count - usedCount}/${count}`;
+            },
+        },
+        { field: "shortDesc", headerName: "Description", flex: 2 },
+        {
+            field: "actions",
+            headerName: "Actions",
+            flex: 1,
+            sortable: false,
+            renderCell: (params) => (
+                <div className="flex gap-2 items-center mt-2">
+                    <IconButton
+                        onClick={() => handleInstrumentInfoSelect(params.row.id)}
+                        sx={{
+                            color: 'gray',
+                            backgroundColor: '#f0f0f0',
+                            borderRadius: '8px',
+                            padding: '5px',
+                            '&:hover': {
+                                backgroundColor: '#e0e0e0',
+                            },
+                        }}
+                    >
+                        <InfoIcon />
+                    </IconButton>
+                    <IconButton
+                        onClick={() => handleShowQR(params.row.qrImage, params.row.name)}
+                        sx={{
+                            color: 'gray',
+                            backgroundColor: '#f0f0f0',
+                            borderRadius: '8px',
+                            padding: '5px',
+                            '&:hover': {
+                                backgroundColor: '#e0e0e0',
+                            },
+                        }}
+                    >
+                        <QrCodeScannerIcon />
+                    </IconButton>
+                </div>
+            ),
+        }
+        
+    ];
+
 
     return (
         <Box m={{ xs: "0px", sm: "20px" }} mt={{ xs: "10px", sm: "20px" }}>
             <div className="flex flex-col sm:flex-row justify-between items-center">
-                <span className="text-2xl sm:text-3xl font-semibold mb-4 sm:mb-0">List of instruments</span>
+                <span className="text-2xl sm:text-3xl font-semibold mb-4 sm:mb-0">
+                    List of Instruments
+                </span>
                 <div className="flex items-center gap-4 justify-between w-full sm:w-auto">
                     <TextField
                         id="searchbtnax"
@@ -633,84 +780,122 @@ export const Instruments = () => {
                         onChange={handleSearchChange}
                         onKeyDown={handleKeyDown}
                         sx={{
-                            width: { xs: '100%' , sm: {isAdmin} ? "100%" : "50%" },
+                            width: { xs: '100%', sm: isAdmin ? "100%" : "50%" },
                             boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
                             borderRadius: '30px',
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: '30px',
-                            },
-                            '& .MuiOutlinedInput-input': {
-                                padding: '10px 15px',
-                            },
+                            '& .MuiOutlinedInput-root': { borderRadius: '30px' },
+                            '& .MuiOutlinedInput-input': { padding: '10px 15px' },
                         }}
                     />
                     {isAdmin && (
-                    <Button
-                        variant="contained"
-                        className="!bg-[#1D34D8] !rounded-3xl !ml-0 md:!ml-3 !py-2 !w-full"
-                        sx={{ width: { xs: '100%', sm: '48%' }, textTransform: "none" }}
-                        onClick={handleOpenModal}
-                    >
-                        Add Instrument
-                    </Button>
+                        <Button
+                            variant="contained"
+                            className="!bg-[#1D34D8] !rounded-3xl !ml-0 md:!ml-3 !py-2 !w-full"
+                            sx={{ width: { xs: '100%', sm: '48%' }, textTransform: "none" }}
+                            onClick={handleOpenModal}
+                        >
+                            Add Instrument
+                        </Button>
                     )}
+                    {/* Switch to toggle between Card and Table views */}
+                    {isSmallScreen ? 
+                    <div className="flex items-center">
+                        <span>Card</span>
+                        <Switch
+                            checked={viewMode === "table"}
+                            onChange={handleViewChange}
+                            className='!text-[#1D34D8]'
+                        />
+                        <span>Table</span>
+                    </div> : 
+                    <div></div> 
+                    }
+
+                    <div className="flex items-center">
+                        <span>Card</span>
+                        <Switch
+                            checked={viewMode === "table"}
+                            onChange={handleViewChange}
+                            className='!text-[#1D34D8]'
+                        />
+                        <span>Table</span>
+                    </div>
                 </div>
             </div>
+
             <p className="mt-4 text-sm sm:text-base">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
             </p>
 
-            <Grid container spacing={2} sx={{ marginTop: '20px' }}>
-                {rows.map((row) => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={row.id}>
-                        <Box p={2} boxShadow={2} className="rounded-lg">
-                            <img
-                                src={`${process.env.REACT_APP_DOCUMENT_URL}${row.image?.image}`}
-                                alt={row.name}
-                                style={{ width: '100%', height: '200px', marginBottom: '10px', objectFit: 'cover' }}
-                                className="rounded-lg"
-                            />
-                            <StatusButton text={row.status.split('_').join(' ')} color={getStatusColor(row.status)} />
-                            <Typography className="!text-lg !mt-1 !whitespace-nowrap !overflow-hidden !text-ellipsis">
-                                {row.name}
-                            </Typography>
-                            <Typography
-                                variant="body2"
-                                color="textSecondary"
-                                sx={{
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                }}
-                            >
-                                {row.shortDesc}
-                            </Typography>
-                            <div className='flex justify-between'>
-                                        <Button 
-                                            variant="outlined"  
-                                            startIcon={<InfoIcon />} 
-                                            sx={{ marginRight: '10px', borderColor: 'blue', color: 'blue' }}
-                                            onClick={() => handleInstrumentInfoSelect(row.id)}
-
-                                        >
-                                            Info
-                                        </Button>
-                                        <Button 
-                                    onClick={() => handleShowQR(row.qr, row.name)} 
-                                    className='!underline !text-[#1D34D8] !rounded-xl' 
+            {viewMode === "card" ? (
+                // Card View
+                <Grid container spacing={2} sx={{ marginTop: '20px' }}>
+                    {instrumentsFilteredByName?.map((row) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={row.id}>
+                            <Box p={2} boxShadow={2} className="rounded-lg">
+                                <img
+                                    src={`${process.env.REACT_APP_DOCUMENT_URL}${row.image?.image}`}
+                                    alt={row.name}
+                                    style={{ width: '100%', height: '200px', marginBottom: '10px', objectFit: 'cover' }}
+                                    className="rounded-lg"
+                                />
+                                <Typography className="!text-lg !mt-1 !whitespace-nowrap !overflow-hidden !text-ellipsis">
+                                    {row.name}
+                                </Typography>
+                                <div className='flex justify-between items-center'>
+                                    <div>Available instruments:</div>
+                                    <Typography className="!text-base !mt-1 !whitespace-nowrap !overflow-hidden !text-ellipsis">
+                                        {row.count - row.usedInstrumentCount}/{row.count}
+                                    </Typography>
+                                </div>
+                                <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                    sx={{
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                    }}
+                                >
+                                    {row.shortDesc}
+                                </Typography>
+                                <div className='flex justify-between mt-1'>
+                                    <Button 
+                                        variant="outlined"  
+                                        startIcon={<InfoIcon />} 
+                                        sx={{ marginRight: '10px', borderColor: 'blue', color: 'blue' }}
+                                        onClick={() => handleInstrumentInfoSelect(row.id)}
+                                    >
+                                        Info
+                                    </Button>
+                                    <Button 
+                                        onClick={() => handleShowQR(row.qr, row.name)} 
+                                        className='!underline !text-[#1D34D8] !rounded-xl' 
                                     >
                                         Scan QR code
                                     </Button>
-                            </div>
-                        </Box>
-                    </Grid>
-                ))}
+                                </div>
+                            </Box>
+                        </Grid>
+                    ))}
 
-            {loading && <CircularProgress />}
-
-
-
-            </Grid>
+                    {loading && <CircularProgress />}
+                </Grid>
+                
+            ) : (
+                // Table View
+                <Box sx={{ marginTop: "20px", height: 500, width: "100%" }}>
+                    <DataGrid
+                        rows={rowss || []}
+                        columns={columns}
+                        pageSize={10}
+                        rowsPerPageOptions={[10, 20, 50]}
+                        loading={loading}
+                        disableSelectionOnClick
+                        autoHeight
+                    />
+                </Box>
+            )}
 
             {!loading && hasMore && (
                 <div className='text-center mt-5 px-2'>
@@ -719,106 +904,21 @@ export const Instruments = () => {
                     </Button>
                 </div>
             )}
+
             {/* QR Modal */}
             <Dialog open={openQRDialog} onClose={handleCloseQRDialog}
-            PaperProps={{
-                style: {
-                  borderRadius: 20,
-                  //height: "500px",  
-                },
-              }}>
-                <DialogTitle>
-                    Qr Instrument
-                    <IconButton
-                        className="!text-blue-700"
-                        aria-label="close"
-                        onClick={handleCloseQRDialog}
-                        sx={{
-                            position: 'absolute',
-                            right: 8,
-                            top: 8,
-                            color: (theme) => theme.palette.grey[500],
-                        }}
-                    >
-                    <CancelOutlinedIcon />
-                </IconButton>
-                </DialogTitle>
-
-                <DialogContent >
-                    <div className='flex justify-between items-center'>
-                    <Typography variant="body1" >
-                        Instrument details:
-                    </Typography>
-
-                    <Button
-                        className="!text-blue-700"
-                        startIcon={<ShareIcon />}
-                        onClick={handleShare}
-                    >
-                        Share
-                    </Button>
-
-                    </div>
-
-                    {/* QR Code Image */}
-                    {qrImage && (
-                        <Box
-                            display="flex"
-                            flexDirection="column"
-                            alignItems="center"
-                            justifyContent="center"
-                            p={2}
-                            mt={2}
-                            border={1}
-                            borderColor="grey.300"
-                            borderRadius="12px"
-                        >
-                            <Typography
-                                variant="h6"
-                                align="center"
-                                gutterBottom
-                                style={{ fontWeight: 'bold' }}
-                            >
-                                {qrInstrumentName}
-                            </Typography>
-
-                            <Typography
-                                variant="body2"
-                                color="textSecondary"
-                                align="center"
-                                gutterBottom
-                            >
-                                Scan QR to get more information about instrument's history
-                            </Typography>
-
-                            <img
-                            className='border-[30px] border-gray-200 rounded-xl'
-                                src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
-                                alt="QR Code"
-                                style={{
-                                    width: '200px',
-                                    height: '200px',
-                                    margin: '10px 0',
-                                }}
-                            />
-                        </Box>
-                    )}
-                </DialogContent>
-            </Dialog>
-
-            {/* Add Instrument Modal */}
-            <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
-            style: {
-                borderRadius: 20,
-                //height: "500px",
-                backgroundColor: "#fcfcfc"  
-            },
-            }}>
-                <DialogTitle>Add New Instrument
-                    <IconButton
+                PaperProps={{
+                    style: {
+                    borderRadius: 20,
+                    //height: "500px",  
+                    },
+                }}>
+                    <DialogTitle>
+                        Qr Instrument
+                        <IconButton
                             className="!text-blue-700"
                             aria-label="close"
-                            onClick={handleCloseModal}
+                            onClick={handleCloseQRDialog}
                             sx={{
                                 position: 'absolute',
                                 right: 8,
@@ -828,225 +928,312 @@ export const Instruments = () => {
                         >
                         <CancelOutlinedIcon />
                     </IconButton>
-                </DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        name="name"
-                        label="Instrument Name"
-                        type="text"
-                        fullWidth
-                        value={newInstrument.name}
-                        onChange={handleInputChange}
-                    />
-                    <TextField
-                        margin="dense"
-                        name="description"
-                        label="Description"
-                        type="text"
-                        fullWidth
-                        value={newInstrument.description}
-                        onChange={handleInputChange}
-                    />
-                    <TextField
-                        margin="dense"
-                        name="shortDesc"
-                        label="Short Description"
-                        type="text"
-                        fullWidth
-                        value={newInstrument.shortDesc}
-                        onChange={handleInputChange}
-                    />
+                    </DialogTitle>
 
-                    {/* Instrument Type */}
-                    <TextField
-                        margin="dense"
-                        name="instrumentType"
-                        label="Instrument Type"
-                        type="text"
-                        fullWidth
-                        value={newInstrument.instrumentType || ''}
-                        onChange={handleInputChange}
-                    />
+                    <DialogContent >
+                        <div className='flex justify-between items-center'>
+                        <Typography variant="body1" >
+                            Instrument details:
+                        </Typography>
 
-                    {/* Price Input */}
-                    <TextField
-                        margin="dense"
-                        name="price"
-                        label="Price"
-                        type="number"
-                        fullWidth
-                        value={newInstrument.price || ''}
-                        onChange={handleInputChange}
-                        inputProps={{ min: 0, step: "0.01" }}
-                    />
+                        <Button
+                            className="!text-blue-700"
+                            startIcon={<ShareIcon />}
+                            onClick={handleShare}
+                        >
+                            Share
+                        </Button>
 
-                    {/* <FormControl fullWidth margin="dense">
-                    <InputLabel>Tags</InputLabel>
-                    <Select
-                        multiple
-                        value={newInstrument.tags}
-                        onChange={handleTagChange}
-                        renderValue={(selected) => selected.join(', ')}
-                    >
-                        {availableTags.map((tag) => (
-                        <MenuItem key={tag.id} value={tag.title}>
-                            <Checkbox checked={newInstrument.tags.includes(tag.title)} />
-                            <ListItemText primary={tag.title} />
-                        </MenuItem>
-                        ))}
-                        <FormControl fullWidth margin="dense" className="!px-5">
-                            <OutlinedInput 
-                            id="outlined-adornment-password"
-                            type='text'
-                            onChange={e => setTagInput(e?.target?.value)}
-                            value={tagInput}
-                            endAdornment={
-                            <InputAdornment position="end" >
-                                <IconButton
-                                onClick= {() => handleAddNewTag()}
-                                edge="end"
+                        </div>
+
+                        {/* QR Code Image */}
+                        {qrImage && (
+                            <Box
+                                display="flex"
+                                flexDirection="column"
+                                alignItems="center"
+                                justifyContent="center"
+                                p={2}
+                                mt={2}
+                                border={1}
+                                borderColor="grey.300"
+                                borderRadius="12px"
+                            >
+                                <Typography
+                                    variant="h6"
+                                    align="center"
+                                    gutterBottom
+                                    style={{ fontWeight: 'bold' }}
                                 >
-                                    <AddIcon />
+                                    {qrInstrumentName}
+                                </Typography>
+
+                                <Typography
+                                    variant="body2"
+                                    color="textSecondary"
+                                    align="center"
+                                    gutterBottom
+                                >
+                                    Scan QR to get more information about instrument's history
+                                </Typography>
+
+                                <img
+                                className='border-[30px] border-gray-200 rounded-xl'
+                                    src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
+                                    alt="QR Code"
+                                    style={{
+                                        width: '200px',
+                                        height: '200px',
+                                        margin: '10px 0',
+                                    }}
+                                />
+                            </Box>
+                        )}
+                    </DialogContent>
+            </Dialog>
+
+            {/* Add Instrument Modal */}
+            <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
+                style: {
+                    borderRadius: 20,
+                    //height: "500px",
+                    backgroundColor: "#fcfcfc"  
+                },
+                }}>
+                    <DialogTitle>Add New Instrument
+                        <IconButton
+                                className="!text-blue-700"
+                                aria-label="close"
+                                onClick={handleCloseModal}
+                                sx={{
+                                    position: 'absolute',
+                                    right: 8,
+                                    top: 8,
+                                    color: (theme) => theme.palette.grey[500],
+                                }}
+                            >
+                            <CancelOutlinedIcon />
+                        </IconButton>
+                    </DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            name="name"
+                            label="Instrument Name"
+                            type="text"
+                            fullWidth
+                            value={newInstrument.name}
+                            onChange={handleInputChange}
+                        />
+                        <TextField
+                            margin="dense"
+                            name="description"
+                            label="Description"
+                            type="text"
+                            fullWidth
+                            value={newInstrument.description}
+                            onChange={handleInputChange}
+                        />
+                        <TextField
+                            margin="dense"
+                            name="shortDesc"
+                            label="Short Description"
+                            type="text"
+                            fullWidth
+                            value={newInstrument.shortDesc}
+                            onChange={handleInputChange}
+                        />
+
+                        {/* Instrument Type */}
+                        <TextField
+                            margin="dense"
+                            name="instrumentType"
+                            label="Instrument Type"
+                            type="text"
+                            fullWidth
+                            value={newInstrument.instrumentType || ''}
+                            onChange={handleInputChange}
+                        />
+
+                        {/* Price Input */}
+                        <TextField
+                            margin="dense"
+                            name="price"
+                            label="Price"
+                            type="number"
+                            fullWidth
+                            value={newInstrument.price || ''}
+                            onChange={handleInputChange}
+                            inputProps={{ min: 0, step: "0.01" }}
+                            error={!!error} // Show red border if there's an error
+                            helperText={error} // Display error message below the input
+                        />
+
+                        {/* <FormControl fullWidth margin="dense">
+                        <InputLabel>Tags</InputLabel>
+                        <Select
+                            multiple
+                            value={newInstrument.tags}
+                            onChange={handleTagChange}
+                            renderValue={(selected) => selected.join(', ')}
+                        >
+                            {availableTags.map((tag) => (
+                            <MenuItem key={tag.id} value={tag.title}>
+                                <Checkbox checked={newInstrument.tags.includes(tag.title)} />
+                                <ListItemText primary={tag.title} />
+                            </MenuItem>
+                            ))}
+                            <FormControl fullWidth margin="dense" className="!px-5">
+                                <OutlinedInput 
+                                id="outlined-adornment-password"
+                                type='text'
+                                onChange={e => setTagInput(e?.target?.value)}
+                                value={tagInput}
+                                endAdornment={
+                                <InputAdornment position="end" >
+                                    <IconButton
+                                    onClick= {() => handleAddNewTag()}
+                                    edge="end"
+                                    >
+                                        <AddIcon />
+                                    </IconButton>
+                                </InputAdornment>
+                                }
+                                />
+                            </FormControl>
+                        </Select>
+                        </FormControl> */}
+
+                        <FormControl fullWidth margin="dense">
+                        <InputLabel>Tags</InputLabel>
+                        <Select
+                            multiple
+                            label="Tags"
+                            value={newInstrument.tags}
+                            onChange={handleTagChange}
+                            renderValue={(selected) => selected.join(', ')}
+                        >
+                            {availableTags.map((tag) => (
+                            <MenuItem key={tag.id} value={tag.title}>
+                                <Checkbox checked={newInstrument.tags.includes(tag.title)} />
+                                <ListItemText primary={tag.title} />
+                            </MenuItem>
+                            ))}
+                        </Select>
+                        </FormControl>
+
+                        <FormControl fullWidth margin="dense" variant="outlined">
+                        <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
+                        <OutlinedInput
+                            id="add-new-tag"
+                            type="text"
+                            onChange={(e) => setTagInput(e.target.value)}
+                            value={tagInput}
+                            label="Add new tag (optional)"
+                            placeholder="Type a new tag"
+                            endAdornment={
+                            <InputAdornment position="end">
+                                <IconButton onClick={handleAddNewTag} edge="end">
+                                <AddIcon />
                                 </IconButton>
                             </InputAdornment>
                             }
-                            />
-                        </FormControl>
-                    </Select>
-                    </FormControl> */}
-
-                    <FormControl fullWidth margin="dense">
-                    <InputLabel>Tags</InputLabel>
-                    <Select
-                        multiple
-                        label="Tags"
-                        value={newInstrument.tags}
-                        onChange={handleTagChange}
-                        renderValue={(selected) => selected.join(', ')}
-                    >
-                        {availableTags.map((tag) => (
-                        <MenuItem key={tag.id} value={tag.title}>
-                            <Checkbox checked={newInstrument.tags.includes(tag.title)} />
-                            <ListItemText primary={tag.title} />
-                        </MenuItem>
-                        ))}
-                    </Select>
-                    </FormControl>
-
-                    <FormControl fullWidth margin="dense" variant="outlined">
-                    <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
-                    <OutlinedInput
-                        id="add-new-tag"
-                        type="text"
-                        onChange={(e) => setTagInput(e.target.value)}
-                        value={tagInput}
-                        label="Add new tag (optional)"
-                        placeholder="Type a new tag"
-                        endAdornment={
-                        <InputAdornment position="end">
-                            <IconButton onClick={handleAddNewTag} edge="end">
-                            <AddIcon />
-                            </IconButton>
-                        </InputAdornment>
-                        }
-                    />
-                    </FormControl>
-
-                    <TextField
-                        label="Number of Instruments to Add"
-                        name="count"
-                        type="number"
-                        fullWidth
-                        value={newInstrument.count}
-                        onChange={handleInputChange}
-                        margin="normal"
-                        inputProps={{ min: 1 }}
-                    />
-                    {/* Image upload */}
-                    <StyledBox>
-                        <Button
-                        component="label"
-                        variant="contained"
-                        startIcon={<CloudUploadIcon />}
-                        >
-                        Upload Images
-                        <VisuallyHiddenInput
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            onChange={handleImageUpload}
                         />
-                        </Button>
-                    </StyledBox>
+                        </FormControl>
 
-                    {/* Image Previews and Main Image Selection */}
-                    {imagePreviews.length > 0 && (
-                        <Box mt={2}>
-                        <Typography variant="h6">Select Main Image:</Typography>
-                        <Grid container spacing={2}>
-                            {imagePreviews.map((image, index) => (
-                            <Grid item xs={4} key={index}>
-                                <img src={image} alt={`Preview ${index}`} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
-                                <FormControlLabel
-                                control={<Radio
-                                    checked={newInstrument.mainImageIndex === index}
-                                    onChange={handleMainImageChange}
-                                    value={index}
-                                    name="mainImage"
-                                />}
-                                label="Main"
-                                />
+                        <TextField
+                            label="Number of Instruments to Add"
+                            name="count"
+                            type="number"
+                            fullWidth
+                            value={newInstrument.count}
+                            onChange={handleInputChange}
+                            margin="normal"
+                            inputProps={{ min: 1 }}
+                        />
+                        {/* Image upload */}
+                        <StyledBox>
+                            <Button
+                            component="label"
+                            variant="contained"
+                            startIcon={<CloudUploadIcon />}
+                            >
+                            Upload Images
+                            <VisuallyHiddenInput
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                            />
+                            </Button>
+                        </StyledBox>
+
+                        {/* Image Previews and Main Image Selection */}
+                        {imagePreviews.length > 0 && (
+                            <Box mt={2}>
+                            <Typography variant="h6">Select Main Image:</Typography>
+                            <Grid container spacing={2}>
+                                {imagePreviews.map((image, index) => (
+                                <Grid item xs={4} key={index}>
+                                    <img src={image} alt={`Preview ${index}`} style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '10px' }} />
+                                    <FormControlLabel
+                                    control={<Radio
+                                        checked={newInstrument.mainImageIndex === index}
+                                        onChange={handleMainImageChange}
+                                        value={index}
+                                        name="mainImage"
+                                    />}
+                                    label="Main"
+                                    />
+                                </Grid>
+                                ))}
                             </Grid>
-                            ))}
-                        </Grid>
-                        </Box>
-                    )}
-                     {/* PDF Upload */}
-        <StyledBox>
-          <Button
-            component="label"
-            variant="contained"
-            startIcon={<CloudUploadIcon />}
-          >
-            Upload files
-            <VisuallyHiddenInput
-              type="file"
-              onChange={handlePdfUpload}
-              multiple
-              accept="application/pdf"
-            />
-          </Button>
-        </StyledBox>
+                            </Box>
+                        )}
+                        {/* PDF Upload */}
+            <StyledBox>
+            <Button
+                component="label"
+                variant="contained"
+                startIcon={<CloudUploadIcon />}
+            >
+                Upload files
+                <VisuallyHiddenInput
+                type="file"
+                onChange={handlePdfUpload}
+                multiple
+                accept="application/pdf"
+                />
+            </Button>
+            </StyledBox>
 
-        {/* Display uploaded PDF files */}
-        <Box mt={2}>
-            {uploadedFiles.length > 0 ? (
+            {/* Display uploaded PDF files */}
+            <Box mt={2}>
+                {uploadedFiles.length > 0 ? (
 
-              <Grid container spacing={1}>
-                {uploadedFiles.map((file, index) => (
-                  <Grid item xs={12} key={index} display="flex" alignItems="center">
-                    <PictureAsPdfIcon color="error" />
-                    <Typography variant="body2" ml={1}>
-                      {file.name}
-                    </Typography>
-                  </Grid>
-                ))}
-              </Grid>
-            ) : (
-              <Typography variant="body2" color="textSecondary">No files uploaded</Typography>
-            )}
-          </Box>
-                    
-                </DialogContent>
-                <DialogActions className='!px-10'>
-                <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
-                <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
-                </DialogActions>
+                <Grid container spacing={1}>
+                    {uploadedFiles.map((file, index) => (
+                    <Grid item xs={12} key={index} display="flex" alignItems="center">
+                        <PictureAsPdfIcon color="error" />
+                        <Typography variant="body2" ml={1}>
+                        {file.name}
+                        </Typography>
+                    </Grid>
+                    ))}
+                </Grid>
+                ) : (
+                <Typography variant="body2" color="textSecondary">No files uploaded</Typography>
+                )}
+            </Box>
+                        
+                    </DialogContent>
+                    <DialogActions className='!px-10'>
+                    <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
+                    <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
+                    </DialogActions>
             </Dialog>
         </Box>
-
     );
 };
 
