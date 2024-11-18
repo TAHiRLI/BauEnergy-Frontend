@@ -61,17 +61,18 @@ export default function TeamMember({ project }) {
     }
   }, [openDialog]);
 
+  const fetchTeamMembersForProject = async () => {
+    dispatch({ type: ProjectsActions.start });
+    try {
+      const response = await projectService.getById(project.id);
+      dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      dispatch({ type: ProjectsActions.failure, payload: error });
+    }
+  };
   useEffect(() => {
-    const fetchTeamMembersForProject = async () => {
-      dispatch({ type: ProjectsActions.start });
-      try {
-        const response = await projectService.getById(project.id);
-        dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
-      } catch (error) {
-        console.error('Error fetching team members:', error);
-        dispatch({ type: ProjectsActions.failure, payload: error });
-      }
-    };
+    
     fetchTeamMembersForProject();
   }, [dispatch, project.id]);
 
@@ -133,28 +134,32 @@ export default function TeamMember({ project }) {
 
   const handleFormSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
+      console.log(values)
       const formData = new FormData();
       formData.append('Name', values.name);
       formData.append('LastName', values.lastName);
       formData.append('Email', values.email);
       formData.append('Role', values.role);
+      formData.append('Image', values.image);
       formData.append('ProjectId', project.id); 
   
-      if (imageFile) {
-        formData.append('Image', imageFile); 
-      }
+      // if (imageFile) {
+      //   formData.append('Image', imageFile); 
+      // }
   
       const response = await teamMemberService.add(formData);
   
       Swal.fire('Success', 'Team member has been created and added to the project!', 'success');
       resetForm();
       setOpenDialog(false);
-  
-      const projectResponse = await projectService.getById(project.id);
-      dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
+      fetchTeamMembersForProject();
+
+      // const projectResponse = await projectService.getById(project.id);
+      // dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
   
     } catch (error) {
       console.error('Error adding team member:', error.response || error.message);
+      setOpenDialog(false)
       Swal.fire('Error', 'Failed to create team member.', 'error');
     } finally {
       setSubmitting(false);
@@ -305,7 +310,7 @@ export default function TeamMember({ project }) {
 
     <Paper
   sx={{
-    height: '200px',
+    //height: '600px',
     width: '100%',
     overflowX: 'hidden',
     maxWidth: '100vw', // Restrict Paper width to viewport
@@ -325,6 +330,7 @@ export default function TeamMember({ project }) {
       sx={{
         border: 0,
         minWidth: 640,
+        height: 'auto',
         overflowX: 'auto', 
       }}
       getRowId={(row) => row.id}

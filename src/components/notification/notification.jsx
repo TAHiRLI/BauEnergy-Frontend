@@ -8,6 +8,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { projectService } from '../../APIs/Services/project.service';
+import Swal from 'sweetalert2';
 
 const NotificationModal = ({ open, onClose }) => {
   const [notifications, setNotifications] = useState([]);
@@ -112,25 +113,74 @@ const NotificationModal = ({ open, onClose }) => {
       console.error('Error marking notification as unread:', error);
     }
   };
-  const handleApprove = async (instrumentId , notificationId) => {
-    try {
-      const result = await projectService.approveOrRejectInstrument(instrumentId, InstrumentApprovalStatus.Approved, notificationId);
-      console.log(result); 
-      fetchNotifications();
-    } catch (error) {
-      console.error("Failed to approve instrument:", error);
+  const handleApprove = async (instrumentId, notificationId) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You are about to approve this instrument.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, approve it!",
+      cancelButtonText: "Cancel",
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        const response = await projectService.approveOrRejectInstrument(
+          instrumentId,
+          InstrumentApprovalStatus.Approved,
+          notificationId
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Approved!",
+          text: response?.message || "The instrument has been successfully approved.",
+        });
+        fetchNotifications();
+      } catch (error) {
+        console.error("Failed to approve instrument:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Something went wrong while approving the instrument.",
+        });
+      }
     }
   };
   
-  const handleReject = async (instrumentId , notificationId) => {
-    try {
-      const result = await projectService.approveOrRejectInstrument(instrumentId, InstrumentApprovalStatus.Rejected, notificationId);
-      console.log(result); 
-      fetchNotifications();
-    } catch (error) {
-      console.error("Failed to reject instrument:", error);
+  const handleReject = async (instrumentId, notificationId) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You are about to reject this instrument.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, reject it!",
+      cancelButtonText: "Cancel",
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        const response = await projectService.approveOrRejectInstrument(
+          instrumentId,
+          InstrumentApprovalStatus.Rejected,
+          notificationId
+        );
+        Swal.fire({
+          icon: "success",
+          title: "Rejected!",
+          text: response?.message || "The instrument has been successfully rejected.",
+        });
+        fetchNotifications();
+      } catch (error) {
+        console.error("Failed to reject instrument:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Something went wrong while rejecting the instrument.",
+        });
+      }
     }
   };
+  
 
 
   return (
@@ -195,12 +245,11 @@ const NotificationModal = ({ open, onClose }) => {
                         <div className="w-full">
                           <div className="flex justify-between items-center">
                             <div className="font-bold text-sm">{notification.title}</div>
-                            <div className="text-gray-400 text-xs">
-                              {formatDate(notification.createdAt)}
-                            </div>
+                            <div className="text-gray-400 text-xs"> {formatDate(notification.createdAt)} </div>
                           </div>
-                          <p className="text-gray-500 text-xs">{notification.description}</p>
 
+                          <div className="flex justify-between items-center">
+                            <p className="text-gray-500 text-xs">{notification.description}</p>
                           {/* Conditionally render Approve and Reject icons if hasAction is true */}
                           {notification.hasAction && notification.approvalStatus === 0 && (
                             <div className="flex space-x-2 mt-2">
@@ -214,7 +263,7 @@ const NotificationModal = ({ open, onClose }) => {
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   viewBox="0 0 24 24"
-                                  className="w-5 h-5 fill-current"
+                                  className="w-6 h-6 fill-current"
                                 >
                                   <path d="M9 16.2l-3.5-3.5L4 14.2l5 5 10-10-1.5-1.5L9 16.2z" />
                                 </svg>
@@ -229,13 +278,16 @@ const NotificationModal = ({ open, onClose }) => {
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   viewBox="0 0 24 24"
-                                  className="w-5 h-5 fill-current"
+                                  className="w-6 h-6 fill-current"
                                 >
                                   <path d="M18.3 5.71L16.89 4.3 12 9.17 7.11 4.3 5.7 5.71l4.88 4.88-4.88 4.88 1.41 1.41L12 11.99l4.89 4.88 1.41-1.41-4.88-4.88z" />
                                 </svg>
                               </button>
                             </div>
                           )}
+                          </div>
+
+
                         </div>
                       </div>
                     </li>

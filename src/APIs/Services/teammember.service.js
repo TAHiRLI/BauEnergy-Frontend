@@ -15,6 +15,13 @@ class TeamMemberService extends HttpClient {
             }
         });
     }
+    async getAllMembers() {
+        return await this.get(`TeamMember/members`, {
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`
+            }
+        });
+    }
 
     async getAllByCompany(projectId) {
         return await this.get(`TeamMember/GetAllByCompany`, {
@@ -58,6 +65,13 @@ class TeamMemberService extends HttpClient {
 
     async remove(id) {
         return await this.delete('TeamMember',id,{
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`
+            }
+        });
+    }
+    async removeUser(id) {
+        return await this.delete('TeamMember/delete-user',id,{
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }
