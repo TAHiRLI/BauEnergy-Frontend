@@ -212,6 +212,7 @@ export default function TeamMember({ project }) {
   
     } catch (error) {
       console.error('Error updating team member:', error.response || error.message);
+      setIsEditDialogOpen(false);
       Swal.fire('Error', 'Failed to update team member.', 'error');
     }
   };
