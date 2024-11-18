@@ -5,6 +5,7 @@ export const ROUTES = {
   REGISTER: "/register",
   CONTACT_US: "/contactUs",
   RESET_PASSWORD: '/resetPassword',
+  CERTIFICATE: '/certificate',
   // İnstruments
   INSTRUMENTS: '/instruments',
   ADD_INSTRUMENTS: '/addinstrument',
