@@ -30,13 +30,14 @@ export const LoginPage = () => {
     dispatch({ type: AuthActions.start });
     try {
       let res = await loginService.login(values);
+      console.log("🚀 ~ handleLogin ~ res:", res)
 
       if (res.statusCode === 200) {
         const user = {
           token: res.data.token,
           userId: res.data.userId,
           tokenType: "Bearer",
-          authState: res.data.userState,
+          authState: res.userState,
         };
 
         cookies.set('user', JSON.stringify(user), { expires: new Date(dayjs(res.data.expiration)), path: '/' });

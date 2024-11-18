@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 const ResetPassword = () => {
   const location = useLocation();  
   const token = location.state?.token;
+  console.log("🚀 ~ ResetPassword ~ token:", token)
 
   const { t } = useTranslation();
 
@@ -31,6 +32,7 @@ const ResetPassword = () => {
     dispatch({ type: AuthActions.start });
     try {
       let res = await loginService.resetPassword(values);
+      console.log("🚀 ~ handleFormSubmit ~ res:", res)
       if (res.status === 200) {
         const user = {
           token: res.data.token,
@@ -42,6 +44,7 @@ const ResetPassword = () => {
         navigate(ROUTES.BASE, { replace: true });
       }
     } catch (err) {
+      console.log("🚀 ~ handleFormSubmit ~ err:", err)
       setFieldError("email", t("Incorrect Email"));
       setFieldError("password", t("Incorrect Password"));
       dispatch({ type: AuthActions.failure, payload: err });
@@ -84,6 +87,7 @@ const ResetPassword = () => {
             initialValues={{ email: '', password: '', token: token }}
             onSubmit={handleFormSubmit}
             validationSchema={validationSchema}
+            enableReinitialize={true}
           >
             {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting }) => (
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">

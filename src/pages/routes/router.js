@@ -11,6 +11,7 @@ import RegistrationView from "../Register";
 import ResetPassword from "../login/resetPassword";
 import InstrumentDetails from "../instruments/details" ;
 import { Documents } from "../documentspage" ;
+import TutorialPage from "../Tutorial/Tutorial";
 
 
 
@@ -103,6 +104,17 @@ export const router = createBrowserRouter([
               </Layout>
             </PrivateRoute>
   },
+
+  // ======================
+  // Certificates
+  {
+    path: ROUTES.CERTIFICATE,
+    element: <PrivateRoute loginPath={ROUTES.LOGIN}>
+                <Layout>
+                  <TutorialPage />
+                </Layout>
+              </PrivateRoute>,
+},
 ]);
 
 export default ROUTES;

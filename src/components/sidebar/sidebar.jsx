@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse, IconButton, Drawer, } from '@mui/material';
+import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse, IconButton, Drawer, Icon, } from '@mui/material';
 import { Menu as MenuIcon, Search, ExpandLess, ExpandMore } from '@mui/icons-material';
 import NotificationIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import Home from '@mui/icons-material/HomeOutlined';
@@ -18,7 +18,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useAuth } from '../../context/authContext';
 import { notificationService } from '../../APIs/Services/notification.service';
 import { useMediaQuery } from '@mui/material';
-
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const [openProjectsBtn, setOpenProjectsBtn] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -157,9 +157,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
               </ListItem>
               <ListItem button component={Link} to={ROUTES.CERTIFICATE} className='!rounded-xl'>
                 <ListItemIcon>
-                  <Home className="text-black" />
+                  <WorkspacePremiumIcon className="text-black" />
                 </ListItemIcon>
-                <ListItemText primary="Home" />
+                <ListItemText primary="Tutorial" />
               </ListItem>
               <ListItem button component={Link} onClick={handleProjectsClick} className='!rounded-xl'>
                 <ListItemIcon>
