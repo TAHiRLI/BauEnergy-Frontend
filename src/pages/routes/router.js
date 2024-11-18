@@ -116,7 +116,6 @@ export const router = createBrowserRouter([
             </PrivateRoute>
   },
 
-  },
 
   // ======================
   // Certificates
@@ -127,7 +126,8 @@ export const router = createBrowserRouter([
                   <TutorialPage />
                 </Layout>
               </PrivateRoute>,
-},
+  },
+
 ]);
 
 export default ROUTES;

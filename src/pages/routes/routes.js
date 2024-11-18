@@ -1,32 +1,31 @@
 export const ROUTES = {
-
   BASE: "/",
   LOGIN: "/login",
   REGISTER: "/register",
   CONTACT_US: "/contactUs",
-  RESET_PASSWORD: '/resetPassword',
-  CERTIFICATE: '/certificate',
+  RESET_PASSWORD: "/resetPassword",
+  CERTIFICATE: "/certificate",
   // İnstruments
-  INSTRUMENTS: '/instruments',
-  ADD_INSTRUMENTS: '/addinstrument',
-  EDIT_INSTRUMENTS: '/instrument/:id',
-  INSTRUMENTS_DETAILS: '/instruments/details/:id',
-  AVIABLEINSTRUMENTS: '/aviableInstruments',
+  INSTRUMENTS: "/instruments",
+  ADD_INSTRUMENTS: "/addinstrument",
+  EDIT_INSTRUMENTS: "/instrument/:id",
+  INSTRUMENTS_DETAILS: "/instruments/details/:id",
+  AVIABLEINSTRUMENTS: "/aviableInstruments",
 
   // Projects
-  PROJECT: '/projects',
-  ADD_PROJECT: '/addproject',
-  EDIT_PROJECT: '/project/:id',
-  PROJECT_DETAILS: '/project/:id',
+  PROJECT: "/projects",
+  ADD_PROJECT: "/addproject",
+  EDIT_PROJECT: "/project/:id",
+  PROJECT_DETAILS: "/project/:id",
 
-    //TeamMembers
-  ADD_TEAMMEMBERS: '/addteammember',
+  //TeamMembers
+  ADD_TEAMMEMBERS: "/addteammember",
 
-  DOCUMENTS: '/documents',
+  DOCUMENTS: "/documents",
 
-  SETTINGSANDTEAMS: '/settingsandteams',
+  SETTINGSANDTEAMS: "/settingsandteams",
 
-  DASHBOARD :{
-      BASE: "/dashboard"
+  DASHBOARD: {
+    BASE: "/dashboard",
   }
 };
