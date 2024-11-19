@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -16,9 +15,10 @@ import { jwtDecode } from 'jwt-decode';
 import { useAuth } from "../../context/authContext";
 import * as Yup from 'yup';
 import { projectService } from '../../APIs/Services/project.service';
+import { loginService } from '../../APIs/Services/login.service';
 import Swal from 'sweetalert2';
 import { Formik, Form, Field } from 'formik';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, FormControl, InputLabel, useMediaQuery } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, useMediaQuery } from '@mui/material';
 import NotificationModal from '../notification/notification';
 import { notificationService } from '../../APIs/Services/notification.service';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -26,6 +26,9 @@ import { faBell} from '@fortawesome/free-regular-svg-icons';
 import { faEllipsis } from '@fortawesome/free-solid-svg-icons';
 import AddIcon from '@mui/icons-material/Add';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from '../../pages/routes/routes';
+import axios from 'axios';
 
 
 export default function Appbar({ toggleSidebar }) {
@@ -43,6 +46,9 @@ export default function Appbar({ toggleSidebar }) {
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
 
   const userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+  const email = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
+
+  const navigate = useNavigate();
   
   useEffect(() => {
     if (openDialog) {
@@ -128,6 +134,21 @@ export default function Appbar({ toggleSidebar }) {
     }
   };
 
+  const handleResetPassword = async (email) => {
+    try {        
+         const response = await loginService.generateResetToken(email);
+
+        const token = response.data.resetToken;
+
+        // Navigate to the reset password page with the token in state
+        navigate(ROUTES.RESET_PASSWORD, { state: { token } });
+
+    } catch (error) {
+        console.error("Failed to generate reset token:", error);
+    }
+};
+
+
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -163,7 +184,9 @@ export default function Appbar({ toggleSidebar }) {
       onClose={handleMenuClose}
     >
       <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem onClick={() => handleResetPassword(email)}>
+      Reset password
+    </MenuItem>
     </Menu>
   );
 
