@@ -11,7 +11,7 @@ function HomePage() {
       try {
         const { data } = await instrumentTagService.GetProjectsTagsInstruments();
         processChartData(data);
-        console.log(data)
+        //console.log(data)
       } catch (error) {
         console.error('Error fetching data:', error);
       }

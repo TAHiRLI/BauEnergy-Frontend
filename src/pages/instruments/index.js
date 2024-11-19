@@ -454,67 +454,27 @@ export const Instruments = () => {
 
                     {/* Price Input */}
                     <TextField
-    margin="dense"
-    name="price"
-    label="Price"
-    type="text" // Use 'text' to enforce custom validation
-    fullWidth
-    value={newInstrument.price || ''}
-    onChange={(e) => {
-        const value = e.target.value;
-        // Filter input to allow only numbers and one decimal point
-        const sanitizedValue = value.replace(/[^0-9.]/g, ''); // Remove any non-numeric or non-decimal characters
-        if (/^\d*\.?\d*$/.test(sanitizedValue)) {
-            handleInputChange({
-                target: { name: 'price', value: sanitizedValue }
-            });
-        }
-    }}
-    inputProps={{
-        inputMode: "decimal", // Suggest numeric keyboard on mobile devices
-        min: 0,
-        step: "0.01",
-    }}
-/>
-
-
-
-
-                    {/* <FormControl fullWidth margin="dense">
-                    <InputLabel>Tags</InputLabel>
-                    <Select
-                        multiple
-                        value={newInstrument.tags}
-                        onChange={handleTagChange}
-                        renderValue={(selected) => selected.join(', ')}
-                    >
-                        {availableTags.map((tag) => (
-                        <MenuItem key={tag.id} value={tag.title}>
-                            <Checkbox checked={newInstrument.tags.includes(tag.title)} />
-                            <ListItemText primary={tag.title} />
-                        </MenuItem>
-                        ))}
-                        <FormControl fullWidth margin="dense" className="!px-5">
-                            <OutlinedInput 
-                            id="outlined-adornment-password"
-                            type='text'
-                            onChange={e => setTagInput(e?.target?.value)}
-                            value={tagInput}
-                            endAdornment={
-                            <InputAdornment position="end" >
-                                <IconButton
-                                onClick= {() => handleAddNewTag()}
-                                edge="end"
-                                >
-                                    <AddIcon />
-                                </IconButton>
-                            </InputAdornment>
+                        margin="dense"
+                        name="price"
+                        label="Price"
+                        type="text"
+                        fullWidth
+                        value={newInstrument.price || ''}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            const sanitizedValue = value.replace(/[^0-9.]/g, ''); 
+                            if (/^\d*\.?\d*$/.test(sanitizedValue)) {
+                                handleInputChange({
+                                    target: { name: 'price', value: sanitizedValue }
+                                });
                             }
-                            />
-                        </FormControl>
-                    </Select>
-                    </FormControl> */}
-
+                        }}
+                        inputProps={{
+                            inputMode: "decimal",
+                            min: 0,
+                            step: "0.01",
+                        }}
+                    />
                     <FormControl fullWidth margin="dense">
                     <InputLabel>Tags</InputLabel>
                     <Select
@@ -642,7 +602,7 @@ export const Instruments = () => {
                 <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
                 <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
                 </DialogActions>
-            </Dialog>
+                </Dialog>
             </Box>
         );
     }
@@ -897,13 +857,13 @@ export const Instruments = () => {
                 </Box>
             )}
 
-            {!loading && hasMore && (
+            {/* {!loading && hasMore && (
                 <div className='text-center mt-5 px-2'>
                     <Button onClick={loadMore} variant="contained" sx={{ marginTop: 2 }} className="!bg-[#1D34D8] !rounded-3xl !py-2 !px-8">
                         Load More
                     </Button>
                 </div>
-            )}
+            )} */}
 
             {/* QR Modal */}
             <Dialog open={openQRDialog} onClose={handleCloseQRDialog}
@@ -1066,44 +1026,9 @@ export const Instruments = () => {
                             value={newInstrument.price || ''}
                             onChange={handleInputChange}
                             inputProps={{ min: 0, step: "0.01" }}
-                            error={!!error} // Show red border if there's an error
-                            helperText={error} // Display error message below the input
+                            error={!!error} 
+                            helperText={error}
                         />
-
-                        {/* <FormControl fullWidth margin="dense">
-                        <InputLabel>Tags</InputLabel>
-                        <Select
-                            multiple
-                            value={newInstrument.tags}
-                            onChange={handleTagChange}
-                            renderValue={(selected) => selected.join(', ')}
-                        >
-                            {availableTags.map((tag) => (
-                            <MenuItem key={tag.id} value={tag.title}>
-                                <Checkbox checked={newInstrument.tags.includes(tag.title)} />
-                                <ListItemText primary={tag.title} />
-                            </MenuItem>
-                            ))}
-                            <FormControl fullWidth margin="dense" className="!px-5">
-                                <OutlinedInput 
-                                id="outlined-adornment-password"
-                                type='text'
-                                onChange={e => setTagInput(e?.target?.value)}
-                                value={tagInput}
-                                endAdornment={
-                                <InputAdornment position="end" >
-                                    <IconButton
-                                    onClick= {() => handleAddNewTag()}
-                                    edge="end"
-                                    >
-                                        <AddIcon />
-                                    </IconButton>
-                                </InputAdornment>
-                                }
-                                />
-                            </FormControl>
-                        </Select>
-                        </FormControl> */}
 
                         <FormControl fullWidth margin="dense">
                         <InputLabel>Tags</InputLabel>
