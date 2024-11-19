@@ -35,6 +35,7 @@ const ResetPassword = () => {
       console.log("🚀 ~ handleFormSubmit ~ res:", res)
       if (res.status === 200) {
         const user = {
+          hasCompletedTutorial: res.data?.hasCompletedTutorial,
           token: res.data.token,
           tokenType: "Bearer",
           authState: res.data.userState,

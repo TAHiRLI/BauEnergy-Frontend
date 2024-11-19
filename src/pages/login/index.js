@@ -34,6 +34,7 @@ export const LoginPage = () => {
 
       if (res.statusCode === 200) {
         const user = {
+          hasCompletedTutorial: res.hasCompletedTutorial, 
           token: res.data.token,
           userId: res.data.userId,
           tokenType: "Bearer",

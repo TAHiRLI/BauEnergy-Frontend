@@ -3,35 +3,45 @@ import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import Questions from "../../components/Questions/Questions";
 import { useAuth } from "../../context/authContext";
 import { fileService } from "../../APIs/Services/file.service";
-
+import { userSerivce } from "../../APIs/Services/user.service";
+import { AuthActions } from "../../context/authContext";
 const TutorialPage = () => {
-  const [isEnded, setIsEnded] = useState(false);
-  const [isSuccessful, setIsSuccessful] = useState(null);
+  const { user, dispatch } = useAuth();
 
+  const [isEnded, setIsEnded] = useState(user.hasCompletedTutorial);
+  const [isSuccessful, setIsSuccessful] = useState(null);
+  const [hasCertificate, setHasCertificate] = useState(() => (user.hasCompletedTutorial == false ? null : true));
+  const [scorePercentage, setScorePercentage] =  useState(0);
   const [showQuestions, setShowQuestions] = useState(false);
 
   const handleVideoEnd = () => {
     setIsEnded(true); // Enable moving forward
   };
-  const {user} = useAuth();
 
-  const handleCertificateGet =async ()=>{
+  const handleCertificateGet = async () => {
     try {
-        console.log(user?.authState);
-        await fileService.getCertificate(user?.authState?.teamMember)
+      console.log(user);
+      await userSerivce.CompletedTutorial();
+      dispatch({ type: AuthActions.completedTutorial });
+
+      await fileService.getCertificate(user?.authState?.teamMember, scorePercentage);
     } catch (error) {
-      console.log("🚀 ~ handleCertificateGet ~ error:", error)
-      
+      console.log("🚀 ~ handleCertificateGet ~ error:", error);
     }
-  }
+  };
   return (
-    <div>
+    <div className=" mt-3">
       {showQuestions ? (
-        <Questions isSuccessful={isSuccessful} setIsSuccessful={setIsSuccessful} />
+        <Questions setScorePercentage ={setScorePercentage} isSuccessful={isSuccessful} setIsSuccessful={setIsSuccessful} />
       ) : (
         <VideoPlayer onVideoEnd={handleVideoEnd} />
       )}
-      <button
+
+      <div className="flex justify-center mt-3">
+
+      {
+        !isSuccessful &&
+        <button
         onClick={() => setShowQuestions((x) => !x)}
         disabled={!isEnded}
         style={{
@@ -46,6 +56,8 @@ const TutorialPage = () => {
       >
         {showQuestions ? "Go Back" : "Take Test"}
       </button>
+      }
+      
       {isSuccessful && (
         <button
           onClick={handleCertificateGet}
@@ -58,8 +70,12 @@ const TutorialPage = () => {
             borderRadius: "5px",
             cursor: isEnded ? "pointer" : "not-allowed",
           }}
-        >Get certificate</button>
+        >
+          {hasCertificate ? "Renew Certificate":"Get certificate"}
+        </button>
       )}
+      </div>
+     
     </div>
   );
 };

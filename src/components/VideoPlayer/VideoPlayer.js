@@ -1,8 +1,17 @@
 import React, { useRef, useState, useEffect } from "react";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import PauseCircleIcon from "@mui/icons-material/PauseCircle";
+import { IconButton } from "@mui/material";
+import Replay10Icon from "@mui/icons-material/Replay10";
+import FastRewindIcon from "@mui/icons-material/FastRewind";
+import FirstPageIcon from "@mui/icons-material/FirstPage";
+import { FastForward, SkipNext } from "@mui/icons-material";
 
-const VideoPlayer = ({onVideoEnd}) => {
+const VideoPlayer = ({ onVideoEnd }) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   // Load saved playback position from localStorage on component mount
   useEffect(() => {
@@ -31,7 +40,17 @@ const VideoPlayer = ({onVideoEnd}) => {
     };
   }, []);
 
-  // Play the video
+  // Update progress and duration
+  const handleTimeUpdate = () => {
+    const video = videoRef.current;
+    if (video) {
+      setProgress((video.currentTime / video.duration) * 100);
+      setDuration(video.duration);
+      localStorage.setItem("videoCurrentTime", video.currentTime);
+    }
+  };
+
+  // Handle play and pause
   const handlePlay = () => {
     const video = videoRef.current;
     if (video) {
@@ -40,7 +59,6 @@ const VideoPlayer = ({onVideoEnd}) => {
     }
   };
 
-  // Pause the video
   const handlePause = () => {
     const video = videoRef.current;
     if (video) {
@@ -51,23 +69,17 @@ const VideoPlayer = ({onVideoEnd}) => {
 
   // Handle when video ends
   const handleVideoEnd = () => {
-    onVideoEnd()
+    onVideoEnd();
     setIsPlaying(false);
   };
 
-  // Handle seeking and save playback position
-  const handleTimeUpdate = () => {
+  // Handle seeking via timeline
+  const handleTimelineChange = (e) => {
     const video = videoRef.current;
+    const newTime = (e.target.value / 100) * duration;
     if (video) {
-      // Prevent user from seeking forward
-      if (video.currentTime > video._lastTime + 1) {
-        video.currentTime = video._lastTime;
-      }
-      video._lastTime = video.currentTime;
-      console.log("🚀 ~ handleTimeUpdate ~  video._lastTime :",  video._lastTime )
-
-      // Save playback position
-      localStorage.setItem("videoCurrentTime", video.currentTime);
+      video.currentTime = newTime;
+      setProgress((newTime / duration) * 100);
     }
   };
 
@@ -89,68 +101,58 @@ const VideoPlayer = ({onVideoEnd}) => {
     }
   };
 
-
-   
-
   return (
-    <div style={{ textAlign: "center",  }}>
+    <div style={{ textAlign: "center" }} className="relative group mt-3">
       <video
         ref={videoRef}
         src="http://localhost:7000/assets/videos/demo2.mp4"
         onEnded={handleVideoEnd}
         onTimeUpdate={handleTimeUpdate}
-        onPlay={() => {
-          const video = videoRef.current;
-          if (video) video._lastTime = video.currentTime;
-        }}
-        style={{
-          width: "100%",
-        }}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        style={{ width: "100%" }}
       />
-      <div style={{ marginTop: "10px" }}>
-        <button
-          onClick={isPlaying ? handlePause : handlePlay}
-          style={{
-            padding: "10px 20px",
-            margin: "5px",
-            backgroundColor: "#007BFF",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          {isPlaying ? "Pause" : "Play"}
-        </button>
-        <button
-          onClick={handleSkipBack}
-          style={{
-            padding: "10px 20px",
-            margin: "5px",
-            backgroundColor: "#FFA500",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Back 10s
-        </button>
-        <button
-          onClick={handleRestart}
-          style={{
-            padding: "10px 20px",
-            margin: "5px",
-            backgroundColor: "#FF5733",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Restart
-        </button>
+      {/* Timeline */}
 
+      <div className="bg-black bg-opacity-50 absolute bottom-0 w-full p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ">
+        <IconButton onClick={handleRestart} title="Restart">
+          <FastRewindIcon fontSize={"large"} color="primary" />
+        </IconButton>
+        <IconButton onClick={handleSkipBack} title="Back 10 seconds">
+          <FirstPageIcon fontSize={"large"} color="primary" />
+        </IconButton>
+        <IconButton onClick={isPlaying ? handlePause : handlePlay} title={isPlaying ? "Pause" : "Play"}>
+          {!isPlaying ? (
+            <PlayCircleIcon fontSize={"large"} color="primary" />
+          ) : (
+            <PauseCircleIcon fontSize={"large"} color="primary" />
+          )}
+        </IconButton>
+        <IconButton disabled title="Back 10 seconds">
+          <SkipNext fontSize={"large"} sx={{ color: "#8c97a1" }} />
+        </IconButton>
+        <IconButton disabled>
+          <FastForward fontSize={"large"} sx={{ color: "#8c97a1" }} />
+        </IconButton>
+
+        <div>
+          <input
+
+            type="range"
+            min="0"
+            max="100"
+            value={progress}
+            style={{
+              width: "100%",
+              appearance: "none",
+              height: "5px",
+              background: "#ddd",
+              borderRadius: "5px",
+              outline: "none",
+              cursor: "pointer",
+            }}
+          />
+        </div>
       </div>
     </div>
   );

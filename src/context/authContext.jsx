@@ -13,7 +13,8 @@ export const AuthActions = {
   start: 'LOGIN_START',
   success: 'LOGIN_SUCCESS',
   failure: 'LOGIN_FAILURE',
-  logout: 'LOGOUT'
+  logout: 'LOGOUT',
+  completedTutorial: 'completedTutorial'
 };
 
 export const Roles = {
@@ -38,6 +39,14 @@ const AuthReducer = (state, action) => {
         loading: false,
         error: null,
       };
+      case AuthActions.completedTutorial:
+        return {
+          ...state,
+          user:{
+            ...state?.user,
+            hasCompletedTutorial: true
+          }
+        };
     case AuthActions.failure:
       return {
         user: null,

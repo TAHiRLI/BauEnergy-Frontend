@@ -2,8 +2,9 @@ import React, { useRef, useState } from "react";
 import { Survey } from "survey-react-ui";
 import "survey-core/defaultV2.min.css";
 import { Model } from "survey-core";
+import Swal from "sweetalert2";
 
-const Questions = ({isSuccessful, setIsSuccessful}) => {
+const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
   // Define the survey JSON
 
   const surveyJson = {
@@ -78,15 +79,28 @@ const Questions = ({isSuccessful, setIsSuccessful}) => {
 
   // Handle survey completion
   survey.onComplete.add((sender) => {
-    const results = sender.getAllQuestions().every((q) => q.isAnswerCorrect());
-    if (results) {
+    // Get all questions
+    const allQuestions = sender.getAllQuestions();
+
+    // Calculate the number of correct answers
+    const correctAnswers = allQuestions.filter((q) => q.isAnswerCorrect()).length;
+
+    // Calculate the total number of questions
+    const totalQuestions = allQuestions.length;
+
+    // Calculate the percentage score
+    const scorePercentage = Math.round((correctAnswers / totalQuestions) * 100);
+    setScorePercentage(scorePercentage);
+
+    // Show success or error message based on score
+    if (correctAnswers === totalQuestions) {
       setIsSuccessful(true);
-      alert("Congratulations! All answers are correct.");
+      Swal.fire("Success", `You scored 100%! Well done!`, "success");
     } else {
       setIsSuccessful(false);
-
-      alert("Some answers are incorrect. Please try again.");
+      Swal.fire("Your Score", `You scored ${scorePercentage}%. Keep practicing!`, "info");
     }
+
     setIsCompleted(true); // Mark survey as completed
   });
 
@@ -98,7 +112,7 @@ const Questions = ({isSuccessful, setIsSuccessful}) => {
   };
 
   return (
-    <div>
+    <div className="flex justify-center">
       {isSuccessful == null ? (
         <Survey model={survey} />
       ) : (
@@ -118,8 +132,6 @@ const Questions = ({isSuccessful, setIsSuccessful}) => {
           </button>
         )
       )}
-
-    
     </div>
   );
 };
