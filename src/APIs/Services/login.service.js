@@ -27,6 +27,17 @@ class LoginService extends HttpClient {
 
         return await this.post('Auth/ResetPassword', body);
     }
+
+    async generateResetToken(email) {
+        return await this.post('Auth/GenerateResetToken', email, {
+            headers: {
+                'Content-Type': 'application/json', // Correct Content-Type
+            },
+        });
+    }
+    
+    
+    
 }
 
 export const loginService = new LoginService();
