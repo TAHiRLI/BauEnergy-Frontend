@@ -105,7 +105,8 @@ const VideoPlayer = ({ onVideoEnd }) => {
     <div style={{ textAlign: "center" }} className="relative group mt-3">
       <video
         ref={videoRef}
-        src="http://localhost:7000/assets/videos/demo2.mp4"
+        // src="http://localhost:7000/assets/videos/demo2.mp4"
+        src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/videos/demo2.mp4`}
         onEnded={handleVideoEnd}
         onTimeUpdate={handleTimeUpdate}
         onPlay={() => setIsPlaying(true)}
