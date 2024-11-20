@@ -4,15 +4,25 @@ import {
   Typography,
   Paper,
   IconButton,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from '@mui/material';
-import { teamMemberService } from '../../APIs/Services/teammember.service';
 import { DataGrid } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
+import { Field, Form, Formik, useFormik } from 'formik';
+import * as Yup from 'yup';
+import { teamMemberService } from '../../APIs/Services/teammember.service';
+import { userSerivce } from '../../APIs/Services/user.service'; 
 
 const SettingsAndTeams = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     fetchTeamMembers();
@@ -30,23 +40,13 @@ const SettingsAndTeams = () => {
     }
   };
 
-  if (loading) return <Typography>Loading...</Typography>;
-
   const formatDate = (date) => {
-    if (!date) {
-      return 'N/A';
-    }
-
-    try {
-      return new Intl.DateTimeFormat('en-GB', {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-      }).format(new Date(date));
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      return 'Invalid date';
-    }
+    if (!date) return;
+    return new Intl.DateTimeFormat('en-GB', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(new Date(date));
   };
 
   const handleDelete = async (id) => {
@@ -71,6 +71,44 @@ const SettingsAndTeams = () => {
     } catch (error) {
       console.error('Error deleting team member:', error.message);
       Swal.fire('Error!', 'Failed to remove team member.', 'error');
+    }
+  };
+
+  const handleOpenDialog = () => setOpenDialog(true);
+  const handleCloseDialog = () => setOpenDialog(false);
+
+  const validationSchema = Yup.object({
+    Name: Yup.string()
+      .required('Name is required')
+      .min(2, 'Name must be at least 2 characters')
+      .max(50, 'Name must be at most 50 characters'),
+    
+    LastName: Yup.string()
+      .required('Last name is required')
+      .min(2, 'Last name must be at least 10 characters')
+      .max(50, 'Last name must be at most 200 characters'),
+    
+    Email: Yup.string()
+      .required('Address is required')
+  });
+
+  const handleFormSubmit = async (values, { setSubmitting, resetForm }) => {
+    try {
+      const formData = new FormData();
+      formData.append('Name', values.Name);
+      formData.append('LastName', values.LastName);
+      formData.append('Email', values.Email);
+
+      await userSerivce.AddUser(formData); 
+      Swal.fire('Success', 'Admin has been added!', 'success');
+      resetForm();
+      setOpenDialog(false); 
+    } catch (error) {
+      console.error('Error adding project:', error);
+      Swal.fire('Error', 'Failed to add project.', 'error');
+      setOpenDialog(false)
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -106,7 +144,7 @@ const SettingsAndTeams = () => {
       field: 'dateAddedProject',
       headerName: 'Joined date',
       minWidth: 150,
-      renderCell: (params) => formatDate(params.row.dateAddedProject),
+      renderCell: (params) => formatDate(params.row?.dateAddedProject),
     },
     {
       field: 'actions',
@@ -132,20 +170,79 @@ const SettingsAndTeams = () => {
     },
   ];
 
+  if (loading) return <Typography>Loading...</Typography>;
+
   return (
-    <Paper
-      sx={{
-        width: '100%',
-        overflowX: 'hidden',
-        maxWidth: '100vw',
-      }}
-    >
-      <Box
-        sx={{
-          maxWidth: { xs: '250px', sm: '100%' },
-          overflowX: 'auto',
-        }}
-      >
+    <Paper sx={{ width: '100%', overflowX: 'hidden', maxWidth: '100vw' }}>
+      <Button
+              variant="contained"
+              className="!m-2 !bg-[#1D34D8] !rounded-3xl !py-2 !text-base sm:text-xs"
+              onClick={handleOpenDialog}
+              sx={{ textTransform: "none",display: { xs: 'none', md: 'flex' }, 
+            }}
+            >
+              Create admin
+            </Button>
+      <Dialog open={openDialog} onClose={() => handleCloseDialog(false)} fullWidth PaperProps={{
+        style: {
+          borderRadius: 20,
+          //height: "500px",
+          backgroundColor: "#fcfcfc"  
+        },
+      }}>
+        <DialogTitle>Add New Admin</DialogTitle>
+        <DialogContent>
+          <Formik
+            initialValues={{
+              Name: '',
+              LastName: '',
+              Email: '',
+            }}
+            validationSchema={validationSchema}
+            onSubmit={handleFormSubmit}
+          >
+            {({ setFieldValue, isSubmitting, errors, touched }) => (
+              <Form>
+                <Field
+                  as={TextField}
+                  label="Name"
+                  name="Name"
+                  fullWidth
+                  margin="dense"
+                  error={touched.Name && !!errors.Name}
+                  helperText={touched.Name && errors.Name}
+                />
+                <Field
+                  as={TextField}
+                  label="LastName"
+                  name="LastName"
+                  fullWidth
+                  margin="dense"
+                  error={touched.Description && !!errors.Description}
+                  helperText={touched.Description && errors.Description}
+                />
+                <Field
+                  as={TextField}
+                  label="Email"
+                  name="Email"
+                  fullWidth
+                  margin="dense"
+                  error={touched.Address && !!errors.Address}
+                  helperText={touched.Address && errors.Address}
+                />
+                <DialogActions>
+                  <Button className='!text-[#1D34D8]' onClick={() => setOpenDialog(false)}>Cancel</Button>
+                  <Button type="submit" className='!bg-[#1D34D8]' variant="contained" disabled={isSubmitting}>
+                    Add Admin
+                  </Button>
+                </DialogActions>
+              </Form>
+            )}
+          </Formik>
+        </DialogContent>
+      </Dialog>
+
+      <Box sx={{ maxWidth: { xs: '250px', sm: '100%' }, overflowX: 'auto' }}>
         <DataGrid
           rows={teamMembers}
           columns={columns}
