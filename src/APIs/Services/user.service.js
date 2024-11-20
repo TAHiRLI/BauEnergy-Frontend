@@ -15,6 +15,14 @@ class UserService extends HttpClient {
       },
     });
   }
+
+  async AddUser(userData) {
+    return await this.post(`User/CreateAdmin`, userData, {
+      headers: {
+        authorization: `Bearer ${cookies.get("user")?.token}`
+      }
+    });
+  }
 }
 
 export const userSerivce = new UserService();

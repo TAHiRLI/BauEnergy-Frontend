@@ -318,7 +318,7 @@ export const Instruments = () => {
             formData.append('Files', file);
         });
     
-        newInstrument.tags.forEach((tag) => {
+        newInstrument.tags?.forEach((tag) => {
             formData.append('Tags', tag);
           });
     
