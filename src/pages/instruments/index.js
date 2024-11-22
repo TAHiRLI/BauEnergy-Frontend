@@ -383,7 +383,7 @@ export const Instruments = () => {
                 <Button
                 variant="contained"
                 className="!bg-[#1D34D8] !rounded-3xl !ml-0 md:!ml-3 !py-2"
-                sx={{ width: "auto", textTransform: "none", padding: "10px 20px" }} // Adjust padding if needed
+                sx={{ width: "auto", textTransform: "none", padding: "10px 20px" }}
                 onClick={handleOpenModal}
               >
                 Add Instrument

@@ -25,6 +25,8 @@ export const ROUTES = {
 
   SETTINGSANDTEAMS: "/settingsandteams",
 
+  UPDATEUSERPAGE: "/updateuser",
+
   DASHBOARD: {
     BASE: "/dashboard",
   }

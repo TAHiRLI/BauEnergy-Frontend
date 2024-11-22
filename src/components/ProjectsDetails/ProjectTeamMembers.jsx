@@ -77,11 +77,18 @@ export default function TeamMember({ project }) {
   }, [dispatch, project.id]);
 
   const validationSchema = Yup.object({
-   name: Yup.string().required('Required'),
+    name: Yup.string().required('Required'),
     lastName: Yup.string().required('Required'),
     role: Yup.number().required('Required'),
-   image: Yup.mixed().nullable(),
+    image: Yup.mixed().nullable(),
+    birthDate: Yup.date()
+      .required('Birth Date is required')
+      .max(new Date(), 'Birth Date cannot be in the future'),
+    phoneNumber: Yup.string()
+      .required('Phone number is required')
+      .matches(/^\+?[1-9]\d{1,14}$/, 'Phone number is not valid'),
   });
+  
   const RoleEnum = {
     User: 1,
     Project_Manager: 2,
@@ -113,6 +120,8 @@ export default function TeamMember({ project }) {
       formData.append('LastName', selectedTeamMember.lastName);
       formData.append('Email', selectedTeamMember.email);
       formData.append('Role', roleEnumValue);
+      formData.append('BirthDate', selectedTeamMember.birthDate)
+      formData.append('PhoneNumber', selectedTeamMember.phoneNumber)
       formData.append('ProjectId', project.id);
       if (imageFile) {
         formData.append('Image', imageFile); 
@@ -140,6 +149,8 @@ export default function TeamMember({ project }) {
       formData.append('LastName', values.lastName);
       formData.append('Email', values.email);
       formData.append('Role', values.role);
+      formData.append('BirthDate', values.birthDate);
+      formData.append('PhoneNumber', values.phoneNumber);
       formData.append('Image', values.image);
       formData.append('ProjectId', project.id); 
   
@@ -418,6 +429,8 @@ export default function TeamMember({ project }) {
               email: '',
               role: '',
               image: null,
+              birthDate: '',
+              phoneNumber: '',
             }}
             validationSchema={validationSchema}
             onSubmit={handleFormSubmit}
@@ -453,7 +466,33 @@ export default function TeamMember({ project }) {
                   error={touched.email && Boolean(errors.email)}
                   helperText={touched.email && errors.email}
                 />
+                <Field
+                  as={TextField}
+                  name="birthDate"
+                  label="Birth Date"
+                  type="date"
+                  fullWidth
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  error={touched.birthDate && Boolean(errors.birthDate)}
+                  helperText={touched.birthDate && errors.birthDate}
+                  onChange={(e) => {
+                    setFieldValue("birthDate", e.target.value); // Manually set the value
+                    console.log("Selected Date:", e.target.value); // Debugging
+                    selectedTeamMember.birthDate = e.target.value
+                  }}
+                />
 
+
+                <Field
+                  as={TextField}
+                  name="phoneNumber"
+                  label="Phone Number"
+                  fullWidth
+                  margin="normal"
+                  error={touched.phoneNumber && Boolean(errors.phoneNumber)}
+                  helperText={touched.phoneNumber && errors.phoneNumber}
+                />
 
                 <Field name="role">
                   {({ field, form }) => (

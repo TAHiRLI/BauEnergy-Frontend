@@ -4,20 +4,14 @@ import {
   Typography,
   Paper,
   IconButton,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
+
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
-import { Field, Form, Formik, useFormik } from 'formik';
-import * as Yup from 'yup';
 import { teamMemberService } from '../../APIs/Services/teammember.service';
 import { userSerivce } from '../../APIs/Services/user.service'; 
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 
 const SettingsAndTeams = () => {
   const [teamMembers, setTeamMembers] = useState([]);
@@ -74,25 +68,7 @@ const SettingsAndTeams = () => {
     }
   };
 
-  const handleOpenDialog = () => setOpenDialog(true);
-  const handleCloseDialog = () => setOpenDialog(false);
-
-  const validationSchema = Yup.object({
-    Name: Yup.string()
-      .required('Name is required')
-      .min(2, 'Name must be at least 2 characters')
-      .max(50, 'Name must be at most 50 characters'),
-    
-    LastName: Yup.string()
-      .required('Last name is required')
-      .min(2, 'Last name must be at least 10 characters')
-      .max(50, 'Last name must be at most 200 characters'),
-    
-    Email: Yup.string()
-      .required('Address is required')
-  });
-
-  const handleFormSubmit = async (values, { setSubmitting, resetForm }) => {
+  const handleAdminCreateFormSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       const formData = new FormData();
       formData.append('Name', values.Name);
@@ -100,17 +76,51 @@ const SettingsAndTeams = () => {
       formData.append('Email', values.Email);
 
       await userSerivce.AddUser(formData); 
+      setOpenDialog(false); 
       Swal.fire('Success', 'Admin has been added!', 'success');
       resetForm();
-      setOpenDialog(false); 
     } catch (error) {
+      setOpenDialog(false)
       console.error('Error adding project:', error);
       Swal.fire('Error', 'Failed to add project.', 'error');
-      setOpenDialog(false)
     } finally {
       setSubmitting(false);
     }
   };
+
+
+  const handleResetPassword = async (id) => {
+    try {
+      const confirmation = await Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to reset the password for this user?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#1D34D8",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, reset it!",
+      });
+  
+      if (!confirmation.isConfirmed) return;
+  
+      const response = await userSerivce.resetUserPassword(id);
+  
+      await Swal.fire({
+        title: "Success!",
+        text: response?.data?.message || "Password has been reset successfully.",
+        icon: "success",
+        confirmButtonColor: "#3085d6",
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to reset the password. Please try again.",
+        icon: "error",
+        confirmButtonColor: "#d33",
+      });
+    }
+  };
+  
 
   const columns = [
     {
@@ -118,7 +128,7 @@ const SettingsAndTeams = () => {
       headerName: 'Name & Last name',
       minWidth: 300,
       renderCell: (params) => {
-        const fullName = `${params.row.name} ${params.row.lastName}`;
+        console.log(params)
         const image = params.row.image
           ? `${params.row.image}`
           : `defaultUser.png`;
@@ -126,13 +136,29 @@ const SettingsAndTeams = () => {
           <Box display="flex" alignItems="center" sx={{ cursor: 'pointer' }}>
             <img
               src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/teammembers/${image}`}
-              alt={fullName}
+              alt={params.row.fullName}
               style={{ width: 50, height: 50, marginRight: 10 }}
             />
-            <Typography>{fullName}</Typography>
+            <Typography>{params.row.fullName}</Typography>
           </Box>
         );
       },
+    },
+    {
+      field: 'email',
+      headerName: 'Email',
+      minWidth: 250,
+      renderCell: (params) => (
+        <Typography>{params.row?.email || 'N/A'}</Typography>
+      ),
+    },
+    {
+      field: 'phoneNumber',
+      headerName: 'Phone Number',
+      minWidth: 150,
+      renderCell: (params) => (
+        <Typography>{params.row?.phoneNumber || 'N/A'}</Typography>
+      ),
     },
     {
       field: 'role',
@@ -144,14 +170,15 @@ const SettingsAndTeams = () => {
       field: 'dateAddedProject',
       headerName: 'Joined date',
       minWidth: 150,
-      renderCell: (params) => formatDate(params.row?.dateAddedProject),
+      renderCell: (params) => formatDate(params.row?.addedTimeProject),
     },
     {
       field: 'actions',
       headerName: 'Actions',
-      minWidth: 130,
+      minWidth: 180,
       renderCell: (params) => (
         <div className="text-center">
+          {/* Delete Button */}
           <IconButton
             onClick={() => handleDelete(params.row.id)}
             sx={{
@@ -165,83 +192,31 @@ const SettingsAndTeams = () => {
           >
             <DeleteIcon sx={{ color: '#424242' }} />
           </IconButton>
+  
+          {/* Reset Password Button */}
+          <IconButton
+            onClick={() => handleResetPassword(params.row.id)}
+            sx={{
+              backgroundColor: '#f5f5f5',
+              borderRadius: '20%',
+              padding: '5px',
+              border: '1px solid #e0e0e0',
+              '&:hover': { backgroundColor: '#e0e0e0' },
+            }}
+          >
+            <VpnKeyIcon sx={{ color: '#424242' }} />
+          </IconButton>
         </div>
       ),
     },
   ];
+  
+  
 
   if (loading) return <Typography>Loading...</Typography>;
 
   return (
     <Paper sx={{ width: '100%', overflowX: 'hidden', maxWidth: '100vw' }}>
-      <Button
-              variant="contained"
-              className="!m-2 !bg-[#1D34D8] !rounded-3xl !py-2 !text-base sm:text-xs"
-              onClick={handleOpenDialog}
-              sx={{ textTransform: "none",display: { xs: 'none', md: 'flex' }, 
-            }}
-            >
-              Create admin
-            </Button>
-      <Dialog open={openDialog} onClose={() => handleCloseDialog(false)} fullWidth PaperProps={{
-        style: {
-          borderRadius: 20,
-          //height: "500px",
-          backgroundColor: "#fcfcfc"  
-        },
-      }}>
-        <DialogTitle>Add New Admin</DialogTitle>
-        <DialogContent>
-          <Formik
-            initialValues={{
-              Name: '',
-              LastName: '',
-              Email: '',
-            }}
-            validationSchema={validationSchema}
-            onSubmit={handleFormSubmit}
-          >
-            {({ setFieldValue, isSubmitting, errors, touched }) => (
-              <Form>
-                <Field
-                  as={TextField}
-                  label="Name"
-                  name="Name"
-                  fullWidth
-                  margin="dense"
-                  error={touched.Name && !!errors.Name}
-                  helperText={touched.Name && errors.Name}
-                />
-                <Field
-                  as={TextField}
-                  label="LastName"
-                  name="LastName"
-                  fullWidth
-                  margin="dense"
-                  error={touched.Description && !!errors.Description}
-                  helperText={touched.Description && errors.Description}
-                />
-                <Field
-                  as={TextField}
-                  label="Email"
-                  name="Email"
-                  fullWidth
-                  margin="dense"
-                  error={touched.Address && !!errors.Address}
-                  helperText={touched.Address && errors.Address}
-                />
-                <DialogActions>
-                  <Button className='!text-[#1D34D8]' onClick={() => setOpenDialog(false)}>Cancel</Button>
-                  <Button type="submit" className='!bg-[#1D34D8]' variant="contained" disabled={isSubmitting}>
-                    Add Admin
-                  </Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
-        </DialogContent>
-      </Dialog>
-
       <Box sx={{ maxWidth: { xs: '250px', sm: '100%' }, overflowX: 'auto' }}>
         <DataGrid
           rows={teamMembers}
