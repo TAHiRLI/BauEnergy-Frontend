@@ -92,6 +92,16 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   };
   const isMobile = useMediaQuery("(max-width:1023px)"); // Check if screen size is <= 1024px
 
+  var isAdmin = false
+  const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
+  if (userRoles.includes("Admin")) {
+      isAdmin = true;
+  }
+  var isUser = false
+  if (userRoles.includes("User")) {
+    isUser = true;
+  }
+
   return (
     <div className="flex">
       <Drawer
@@ -142,14 +152,16 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                   </ListItem>
                 </List>
 
-                <List>
-                  <ListItem button className="!rounded-xl" component={Link} to={ROUTES.SETTINGSANDTEAMS}>
-                    <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
-                      <SettingsOutlinedIcon className="text-black" />
-                    </ListItemIcon>
-                    <ListItemText primary="Settings and Teams" />
-                  </ListItem>
-                </List>
+                {isAdmin && (
+                  <List>
+                    <ListItem button className="!rounded-xl" component={Link} to={ROUTES.SETTINGSANDTEAMS}>
+                      <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
+                        <SettingsOutlinedIcon className="text-black" />
+                      </ListItemIcon>
+                      <ListItemText primary="Settings and Teams" />
+                    </ListItem>
+                  </List>
+                )}
 
                 <div className="px-5 py-4">
                   <Divider className="bg-gray-200 mx-4" />
@@ -193,12 +205,14 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     </List>
                   </Collapse>
 
-                  <ListItem button component={Link} to={ROUTES.INSTRUMENTS} className="!rounded-xl">
-                    <ListItemIcon>
-                      <BuildOutlinedIcon className="text-black" />
-                    </ListItemIcon>
-                    <ListItemText primary="Instruments" />
-                  </ListItem>
+                  {!isUser && (
+                    <ListItem button component={Link} to={ROUTES.INSTRUMENTS} className="!rounded-xl">
+                      <ListItemIcon>
+                        <BuildOutlinedIcon className="text-black" />
+                      </ListItemIcon>
+                      <ListItemText primary="Instruments" />
+                    </ListItem>
+                  )}      
 
                   <ListItem button component={Link} to={ROUTES.DOCUMENTS} className="!rounded-xl">
                     <ListItemIcon>

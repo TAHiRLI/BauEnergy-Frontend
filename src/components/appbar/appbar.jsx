@@ -28,7 +28,8 @@ import AddIcon from '@mui/icons-material/Add';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from '../../pages/routes/routes';
-import axios from 'axios';
+import { useLocation } from "react-router-dom";
+import { userSerivce } from '../../APIs/Services/user.service';
 
 
 export default function Appbar({ toggleSidebar }) {
@@ -40,6 +41,7 @@ export default function Appbar({ toggleSidebar }) {
   const [openDialog, setOpenDialog] = useState(false);
   const [openNotifications, setOpenNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [openAdminCreateDialog, setOpenAdminCreateDialog] = useState(false);
 
   const { user } = useAuth(); 
   
@@ -49,7 +51,8 @@ export default function Appbar({ toggleSidebar }) {
   const email = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
 
   const navigate = useNavigate();
-  
+  const location = useLocation();
+  const isSettingsAndTeamsPage = location.pathname === "/settingsandteams";
   useEffect(() => {
     if (openDialog) {
       //fetchAllTeamMembers(); 
@@ -59,6 +62,9 @@ export default function Appbar({ toggleSidebar }) {
   const handleNotificationClick = () => {
     setOpenNotifications(true);
   };
+
+  const handleAdminCreateOpenDialog = () => setOpenAdminCreateDialog(true);
+  const handleAdminCreateCloseDialog = () => setOpenAdminCreateDialog(false);
 
   
   const fetchNotifications = async () => {
@@ -148,6 +154,40 @@ export default function Appbar({ toggleSidebar }) {
     }
 };
 
+const validationSchemaCreateAdmin = Yup.object({
+  Name: Yup.string()
+    .required('Name is required')
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name must be at most 50 characters'),
+  
+  LastName: Yup.string()
+    .required('Last name is required')
+    .min(2, 'Last name must be at least 10 characters')
+    .max(50, 'Last name must be at most 200 characters'),
+  
+  Email: Yup.string()
+    .required('Email is required')
+});
+
+const handleCreateAdminFormSubmit = async (values, { setSubmitting, resetForm }) => {
+  try {
+    const formData = new FormData();
+    formData.append('Name', values.Name);
+    formData.append('LastName', values.LastName);
+    formData.append('Email', values.Email);
+
+    await userSerivce.AddUser(formData); 
+    setOpenAdminCreateDialog(false); 
+    Swal.fire('Success', 'Admin has been added!', 'success');
+    resetForm();
+  } catch (error) {
+    console.error('Error adding project:', error);
+    setOpenAdminCreateDialog(false)
+    Swal.fire('Error', 'Failed to add project.', 'error');
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -160,6 +200,11 @@ export default function Appbar({ toggleSidebar }) {
   const handleMenuClose = () => {
     setAnchorEl(null);
     handleMobileMenuClose();
+  };
+
+  const handleProfileButtonClick = () => {
+    handleMenuClose();
+    navigate("/updateuser");
   };
 
   const handleMobileMenuOpen = (event) => {
@@ -183,7 +228,7 @@ export default function Appbar({ toggleSidebar }) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+      <MenuItem onClick={handleProfileButtonClick}>Profile</MenuItem>
       <MenuItem onClick={() => handleResetPassword(email)}>
       Reset password
     </MenuItem>
@@ -241,7 +286,7 @@ export default function Appbar({ toggleSidebar }) {
       </MenuItem>
     </Menu>
   );
-  const isMobile = useMediaQuery('(max-width:1023px)'); // Check if screen size is <= 1024px
+  const isMobile = useMediaQuery('(max-width:1023px)');
 
   return (
     <Box sx={{ flexGrow: 1}} >
@@ -317,15 +362,25 @@ export default function Appbar({ toggleSidebar }) {
               />
             </IconButton>
 
-            <Button
-              variant="contained"
-              className="!ml-6 !bg-[#1D34D8] !rounded-3xl !py-2 !text-base sm:text-xs"
-              onClick={() => setOpenDialog(true)}
-              sx={{ ml: 2, textTransform: "none",display: { xs: 'none', md: 'flex' }, 
-            }}
-            >
-              Create new project
-            </Button>
+            {isSettingsAndTeamsPage ? (
+              <Button
+                variant="contained"
+                className="!m-2 !bg-[#1D34D8] !rounded-3xl !py-2 !text-base sm:text-xs"
+                onClick={handleAdminCreateOpenDialog}
+                sx={{ textTransform: "none", display: { xs: "none", md: "flex" } }}
+              >
+                Create admin
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                className="!ml-6 !bg-[#1D34D8] !rounded-3xl !py-2 !text-base sm:text-xs"
+                onClick={() => setOpenDialog(true)}
+                sx={{ ml: 2, textTransform: "none", display: { xs: "none", md: "flex" } }}
+              >
+                Create new project
+              </Button>
+            )}
           </div>
           </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
@@ -336,12 +391,12 @@ export default function Appbar({ toggleSidebar }) {
               aria-haspopup="true"
               onClick={handleMobileMenuOpen}
               sx={{
-                bgcolor: 'white',     // white background
-                color: 'black',       // black icon color
-                borderRadius: '50%',  // circular shape
-                p: 0.5,               // reduced padding
+                bgcolor: 'white',   
+                color: 'black',     
+                borderRadius: '50%',
+                p: 0.5,             
                 '&:hover': {
-                  bgcolor: 'white',   // keep background white on hover
+                  bgcolor: 'white', 
                 },
               }}
             >
@@ -356,6 +411,7 @@ export default function Appbar({ toggleSidebar }) {
       {renderMobileMenu}
       {renderMenu}
 
+      {/* Add new Project */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth PaperProps={{
         style: {
           borderRadius: 20,
@@ -455,6 +511,67 @@ export default function Appbar({ toggleSidebar }) {
                   <Button className='!text-[#1D34D8]' onClick={() => setOpenDialog(false)}>Cancel</Button>
                   <Button type="submit" className='!bg-[#1D34D8]' variant="contained" disabled={isSubmitting}>
                     Add Project
+                  </Button>
+                </DialogActions>
+              </Form>
+            )}
+          </Formik>
+        </DialogContent>
+      </Dialog>
+
+
+      {/* Create Admin Dialog */}
+      <Dialog open={openAdminCreateDialog} onClose={() => handleAdminCreateCloseDialog(false)} fullWidth PaperProps={{
+        style: {
+          borderRadius: 20,
+          //height: "500px",
+          backgroundColor: "#fcfcfc"  
+        },
+      }}>
+        <DialogTitle>Add New Admin</DialogTitle>
+        <DialogContent>
+          <Formik
+            initialValues={{
+              Name: '',
+              LastName: '',
+              Email: '',
+            }}
+            validationSchema={validationSchemaCreateAdmin}
+            onSubmit={handleCreateAdminFormSubmit}
+          >
+            {({ setFieldValue, isSubmitting, errors, touched }) => (
+              <Form>
+                <Field
+                  as={TextField}
+                  label="Name"
+                  name="Name"
+                  fullWidth
+                  margin="dense"
+                  error={touched.Name && !!errors.Name}
+                  helperText={touched.Name && errors.Name}
+                />
+                <Field
+                  as={TextField}
+                  label="LastName"
+                  name="LastName"
+                  fullWidth
+                  margin="dense"
+                  error={touched.Description && !!errors.Description}
+                  helperText={touched.Description && errors.Description}
+                />
+                <Field
+                  as={TextField}
+                  label="Email"
+                  name="Email"
+                  fullWidth
+                  margin="dense"
+                  error={touched.Address && !!errors.Address}
+                  helperText={touched.Address && errors.Address}
+                />
+                <DialogActions>
+                  <Button className='!text-[#1D34D8]' onClick={() =>setOpenAdminCreateDialog(false)}>Cancel</Button>
+                  <Button type="submit" className='!bg-[#1D34D8]' variant="contained" disabled={isSubmitting}>
+                    Add Admin
                   </Button>
                 </DialogActions>
               </Form>

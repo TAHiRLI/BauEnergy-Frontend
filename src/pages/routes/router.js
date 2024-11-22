@@ -13,6 +13,7 @@ import InstrumentDetails from "../instruments/details" ;
 import { Documents } from "../documentspage" ;
 import SettingsAndTeams from "../SettingsAndTeams";
 import TutorialPage from "../Tutorial/Tutorial";
+import UpdateUserPage from "../UpdateUserPage";
 
 
 
@@ -124,6 +125,17 @@ export const router = createBrowserRouter([
     element: <PrivateRoute loginPath={ROUTES.LOGIN}>
                 <Layout>
                   <TutorialPage />
+                </Layout>
+              </PrivateRoute>,
+  },
+
+  // ======================
+  // UpdateUser
+  {
+    path: ROUTES.UPDATEUSERPAGE,
+    element: <PrivateRoute loginPath={ROUTES.LOGIN}>
+                <Layout>
+                  <UpdateUserPage />
                 </Layout>
               </PrivateRoute>,
   },
