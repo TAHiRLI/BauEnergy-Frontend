@@ -84,9 +84,9 @@ export default function TeamMember({ project }) {
     birthDate: Yup.date()
       .required('Birth Date is required')
       .max(new Date(), 'Birth Date cannot be in the future'),
-    phoneNumber: Yup.string()
-      .required('Phone number is required')
-      .matches(/^\+?[1-9]\d{1,14}$/, 'Phone number is not valid'),
+    // phoneNumber: Yup.string()
+    //   .required('Phone number is required')
+    //   .matches(/^\+?[1-9]\d{1,14}$/, 'Phone number is not valid'),
   });
   
   const RoleEnum = {
@@ -143,7 +143,6 @@ export default function TeamMember({ project }) {
 
   const handleFormSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      console.log(values)
       const formData = new FormData();
       formData.append('Name', values.name);
       formData.append('LastName', values.lastName);
@@ -202,6 +201,7 @@ export default function TeamMember({ project }) {
   };
 
   const handleUpdateTeamMember = async (values) => {
+    console.log("adasda")
     try {
       const formData = new FormData();
       formData.append('Name', values.name);
@@ -321,33 +321,33 @@ export default function TeamMember({ project }) {
 
 
     <Paper
-  sx={{
-    //height: '600px',
-    width: '100%',
-    overflowX: 'hidden',
-    maxWidth: '100vw', // Restrict Paper width to viewport
-  }}
->
-  <Box
-    sx={{
-      maxWidth: { xs: '250px', sm: '100%' },
-      overflowX: 'auto', 
-    }}
-  >
-    <DataGrid
-      rows={state.data || []}
-      columns={columns}
-      initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-      pageSizeOptions={[5, 10]}
       sx={{
-        border: 0,
-        minWidth: 640,
-        height: 'auto',
-        overflowX: 'auto', 
+        //height: '600px',
+        width: '100%',
+        overflowX: 'hidden',
+        maxWidth: '100vw', // Restrict Paper width to viewport
       }}
-      getRowId={(row) => row.id}
-    />
-  </Box>
+    >
+      <Box
+        sx={{
+          maxWidth: { xs: '250px', sm: '100%' },
+          overflowX: 'auto', 
+        }}
+      >
+        <DataGrid
+          rows={state.data || []}
+          columns={columns}
+          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+          pageSizeOptions={[5, 10]}
+          sx={{
+            border: 0,
+            minWidth: 640,
+            height: 'auto',
+            overflowX: 'auto', 
+          }}
+          getRowId={(row) => row.id}
+        />
+      </Box>
     </Paper>
 
       {/* Modal dialog for adding team member */}
@@ -546,11 +546,7 @@ export default function TeamMember({ project }) {
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={isEditDialogOpen}
-        onClose={() => setIsEditDialogOpen(false)}
-        fullWidth
-        PaperProps={{
+      <Dialog open={isEditDialogOpen} onClose={() => setIsEditDialogOpen(false)} fullWidth PaperProps={{
           style: {
             borderRadius: 20,
             backgroundColor: "#fcfcfc"
@@ -577,6 +573,9 @@ export default function TeamMember({ project }) {
             initialValues={{
               name: teamMemberToEdit?.name || '',
               lastName: teamMemberToEdit?.lastName || '',
+              birthDate: teamMemberToEdit?.birthDate
+              ? new Date(teamMemberToEdit?.birthDate).toLocaleDateString('en-CA')
+              : "",
               role: teamMemberToEdit?.role === 'Project_Manager' ? RoleEnum.Project_Manager : RoleEnum.User,
               image: teamMemberToEdit?.image,
             }}
@@ -606,6 +605,18 @@ export default function TeamMember({ project }) {
                   margin="normal"
                   error={touched.lastName && Boolean(errors.lastName)}
                   helperText={touched.lastName && errors.lastName}
+                />
+
+                <Field
+                  as={TextField}
+                  type="date"
+                  name="birthDate"
+                  label="Birthdate"
+                  fullWidth
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  error={touched.birthdate && Boolean(errors.birthdate)}
+                  helperText={touched.birthdate && errors.birthdate}
                 />
 
                 <Field name="role">

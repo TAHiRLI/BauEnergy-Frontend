@@ -137,8 +137,9 @@ const InstrumentDetails = () => {
   
     const fetchInstrumentsByName = async () => {
       try {
-        const response = await instrumentService.getAll(instrument.name);
-        setfilteredInstrument(response.data.instruments)
+        const response = await instrumentService.getByExactName(instrument.name);
+        console.log(response)
+        setfilteredInstrument(response.data)
         //console.log(response);
       } catch (error) {
         setError('Error fetching instrument details');
@@ -266,7 +267,6 @@ const InstrumentDetails = () => {
       ...prevState,
       tags: selectedTags
     }));
-    console.log(selectedTags)
 };
 
 const handleAddNewTag = () => {
@@ -286,7 +286,6 @@ const handleAddNewTag = () => {
 };
 
   const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
-    console.log(values);
     const formData = new FormData();
     formData.append('Name', values.name);
     formData.append('Description', values.description);
@@ -308,7 +307,7 @@ const handleAddNewTag = () => {
       resetForm();
       setRefresh(!refresh); 
 
-      console.log('Data submitted successfully');
+      //onsole.log('Data submitted successfully');
     } catch (error) {
       handleCloseUpdateModal();
       Swal.fire('Error', 'Failed to update instrument.', 'error');
