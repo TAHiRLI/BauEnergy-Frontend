@@ -128,7 +128,7 @@ const SettingsAndTeams = () => {
       headerName: 'Name & Last name',
       minWidth: 300,
       renderCell: (params) => {
-        console.log(params)
+        const fullName = `${params.row.name} ${params.row.lastName}`; 
         const image = params.row.image
           ? `${params.row.image}`
           : `defaultUser.png`;
@@ -139,7 +139,7 @@ const SettingsAndTeams = () => {
               alt={params.row.fullName}
               style={{ width: 50, height: 50, marginRight: 10 }}
             />
-            <Typography>{params.row.fullName}</Typography>
+            <Typography>{fullName}</Typography>
           </Box>
         );
       },

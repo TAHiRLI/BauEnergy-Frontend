@@ -21,6 +21,14 @@ class InstrumentService extends HttpClient {
         });
     }
 
+    async getByExactName(name) {
+        return await this.get(`Instrument/ByExactName?name=${name}`, {
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`
+            }
+        });
+    }
+
     async getAllByName() {
         return await this.get(`Instrument/filteredbyname`, {
             headers: {
