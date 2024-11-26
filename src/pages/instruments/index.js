@@ -1,14 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button,Typography, IconButton, Box, Grid, FormControlLabel, Radio, CircularProgress, FormControl, InputLabel, Select, MenuItem, Checkbox, ListItemText, OutlinedInput, InputAdornment, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Switch, useMediaQuery,} from '@mui/material';
 import ShareIcon from '@mui/icons-material/Share';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { useInstruments, InstrumentActions } from '../../context/instrumentContext';
 import { useErrorModal } from '../../hooks/useErrorModal';
-import StatusButton from '../../components/common/statusBtn';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import Swal from 'sweetalert2';
 import InfoIcon from '@mui/icons-material/Info'; 
-import { Link, Routes, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
 import { useLocation } from 'react-router-dom';
@@ -57,13 +56,15 @@ export const Instruments = () => {
     const [totalCount, setTotalCount] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [error, setError] = useState('');
-    const [viewMode, setViewMode] = useState("card"); // 'card' or 'table'
+    const [viewMode, setViewMode] = useState("table"); 
 
-    const handleViewChange = (event) => {
-        setViewMode(event.target.checked ? "table" : "card");
-    };
+
+    const handleViewChange = (mode) => {
+        setViewMode(mode); // Update the state with the selected mode ("card" or "table")
+      };
 
     const isSmallScreen = useMediaQuery('(max-width:800px)');
+    const isExtraSmall = useMediaQuery('(max-width:380px)');
 
 
     const [newInstrument, setNewInstrument] = useState({
@@ -132,10 +133,10 @@ export const Instruments = () => {
         }
     };
 
-    const fetchInstrumentsByName = async () => {
+    const fetchInstrumentsByName = async (newSearch = false) => {
         setLoading(true);
         try {
-            const res = await instrumentService.getAllByName();
+            const res = await instrumentService.getAllByName(searchTerm);
             setInstrumentsByName(res)
             //console.log(res)
         } catch (err) {
@@ -160,7 +161,7 @@ export const Instruments = () => {
     const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
             setPage(1);
-            fetchInstruments(true);
+            fetchInstrumentsByName(true);
         }
     };
 
@@ -169,7 +170,6 @@ export const Instruments = () => {
     };
 
     //
-
     useEffect(() => {
         //const searchParams = new URLSearchParams(location.search);
         //const focusSearch = searchParams.get('focusSearch');        
@@ -628,25 +628,9 @@ export const Instruments = () => {
         usedInstrumentCount: instrument.usedInstrumentsCount
     }));
 
-    console.log(instrumentsByName)
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'Under_maintenance':
-                return 'red';
-            case 'In_use':
-                return 'blue';
-            case 'Available':
-                return 'green';
-            case 'Aviable':
-                return 'green';
-            default:
-                return 'gray';
-        }
-    };
 
     const rowss = instrumentsByName.data?.map((instrument, index) => ({
-        id: instrument.id || index, // Use `id` from the object or fallback to the index
+        id: instrument.id || index,
         ...instrument,
     })); 
 
@@ -657,7 +641,6 @@ export const Instruments = () => {
             width: 200,
             renderCell: (params) => {
               const mainImage = params.row.images?.find(img => img.isMain);
-              console.log(params)
               return (
                 <Box display="flex" alignItems="center" sx={{ cursor: 'pointer' }} onClick={() => handleShowQR(params.row)}>
                   {mainImage && (
@@ -731,7 +714,8 @@ export const Instruments = () => {
                 <span className="text-2xl sm:text-3xl font-semibold mb-4 sm:mb-0">
                     List of Instruments
                 </span>
-                <div className="flex items-center gap-4 justify-between w-full sm:w-auto">
+                <div className={`flex ${isExtraSmall ? "flex-col" : "flex-row"
+                    } items-center gap-4 justify-between w-full sm:w-auto`}>
                     <TextField
                         id="searchbtnax"
                         variant="outlined"
@@ -740,6 +724,7 @@ export const Instruments = () => {
                         onChange={handleSearchChange}
                         onKeyDown={handleKeyDown}
                         sx={{
+                            minWidth: "190px",
                             width: { xs: '100%', sm: isAdmin ? "100%" : "50%" },
                             boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
                             borderRadius: '30px',
@@ -758,27 +743,23 @@ export const Instruments = () => {
                         </Button>
                     )}
                     {/* Switch to toggle between Card and Table views */}
-                    {isSmallScreen ? 
-                    <div className="flex items-center">
-                        <span>Card</span>
-                        <Switch
-                            checked={viewMode === "table"}
-                            onChange={handleViewChange}
-                            className='!text-[#1D34D8]'
-                        />
+                    <div className={`flex items-center border rounded-full p-1 ${!isSmallScreen ? 'gap-2' : ''}`}>
+                    <button
+                        className={`flex items-center px-4 py-[6px] rounded-full ${
+                        viewMode === "table" ? "bg-blue-100 text-blue-700 font-medium" : "bg-transparent text-gray-600"
+                        }`}
+                        onClick={() => handleViewChange("table")}
+                    >
                         <span>Table</span>
-                    </div> : 
-                    <div></div> 
-                    }
-
-                    <div className="flex items-center">
+                    </button>
+                    <button
+                        className={`flex items-center px-4 py-[6px] rounded-full ${
+                        viewMode === "card" ? "bg-blue-100 text-blue-700 font-medium" : "bg-transparent text-gray-600"
+                        }`}
+                        onClick={() => handleViewChange("card")}
+                    >
                         <span>Card</span>
-                        <Switch
-                            checked={viewMode === "table"}
-                            onChange={handleViewChange}
-                            className='!text-[#1D34D8]'
-                        />
-                        <span>Table</span>
+                    </button>
                     </div>
                 </div>
             </div>
@@ -788,7 +769,6 @@ export const Instruments = () => {
             </p>
 
             {viewMode === "card" ? (
-                // Card View
                 <Grid container spacing={2} sx={{ marginTop: '20px' }}>
                     {instrumentsFilteredByName?.map((row) => (
                         <Grid item xs={12} sm={6} md={4} lg={3} key={row.id}>
@@ -843,7 +823,6 @@ export const Instruments = () => {
                 </Grid>
                 
             ) : (
-                // Table View
                 <Box sx={{ marginTop: "20px", height: 500, width: "100%" }}>
                     <DataGrid
                         rows={rowss || []}

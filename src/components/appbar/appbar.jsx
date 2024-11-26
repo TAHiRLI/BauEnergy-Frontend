@@ -18,7 +18,7 @@ import { projectService } from '../../APIs/Services/project.service';
 import { loginService } from '../../APIs/Services/login.service';
 import Swal from 'sweetalert2';
 import { Formik, Form, Field } from 'formik';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, useMediaQuery } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormHelperText, InputLabel, Select, TextField, useMediaQuery } from '@mui/material';
 import NotificationModal from '../notification/notification';
 import { notificationService } from '../../APIs/Services/notification.service';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -30,6 +30,25 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from '../../pages/routes/routes';
 import { useLocation } from "react-router-dom";
 import { userSerivce } from '../../APIs/Services/user.service';
+import { styled } from '@mui/material/styles';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { teamMemberService } from '../../APIs/Services/teammember.service';
+
+
+const VisuallyHiddenInput = styled('input')({
+  display: 'none',
+});
+
+const StyledBox = styled(Box)(({ theme }) => ({
+  border: '1px solid',
+  borderColor: theme.palette.grey[400],
+  padding: theme.spacing(1),
+  marginTop: theme.spacing(1),
+  borderRadius: theme.shape.borderRadius,
+  '&:hover': {
+      borderColor: theme.palette.common.black,
+  },
+}));
 
 
 export default function Appbar({ toggleSidebar }) {
@@ -154,36 +173,34 @@ export default function Appbar({ toggleSidebar }) {
     }
 };
 
-const validationSchemaCreateAdmin = Yup.object({
-  Name: Yup.string()
-    .required('Name is required')
-    .min(2, 'Name must be at least 2 characters')
-    .max(50, 'Name must be at most 50 characters'),
-  
-  LastName: Yup.string()
-    .required('Last name is required')
-    .min(2, 'Last name must be at least 10 characters')
-    .max(50, 'Last name must be at most 200 characters'),
-  
-  Email: Yup.string()
-    .required('Email is required')
-});
-
-const handleCreateAdminFormSubmit = async (values, { setSubmitting, resetForm }) => {
+const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) => {
   try {
     const formData = new FormData();
-    formData.append('Name', values.Name);
-    formData.append('LastName', values.LastName);
-    formData.append('Email', values.Email);
+    formData.append('Name', values.name);
+    formData.append('LastName', values.lastName);
+    formData.append('Email', values.email);
+    formData.append('Role', values.role);
+    formData.append('BirthDate', values.birthDate);
+    formData.append('PhoneNumber', values.phoneNumber);
+    formData.append('Image', values.image);
 
-    await userSerivce.AddUser(formData); 
-    setOpenAdminCreateDialog(false); 
-    Swal.fire('Success', 'Admin has been added!', 'success');
-    resetForm();
-  } catch (error) {
-    console.error('Error adding project:', error);
+    // if (imageFile) {
+    //   formData.append('Image', imageFile); 
+    // }
+
+    const response =  await userSerivce.AddUser(formData); 
+  
     setOpenAdminCreateDialog(false)
-    Swal.fire('Error', 'Failed to add project.', 'error');
+    Swal.fire('Success', 'Team member has been created and added to the project!', 'success').then(() => {
+      // Reload the page after the success alert is closed
+      window.location.reload();
+    });
+    resetForm();
+    
+  } catch (error) {
+    console.error('Error adding team member:', error.response || error.message);
+    setOpenAdminCreateDialog(false)
+    Swal.fire('Error', 'Failed to create team member.', 'error');
   } finally {
     setSubmitting(false);
   }
@@ -252,12 +269,12 @@ const handleCreateAdminFormSubmit = async (values, { setSubmitting, resetForm })
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      <MenuItem>
+      <MenuItem onClick={handleNotificationClick}>
         <IconButton
           size="large"
           aria-label="show 17 new notifications"
           color="inherit"
-          onClick={handleNotificationClick}
+          
         >
           <Badge badgeContent={unreadCount} color="error">
             <NotificationsIcon />
@@ -265,8 +282,8 @@ const handleCreateAdminFormSubmit = async (values, { setSubmitting, resetForm })
         </IconButton>
         <p>Notifications</p>
       </MenuItem>
-      <MenuItem>
-        <IconButton size="large" aria-label="create new project" color="inherit" onClick={() => setOpenDialog(true)}
+      <MenuItem onClick={() => setOpenDialog(true)}>
+        <IconButton size="large" aria-label="create new project" color="inherit" 
         >
             <AddIcon />
         </IconButton>
@@ -287,6 +304,12 @@ const handleCreateAdminFormSubmit = async (values, { setSubmitting, resetForm })
     </Menu>
   );
   const isMobile = useMediaQuery('(max-width:1023px)');
+
+  const RoleEnum = {
+    Admin: 0,
+    User: 1,
+    Project_Manager: 2,
+  };
 
   return (
     <Box sx={{ flexGrow: 1}} >
@@ -369,7 +392,7 @@ const handleCreateAdminFormSubmit = async (values, { setSubmitting, resetForm })
                 onClick={handleAdminCreateOpenDialog}
                 sx={{ textTransform: "none", display: { xs: "none", md: "flex" } }}
               >
-                Create admin
+                Create user
               </Button>
             ) : (
               <Button
@@ -520,7 +543,7 @@ const handleCreateAdminFormSubmit = async (values, { setSubmitting, resetForm })
       </Dialog>
 
 
-      {/* Create Admin Dialog */}
+      {/* Create User Dialog */}
       <Dialog open={openAdminCreateDialog} onClose={() => handleAdminCreateCloseDialog(false)} fullWidth PaperProps={{
         style: {
           borderRadius: 20,
@@ -530,49 +553,115 @@ const handleCreateAdminFormSubmit = async (values, { setSubmitting, resetForm })
       }}>
         <DialogTitle>Add New Admin</DialogTitle>
         <DialogContent>
-          <Formik
+        <Formik
             initialValues={{
-              Name: '',
-              LastName: '',
-              Email: '',
+              name: '',
+              lastName: '',
+              email: '',
+              role: '',
+              image: null,
+              birthDate: '',
+              phoneNumber: '',
             }}
-            validationSchema={validationSchemaCreateAdmin}
-            onSubmit={handleCreateAdminFormSubmit}
+            //validationSchema={validationSchema}
+            onSubmit={handleCreateUserFormSubmit}
           >
-            {({ setFieldValue, isSubmitting, errors, touched }) => (
+            {({ setFieldValue, errors, touched, isSubmitting }) => (
               <Form>
-                <Field
-                  as={TextField}
-                  label="Name"
-                  name="Name"
-                  fullWidth
-                  margin="dense"
-                  error={touched.Name && !!errors.Name}
-                  helperText={touched.Name && errors.Name}
-                />
-                <Field
-                  as={TextField}
-                  label="LastName"
-                  name="LastName"
-                  fullWidth
-                  margin="dense"
-                  error={touched.Description && !!errors.Description}
-                  helperText={touched.Description && errors.Description}
-                />
-                <Field
-                  as={TextField}
-                  label="Email"
-                  name="Email"
-                  fullWidth
-                  margin="dense"
-                  error={touched.Address && !!errors.Address}
-                  helperText={touched.Address && errors.Address}
-                />
-                <DialogActions>
-                  <Button className='!text-[#1D34D8]' onClick={() =>setOpenAdminCreateDialog(false)}>Cancel</Button>
-                  <Button type="submit" className='!bg-[#1D34D8]' variant="contained" disabled={isSubmitting}>
-                    Add Admin
+                <StyledBox>
+                  <Button
+                    component="label"
+                    variant="contained"
+                    startIcon={<CloudUploadIcon />}
+                  >
+                    Select profile photo
+                    <VisuallyHiddenInput
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => {
+                        //handleImageUpload(event);
+                        setFieldValue('image', event.currentTarget.files[0]);
+                      }}
+                    />
                   </Button>
+                </StyledBox>
+                <Field
+                  as={TextField}
+                  name="name"
+                  label="Name"
+                  fullWidth
+                  margin="normal"
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={touched.name && errors.name}
+                />
+
+                <Field
+                  as={TextField}
+                  name="lastName"
+                  label="Last Name"
+                  fullWidth
+                  margin="normal"
+                  error={touched.lastName && Boolean(errors.lastName)}
+                  helperText={touched.lastName && errors.lastName}
+                />
+
+                <Field
+                  as={TextField}
+                  name="email"
+                  label="Email"
+                  fullWidth
+                  margin="normal"
+                  error={touched.email && Boolean(errors.email)}
+                  helperText={touched.email && errors.email}
+                />
+                <Field
+                  as={TextField}
+                  name="birthDate"
+                  label="Birth Date"
+                  type="date"
+                  fullWidth
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  error={touched.birthDate && Boolean(errors.birthDate)}
+                  helperText={touched.birthDate && errors.birthDate}
+                />
+
+
+                <Field
+                  as={TextField}
+                  name="phoneNumber"
+                  label="Phone Number"
+                  fullWidth
+                  margin="normal"
+                  error={touched.phoneNumber && Boolean(errors.phoneNumber)}
+                  helperText={touched.phoneNumber && errors.phoneNumber}
+                />
+
+                <Field name="role">
+                  {({ field, form }) => (
+                    <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
+                      <InputLabel id="role-label">Role</InputLabel>
+                      <Select
+                        {...field}
+                        labelId="role-label"
+                        label="Role" 
+                        value={field.value}
+                      >
+                        {Object.entries(RoleEnum).map(([key, value]) => (
+                          <MenuItem key={value} value={value}>
+                          {key?.split('_').join(' ')}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {form.touched.role && form.errors.role && (
+                        <FormHelperText>{form.errors.role}</FormHelperText>
+                      )}
+                    </FormControl>
+                  )}
+                </Field>
+                <DialogActions>
+                {/* <Button onClick={() => setIsCreatingNew(false)} className='!text-[#1D34D8]'>Cancel</Button> */}
+                <Button type="submit" disabled={isSubmitting} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
                 </DialogActions>
               </Form>
             )}

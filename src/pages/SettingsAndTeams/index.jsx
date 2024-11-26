@@ -4,6 +4,17 @@ import {
   Typography,
   Paper,
   IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
+  DialogActions,
+  TextField,
 
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
@@ -12,11 +23,38 @@ import Swal from 'sweetalert2';
 import { teamMemberService } from '../../APIs/Services/teammember.service';
 import { userSerivce } from '../../APIs/Services/user.service'; 
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import EditIcon from '@mui/icons-material/Edit'; 
+import { projectService } from '../../APIs/Services/project.service';
+import { Field, Form, Formik } from 'formik';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import { styled } from '@mui/material/styles';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import * as Yup from 'yup';
+
+const VisuallyHiddenInput = styled('input')({
+  display: 'none',
+});
+
+const StyledBox = styled(Box)(({ theme }) => ({
+  border: '1px solid',
+  borderColor: theme.palette.grey[400],
+  padding: theme.spacing(1),
+  marginTop: theme.spacing(1),
+  borderRadius: theme.shape.borderRadius,
+  '&:hover': {
+      borderColor: theme.palette.common.black,
+  },
+}));
 
 const SettingsAndTeams = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
+
+  const [imageFile, setImageFile] = useState(null); 
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [teamMemberToEdit, setTeamMemberToEdit] = useState(null);
+
 
   useEffect(() => {
     fetchTeamMembers();
@@ -47,7 +85,7 @@ const SettingsAndTeams = () => {
     try {
       const result = await Swal.fire({
         title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        text: `This action will permanently delete the user. Do you want to proceed?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#1D34D8',
@@ -67,27 +105,6 @@ const SettingsAndTeams = () => {
       Swal.fire('Error!', 'Failed to remove team member.', 'error');
     }
   };
-
-  const handleAdminCreateFormSubmit = async (values, { setSubmitting, resetForm }) => {
-    try {
-      const formData = new FormData();
-      formData.append('Name', values.Name);
-      formData.append('LastName', values.LastName);
-      formData.append('Email', values.Email);
-
-      await userSerivce.AddUser(formData); 
-      setOpenDialog(false); 
-      Swal.fire('Success', 'Admin has been added!', 'success');
-      resetForm();
-    } catch (error) {
-      setOpenDialog(false)
-      console.error('Error adding project:', error);
-      Swal.fire('Error', 'Failed to add project.', 'error');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
 
   const handleResetPassword = async (id) => {
     try {
@@ -120,8 +137,73 @@ const SettingsAndTeams = () => {
       });
     }
   };
-  
 
+  const RoleEnum = {
+    User: 1,
+    Project_Manager: 2,
+  };
+
+  const handleImageUpload = (event) => {
+    const files = event.target.files;
+    if (files.length > 0) {
+      const selectedFile = files[0];
+      setImageFile(selectedFile);
+    }
+  };
+
+  const handleEdit = (teamMember) => {
+    setTeamMemberToEdit(teamMember); 
+    setIsEditDialogOpen(true);  
+  };
+
+  const validationSchema = Yup.object({
+    name: Yup.string().required('Required'),
+    lastName: Yup.string().required('Required'),
+    role: Yup.number().required('Required'),
+    image: Yup.mixed().nullable(),
+    birthDate: Yup.date()
+      .required('Birth Date is required')
+      .max(new Date(), 'Birth Date cannot be in the future'),
+    phoneNumber: Yup.string()
+      .required('Phone number is required')
+      .matches(/^\+?[1-9]\d{1,14}$/, 'Phone number is not valid'),
+  });
+
+  const handleUpdateTeamMember = async (values) => {
+    console.log(values)
+    console.log(teamMemberToEdit)
+    try {
+      const formData = new FormData();
+      formData.append('Name', values.name);
+      formData.append('LastName', values.lastName);
+      formData.append('Role', values.role);
+      formData.append("PhoneNumber", values.phoneNumber);
+      formData.append("BirthDate", new Date(values.birthDate).toISOString().split("T")[0]); 
+      //formData.append('TeamMemberId', teamMemberToEdit.id); 
+
+      if (values.image) {
+        formData.append('Image', values.image); 
+      } 
+  
+      //await teamMemberService.edit(teamMemberToEdit.id, formData);
+      var response = await userSerivce.edit(teamMemberToEdit.email, formData);
+
+      setIsEditDialogOpen(false);
+
+      Swal.fire('Success', 'Team member has been updated!', 'success').then(() => {
+        window.location.reload();
+      });
+  
+      //const projectResponse = await projectService.getById(project.id);
+      //dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
+  
+    } catch (error) {
+      console.error('Error updating team member:', error.response || error.message);
+      setIsEditDialogOpen(false);
+      Swal.fire('Error', 'Failed to update team member.', 'error');
+    }
+  };
+  
   const columns = [
     {
       field: 'name',
@@ -178,6 +260,18 @@ const SettingsAndTeams = () => {
       minWidth: 180,
       renderCell: (params) => (
         <div className="text-center">
+          {/* Edit button */}
+          <IconButton
+            onClick={() => handleEdit(params.row)}
+            sx={{
+              backgroundColor: "#f5f5f5",  
+              borderRadius: "20%",         
+              padding: "5px",               
+              border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
+              marginRight: "8px"
+            }}>
+            <EditIcon sx={{ color: "#424242" }} />
+          </IconButton>
           {/* Delete Button */}
           <IconButton
             onClick={() => handleDelete(params.row.id)}
@@ -211,28 +305,195 @@ const SettingsAndTeams = () => {
     },
   ];
   
-  
-
   if (loading) return <Typography>Loading...</Typography>;
 
   return (
-    <Paper sx={{ width: '100%', overflowX: 'hidden', maxWidth: '100vw' }}>
-      <Box sx={{ maxWidth: { xs: '250px', sm: '100%' }, overflowX: 'auto' }}>
-        <DataGrid
-          rows={teamMembers}
-          columns={columns}
-          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-          pageSizeOptions={[5, 10, 20]}
+    <Box>
+      <Paper
+        sx={{
+          width: '100%',
+          overflowX: 'hidden',
+          maxWidth: '100vw',
+        }}
+      >
+        <Box
           sx={{
-            border: 0,
-            minWidth: 640,
-            height: 'auto',
-            overflowX: 'auto',
+            width: '100%',
+            overflowX: { xs: 'auto', sm: 'hidden' },
           }}
-          getRowId={(row) => row.id}
-        />
-      </Box>
-    </Paper>
+        >
+          <DataGrid
+            rows={teamMembers}
+            columns={columns}
+            initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+            pageSizeOptions={[5, 10, 20]}
+            sx={{
+              border: 0,
+              minWidth: 640,
+              height: 'auto',
+              '& .MuiDataGrid-root': {
+                overflowX: 'auto',
+              },
+              '& .MuiDataGrid-cell': {
+                display: 'flex', 
+                alignItems: 'center', 
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                textAlign: 'center', 
+              },
+              '& .MuiDataGrid-columnHeader': {
+                textAlign: 'center', 
+                justifyContent: 'center', 
+              },
+            }}
+            getRowId={(row) => row.id}
+          />
+        </Box>
+      </Paper>
+
+
+      {/* Modal dialog for editing team member */}
+      <Dialog open={isEditDialogOpen} onClose={() => setIsEditDialogOpen(false)} fullWidth PaperProps={{
+            style: {
+              borderRadius: 20,
+              backgroundColor: "#fcfcfc"
+            },
+          }}
+        >
+          <DialogTitle className="!font-semibold">
+            Edit Team Member
+            <IconButton
+              className="!text-[#1D34D8]"
+              aria-label="close"
+              onClick={() => setIsEditDialogOpen(false)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CancelOutlinedIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <Formik
+              initialValues={{
+                name: teamMemberToEdit?.name || '',
+                lastName: teamMemberToEdit?.lastName || '',
+                birthDate: teamMemberToEdit?.birthDate
+                ? new Date(teamMemberToEdit?.birthDate).toLocaleDateString('en-CA')
+                : "",
+                phoneNumber: teamMemberToEdit?.phoneNumber,
+                role: teamMemberToEdit?.role === 'Project_Manager' ? RoleEnum.Project_Manager : RoleEnum.User,
+                image: teamMemberToEdit?.image,
+              }}
+              validationSchema={validationSchema}
+              onSubmit={async (values, { setSubmitting }) => {
+                await handleUpdateTeamMember(values);
+                setSubmitting(false);
+              }}
+            >
+              {({ setFieldValue, errors, touched, isSubmitting }) => (
+                <Form>
+                  <StyledBox>
+                    <Button
+                      component="label"
+                      variant="contained"
+                      startIcon={<CloudUploadIcon />}
+                    >
+                      Select profile photo
+                      <VisuallyHiddenInput
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => {
+                          handleImageUpload(event);
+                          setFieldValue('image', event.currentTarget.files[0]);
+                        }}
+                      />
+                    </Button>
+                  </StyledBox>
+  
+                  <Field
+                    as={TextField}
+                    name="name"
+                    label="Name"
+                    fullWidth
+                    margin="normal"
+                    error={touched.name && Boolean(errors.name)}
+                    helperText={touched.name && errors.name}
+                  />
+  
+                  <Field
+                    as={TextField}
+                    name="lastName"
+                    label="Last Name"
+                    fullWidth
+                    margin="normal"
+                    error={touched.lastName && Boolean(errors.lastName)}
+                    helperText={touched.lastName && errors.lastName}
+                  />
+
+                  <Field
+                    as={TextField}
+                    name="birthDate"
+                    label="Birth Date"
+                    type="date"
+                    fullWidth
+                    margin="normal"
+                    InputLabelProps={{ shrink: true }}
+                    error={touched.birthDate && Boolean(errors.birthDate)}
+                    helperText={touched.birthDate && errors.birthDate}
+                  />
+
+
+                  <Field
+                    as={TextField}
+                    name="phoneNumber"
+                    label="Phone Number"
+                    fullWidth
+                    margin="normal"
+                    error={touched.phoneNumber && Boolean(errors.phoneNumber)}
+                    helperText={touched.phoneNumber && errors.phoneNumber}
+                  />
+  
+                  <Field name="role">
+                    {({ field, form }) => (
+                      <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
+                        <InputLabel id="role-label">Role</InputLabel>
+                        <Select
+                          {...field}
+                          labelId="role-label"
+                          label="Role"
+                          value={field.value}
+                          onChange={(event) => {
+                            setFieldValue('role', event.target.value);
+                          }}
+                        >
+                          {Object.entries(RoleEnum).map(([key, value]) => (
+                            <MenuItem key={value} value={value}>
+                              {key.split('_').join(' ')}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {form.touched.role && form.errors.role && (
+                          <FormHelperText>{form.errors.role}</FormHelperText>
+                        )}
+                      </FormControl>
+                    )}
+                  </Field>
+  
+                  <DialogActions>
+                    <Button onClick={() => setIsEditDialogOpen(false)} className="!text-[#1D34D8]">Cancel</Button>
+                    <Button type="submit" disabled={isSubmitting} variant="contained" className="!bg-[#1D34D8]">Update</Button>
+                  </DialogActions>
+                </Form>
+              )}
+            </Formik>
+          </DialogContent>
+      </Dialog>
+    </Box>
+
   );
 };
 

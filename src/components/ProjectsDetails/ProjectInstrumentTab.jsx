@@ -79,7 +79,6 @@ export default function InstrumentTab({ project }) {
   const handleAddInstrument = async () => {
     try {
       const body = { projectId: project.id, instrumentId: selectedInstrumentId, projectManagerId: selectedManager };
-      console.log(selectedManager)
       await projectService.addInstrumentToProject(body);
       Swal.fire({
         title: 'Added!',
@@ -291,7 +290,6 @@ const handleManagerChange = (event) => {
   };
 
   const handleEditOpen = (instrumentId, currentStatus) => {
-    console.log(instrumentId)
     setSelectedInstrumentId(instrumentId);
     setSelectedInstrumentStatus(currentStatus);
     setEditOpen(true);
@@ -382,7 +380,6 @@ const handleManagerChange = (event) => {
   if (state.error) {
     return <div>Error loading instruments</div>;
   }
-  console.log(filteredInstruments)
 
   return  (
     <Box height={400} px={0} className='!px-0'>
@@ -442,7 +439,7 @@ const handleManagerChange = (event) => {
       <Paper
       className='!lg:max-w-[100%]'
         sx={{
-          height: '200px',
+          //height: '200px',
           //width: '800px',
           overflowX: 'hidden',
           maxWidth: { xs: '250px', sm: '700px', md:'750px', lg:'100%' },
@@ -458,12 +455,12 @@ const handleManagerChange = (event) => {
           <DataGrid
             rows={filteredInstruments}
             columns={columns}
-            initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-            pageSizeOptions={[5, 10]}
+            initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
+            pageSizeOptions={[20, 40]}
             sx={{
               border: 0,
-              minWidth: 640, // Minimum width for DataGrid to avoid squashing columns
-              overflowX: 'auto', // Enable horizontal scrolling on DataGrid
+              minWidth: 640, 
+              overflowX: 'auto',
             }}
             getRowId={(row) => row.id}
           />
@@ -652,8 +649,6 @@ const handleManagerChange = (event) => {
         >
           {instrumentHistory && instrumentHistory.length > 0 ? (
             <>
-              <Typography variant="h6">Photos</Typography>
-
               <Box display="flex" gap={2} mb={2} >
                 {instrument?.images?.slice(0, 3).map((img, index) => (
                   <img

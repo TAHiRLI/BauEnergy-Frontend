@@ -7,6 +7,8 @@ import { ROUTES } from '../routes/routes';
 import { AuthActions, useAuth } from '../../context/authContext';
 import Cookies from 'universal-cookie';
 import dayjs from 'dayjs';
+import { IconButton } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const validationSchema = yup.object().shape({
   email: yup.string().email('Invalid email').required('Email is required'),
@@ -14,35 +16,39 @@ const validationSchema = yup.object().shape({
     .string()
     .required('Password is required')
     .min(3, 'Password is too short')
-    .max(20, 'Password is too long'), 
+    .max(20, 'Password is too long'),
 });
 
 export const LoginPage = () => {
   const { dispatch } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();  // Get location to access redirect state
+  const location = useLocation(); // Get location to access redirect state
   const cookies = new Cookies();
   const [renderReset, setRenderReset] = useState(false);
   const [token, setToken] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleLogin = async (values, { setFieldError }) => {
     dispatch({ type: AuthActions.start });
     try {
       let res = await loginService.login(values);
-      console.log("🚀 ~ handleLogin ~ res:", res)
-
       if (res.statusCode === 200) {
         const user = {
-          hasCompletedTutorial: res.hasCompletedTutorial, 
+          hasCompletedTutorial: res.hasCompletedTutorial,
           token: res.data.token,
           userId: res.data.userId,
-          tokenType: "Bearer",
+          tokenType: 'Bearer',
           authState: res.userState,
         };
 
-        cookies.set('user', JSON.stringify(user), { expires: new Date(dayjs(res.data.expiration)), path: '/' });
-        
+        cookies.set('user', JSON.stringify(user), {
+          expires: new Date(dayjs(res.data.expiration)),
+          path: '/',
+        });
+
         dispatch({ type: AuthActions.success, payload: user });
 
         // Redirect to the original path if it exists, otherwise go to the home page
@@ -91,15 +97,24 @@ export const LoginPage = () => {
 
             <div className="mb-4">
               <label className="block text-sm font-medium mb-2">Password</label>
-              <Field
-                type="password"
-                name="password"
-                className="w-full p-2 border border-gray-300 rounded"
-              />
+              <div className="relative">
+                <Field
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  className="w-full p-2 border border-gray-300 rounded pr-10"
+                />
+                <div
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer text-gray-500"
+                  onClick={handleClickShowPassword}
+                >
+                  {showPassword ? <VisibilityOff className=''/> : <Visibility />}
+                </div>
+              </div>
               {submitCount > 0 && errors.password && (
                 <div className="text-red-500 text-sm">{errors.password}</div>
               )}
             </div>
+
 
             {Object.keys(errors).length === 0 && errorMessage && (
               <div className="mb-4 text-red-500 text-sm">{errorMessage}</div>

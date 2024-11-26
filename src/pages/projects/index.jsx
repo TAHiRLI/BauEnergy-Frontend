@@ -9,7 +9,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { IconButton, useMediaQuery } from '@mui/material';
 import { Formik, Field, Form } from 'formik';
@@ -115,6 +114,7 @@ export default function BasicTabs() {
   };
 
   const handleFormSubmit = async (values) => {
+    console.log(values)
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('Name', values.name);
@@ -122,13 +122,13 @@ export default function BasicTabs() {
       formDataToSend.append('StartDate', values.startDate);
       formDataToSend.append('EndDate', values.endDate);
       formDataToSend.append('Address', values.address);
-
+      formDataToSend.append('Id', project.id);
       const response = await projectService.edit(project.id, formDataToSend);
 
       if (response.status === 200) {
         Swal.fire({
           icon: 'success',
-          title: 'Project Updated',
+          title: 'Project edited',
           text: response.data?.message || 'The project was successfully updated.',
         });
         setProject({ ...project, ...values }); // Update local state
@@ -152,54 +152,57 @@ export default function BasicTabs() {
   };
 
   const handleDelete = async () => {
-    const confirmDelete = await Swal.fire({
-      title: 'Are you sure?',
-      text: `You are about to delete the project: ${project?.name}`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Delete',
-      cancelButtonText: 'Cancel',
-      allowOutsideClick: false, 
-      backdrop: true, 
-      didOpen: () => {
-        // Set a higher z-index for SweetAlert to ensure it appears above the dialog
-        const swalModal = document.querySelector('.swal2-container');
-        if (swalModal) {
-          swalModal.style.zIndex = '1500'; // Ensure it's higher than the dialog's z-index
-        }
-      },
-    });
-
-    if (confirmDelete.isConfirmed) {
-      try {
+    try {
+      const confirmDelete = await Swal.fire({
+        title: 'Are you sure?',
+        text: `This action will permanently delete the project "${project?.name}". Do you want to proceed?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Delete',
+        confirmButtonColor: '#1D34D8',
+        cancelButtonText: 'Cancel',
+        cancelButtonColor: '#d33',
+        allowOutsideClick: true,
+        backdrop: true,
+        didOpen: () => {
+          const swalModal = document.querySelector('.swal2-container');
+          if (swalModal) {
+            swalModal.style.zIndex = '1500';
+          }
+        },
+      });
+  
+      if (confirmDelete && confirmDelete.isConfirmed) {
         const response = await projectService.remove(project.id);
   
         if (response.status === 200) {
-          Swal.fire({
+          setOpenEditDialog(false); 
+          await Swal.fire({
             icon: 'success',
             title: 'Project Deleted',
             text: response.data?.message || 'The project was successfully deleted.',
           });
           navigate('/');
         } else {
-          Swal.fire({
+          await Swal.fire({
             icon: 'error',
             title: 'Error',
             text: response.data?.message || 'Failed to delete the project. Please try again later.',
           });
         }
-      } catch (error) {
-        console.error('Error deleting project:', error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: error.response?.data?.message || 'An unexpected error occurred. Please try again later.',
-        });
-      } finally {
-        setOpenEditDialog(false);
       }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: error.response?.data?.message || 'An unexpected error occurred. Please try again later.',
+      });
+    } finally {
+      //setOpenEditDialog(false); 
     }
   };
+  
   
   const isSmallScreen = useMediaQuery('(max-width:800px)');
 
@@ -232,7 +235,7 @@ export default function BasicTabs() {
             }}
             onClick={handleEditDialogOpen}
           >
-            Update Project
+            Edit project
           </Button>
         </div>
       </div>
@@ -275,7 +278,9 @@ export default function BasicTabs() {
           backgroundColor: "#fcfcfc"  
       },
       }}>
-        <DialogTitle>Update Project
+
+
+        <DialogTitle>Edit Project
           <IconButton
             className="!text-blue-700"
             aria-label="close"
@@ -296,8 +301,8 @@ export default function BasicTabs() {
               name: project?.name || '',
               address: project?.address || '',
               description: project?.description || '',
-              startDate: project?.startDate || '',
-              endDate: project?.endDate || '',
+              startDate: project?.startDate ? new Date(project.startDate).toLocaleDateString('en-CA') : "",
+              endDate: project?.endDate ? new Date(project.endDate).toLocaleDateString('en-CA') : "",
             }}
             validationSchema={validationSchema}
             onSubmit={handleFormSubmit}
