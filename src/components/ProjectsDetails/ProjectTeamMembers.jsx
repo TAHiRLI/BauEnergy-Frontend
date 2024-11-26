@@ -308,15 +308,6 @@ export default function TeamMember({ project }) {
           >
             Add to Project
           </Button>
-          {/* <Button
-            onClick={() => setIsCreatingNew(true)}
-            sx={{
-              color: '#1D34D8',
-              mt: 2,
-            }}
-          >
-            Or Create New Member
-          </Button> */}
         </FormControl>
         
         </DialogContent>
