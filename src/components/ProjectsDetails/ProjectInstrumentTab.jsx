@@ -35,6 +35,7 @@ export default function InstrumentTab({ project }) {
   const [refresh, setRefresh] = useState(false);
   const [projectManagers, setProjectManagers] = useState([]);
   const [selectedManager, setSelectedManager] = useState('');
+  const [instrumentCount, setInstrumentCount] = useState(1);
 
   const [editOpen, setEditOpen] = useState(false);
   const [selectedInstrumentStatus, setSelectedInstrumentStatus] = useState("");
@@ -78,8 +79,15 @@ export default function InstrumentTab({ project }) {
 
   const handleAddInstrument = async () => {
     try {
-      const body = { projectId: project.id, instrumentId: selectedInstrumentId, projectManagerId: selectedManager };
+      const body = { 
+        projectId: project.id, 
+        instrumentId: selectedInstrumentId, 
+        projectManagerId: selectedManager,
+        count: instrumentCount, // Include the count property
+      };
       await projectService.addInstrumentToProject(body);
+      setOpenDialog(false);
+
       Swal.fire({
         title: 'Added!',
         text: 'Instrument has been added to the project.',
@@ -90,22 +98,23 @@ export default function InstrumentTab({ project }) {
       const response = await projectService.getById(project.id);
       dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
       setFilteredInstruments(response.data.instruments);
-      setSelectedInstrumentId(''); 
-      setOpenDialog(false); 
+      setSelectedInstrumentId('');
+      setInstrumentCount(1); // Reset count to default
+      setOpenDialog(false);
   
     } catch (error) {
-      setOpenDialog(false); 
       console.error('Error adding instrument:', error);
-      
+      setOpenDialog(false);
+  
       Swal.fire({
         title: 'Error!',
         text: 'Failed to add instrument.',
         icon: 'error',
         timer: 2000,
       });
-      setOpenDialog(false); 
     }
   };
+  
   
   const handleCloseHistoryDialog = () => setOpenHistoryDialog(false);
 
@@ -186,7 +195,7 @@ const handleManagerChange = (event) => {
 
   const fetchAllInstruments = async () => {
     try {
-      const response = await instrumentService.getAviableInstruments(); 
+      const response = await instrumentService.getAllByName(); 
       setAllInstruments(response.data);
       //console.log(response.data)
     } catch (error) {
@@ -470,53 +479,64 @@ const handleManagerChange = (event) => {
 
       {/* Dialog for Adding New Instrument */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} PaperProps={{
-          style: {
-            borderRadius: 20,
-            //height: "500px",
-            backgroundColor: "#fcfcfc"  
-          },
-        }}>
-        <DialogTitle className='!font-medium'>Select instrument for adding project</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Select Instrument</InputLabel>
-            <Select
-              value={selectedInstrumentId}
-              onChange={(e) => setSelectedInstrumentId(e.target.value)}
-              label="Select Instrument"
-            >
-              {allInstruments.map((instrument) => (
-                <MenuItem key={instrument.id} value={instrument.id}>
-                  {instrument.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+  style: {
+    borderRadius: 20,
+    backgroundColor: "#fcfcfc"  
+  },
+}}>
+  <DialogTitle className='!font-medium'>Select instrument for adding project</DialogTitle>
+  <DialogContent>
+    <FormControl fullWidth margin="dense">
+      <InputLabel>Select Instrument</InputLabel>
+      <Select
+        value={selectedInstrumentId}
+        onChange={(e) => setSelectedInstrumentId(e.target.value)}
+        label="Select Instrument"
+      >
+        {allInstruments.map((instrument) => (
+          <MenuItem key={instrument.id} value={instrument.id}>
+            {instrument.name}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
 
-          {/* Project Manager Selection */}
-          <FormControl fullWidth margin="dense">
-            <InputLabel id="project-manager-label">Project Manager</InputLabel>
-            <Select
-              labelId="project-manager-label"
-              value={selectedManager}
-              onChange={handleManagerChange}
-              label="Project Manager"
-            >
-              {projectManagers.map((manager) => (
-                  <MenuItem key={manager.id} value={manager.id}>
-                      {manager.name} {manager.lastName}
-                  </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions className='!px-6'>
-          <Button onClick={() => setOpenDialog(false)} className='!text-[#1D34D8] '>Cancel</Button>
-          <Button onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8] '>
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
+    {/* Project Manager Selection */}
+    <FormControl fullWidth margin="dense">
+      <InputLabel id="project-manager-label">Project Manager</InputLabel>
+      <Select
+        labelId="project-manager-label"
+        value={selectedManager}
+        onChange={handleManagerChange}
+        label="Project Manager"
+      >
+        {projectManagers.map((manager) => (
+          <MenuItem key={manager.id} value={manager.id}>
+            {manager.name} {manager.lastName}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+
+    {/* Count Input */}
+    <FormControl fullWidth margin="dense">
+      <TextField
+        type="number"
+        label="Instrument Count"
+        value={instrumentCount}
+        onChange={(e) => setInstrumentCount(e.target.value)}
+        inputProps={{ min: 1 }} // Minimum value is 1
+      />
+    </FormControl>
+  </DialogContent>
+  <DialogActions className='!px-6'>
+    <Button onClick={() => setOpenDialog(false)} className='!text-[#1D34D8]'>Cancel</Button>
+    <Button onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>
+      Add
+    </Button>
+  </DialogActions>
+</Dialog>
+
 
       {/* QR Code Dialog */}
       <Dialog open={openQRDialog} onClose={handleCloseQRDialog} fullWidth maxWidth="xs" PaperProps={{
