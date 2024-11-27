@@ -11,6 +11,7 @@ import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { Formik, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useDropzone } from 'react-dropzone';
+import Swal from 'sweetalert2';
 
 export default function ProjectDocuments({ project }) {
   const [documents, setDocuments] = useState([]);
@@ -25,6 +26,7 @@ export default function ProjectDocuments({ project }) {
   }, [project]);
 
   const fetchProjectDocuments = async (projectId) => {
+    console.log("szdzs")
     setLoading(true);
     setError(null);
     try {
@@ -53,13 +55,41 @@ export default function ProjectDocuments({ project }) {
   };
 
   const handleDelete = async (documentId) => {
-    try {
-      await instrumentDocumentsService.remove(documentId);
-      setDocuments((prevDocuments) => prevDocuments.filter((doc) => doc.id !== documentId));
-    } catch (err) {
-      console.error("Failed to delete document:", err);
+    const confirmDelete = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You are about to delete this document. This action cannot be undone!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1D34D8',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    });
+  
+    if (confirmDelete.isConfirmed) {
+      try {
+        await instrumentDocumentsService.remove(documentId);
+        setDocuments((prevDocuments) => prevDocuments.filter((doc) => doc.id !== documentId));
+  
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'The document has been successfully deleted.',
+          confirmButtonColor: '#1D34D8',
+        });
+      } catch (err) {
+        console.error("Failed to delete document:", err);
+  
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed to delete',
+          text: 'An error occurred while trying to delete the document. Please try again.',
+          confirmButtonColor: '#d33',
+        });
+      }
     }
   };
+  
 
 
   const validationSchema = Yup.object().shape({
@@ -85,6 +115,7 @@ export default function ProjectDocuments({ project }) {
           transition: 'background-color 0.2s ease',
           cursor: 'pointer',
           height: '200px',
+          width: '400px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -101,17 +132,30 @@ export default function ProjectDocuments({ project }) {
   const handleAddDocument = async (values, { resetForm }) => {
     const formData = new FormData();
     formData.append("Files", values.Files);
-    console.log(values)
     try {
       const response = await instrumentDocumentsService.add(project.id, formData);
       setDocuments((prevDocuments) => [...prevDocuments, response.data]);
+      await fetchProjectDocuments(project.id);
       resetForm();
       setOpen(false);
+      Swal.fire({
+        icon: 'success',
+        title: 'Document Uploaded',
+        text: 'The document was successfully uploaded.',
+        confirmButtonColor: '#1D34D8',
+      });
     } catch (error) {
       console.error("Error uploading document:", error);
-      alert("An error occurred while uploading the document.");
+      setOpen(false);
+      Swal.fire({
+        icon: 'error',
+        title: 'Upload Failed',
+        text: 'An error occurred while uploading the document. Please try again.',
+        confirmButtonColor: '#d33',
+      });
     }
   };
+  
   return (
     <Box mt={1} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
         <div className='flex justify-between items-center'>

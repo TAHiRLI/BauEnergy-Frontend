@@ -8,28 +8,9 @@ import Swal from 'sweetalert2';
 import { useProjects, ProjectsActions } from '../../context/projectContext';
 import { projectService } from '../../APIs/Services/project.service';
 import { teamMemberService } from '../../APIs/Services/teammember.service'; 
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
-import { TextField } from '@mui/material';
 import Cookies from "universal-cookie";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { styled } from '@mui/material/styles';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-
-const VisuallyHiddenInput = styled('input')({
-  display: 'none',
-});
-
-const StyledBox = styled(Box)(({ theme }) => ({
-  border: '1px solid',
-  borderColor: theme.palette.grey[400],
-  padding: theme.spacing(1),
-  marginTop: theme.spacing(1),
-  borderRadius: theme.shape.borderRadius,
-  '&:hover': {
-      borderColor: theme.palette.common.black,
-  },
-}));
 
 const cookies = new Cookies();
 
@@ -40,12 +21,13 @@ export default function TeamMember({ project }) {
   const [imageFile, setImageFile] = useState(null); 
   const [isCreatingNew, setIsCreatingNew] = useState(false); 
   const [selectedTeamMember, setSelectedTeamMember] = useState(null); 
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false); // For the edit modal
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [teamMemberToEdit, setTeamMemberToEdit] = useState(null);
 
   const fetchAllTeamMembers = async () => {
     try {
       const response = await teamMemberService.getAllByCompany(project.id); // Pass the projectId to the service
+      console.log(response)
       setAllTeamMembers(response.data);
       //console.log(response.data)
     } catch (error) {
@@ -76,18 +58,7 @@ export default function TeamMember({ project }) {
     fetchTeamMembersForProject();
   }, [dispatch, project.id]);
 
-  const validationSchema = Yup.object({
-    name: Yup.string().required('Required'),
-    lastName: Yup.string().required('Required'),
-    role: Yup.number().required('Required'),
-    image: Yup.mixed().nullable(),
-    birthDate: Yup.date()
-      .required('Birth Date is required')
-      .max(new Date(), 'Birth Date cannot be in the future'),
-    // phoneNumber: Yup.string()
-    //   .required('Phone number is required')
-    //   .matches(/^\+?[1-9]\d{1,14}$/, 'Phone number is not valid'),
-  });
+
   
   const RoleEnum = {
     User: 1,
@@ -96,18 +67,12 @@ export default function TeamMember({ project }) {
 
 
 
-  const handleImageUpload = (event) => {
-    const files = event.target.files;
-    if (files.length > 0) {
-      const selectedFile = files[0];
-      setImageFile(selectedFile);
-    }
-  };
 
   const handleEdit = (teamMember) => {
     setTeamMemberToEdit(teamMember); 
     setIsEditDialogOpen(true);  
   };
+
 
 
   const handleAddExistingTeamMember = async () => {
@@ -116,8 +81,12 @@ export default function TeamMember({ project }) {
         const formData = new FormData();
         const roleEnumValue = RoleEnum[selectedTeamMember.role];
 
-      formData.append('Name', selectedTeamMember.name);
-      formData.append('LastName', selectedTeamMember.lastName);
+        const [firstName, ...lastNameParts] = selectedTeamMember.fullName.split(' ');
+        const lastName = lastNameParts.join(' '); // Join the remaining parts for multi-word last names
+  
+        formData.append('Name', firstName || '');
+        formData.append('LastName', lastName || '');
+
       formData.append('Email', selectedTeamMember.email);
       formData.append('Role', roleEnumValue);
       formData.append('BirthDate', selectedTeamMember.birthDate)
@@ -141,40 +110,6 @@ export default function TeamMember({ project }) {
     }
   };
 
-  const handleFormSubmit = async (values, { setSubmitting, resetForm }) => {
-    try {
-      const formData = new FormData();
-      formData.append('Name', values.name);
-      formData.append('LastName', values.lastName);
-      formData.append('Email', values.email);
-      formData.append('Role', values.role);
-      formData.append('BirthDate', values.birthDate);
-      formData.append('PhoneNumber', values.phoneNumber);
-      formData.append('Image', values.image);
-      formData.append('ProjectId', project.id); 
-  
-      // if (imageFile) {
-      //   formData.append('Image', imageFile); 
-      // }
-  
-      const response = await teamMemberService.add(formData);
-  
-      Swal.fire('Success', 'Team member has been created and added to the project!', 'success');
-      resetForm();
-      setOpenDialog(false);
-      fetchTeamMembersForProject();
-
-      // const projectResponse = await projectService.getById(project.id);
-      // dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
-  
-    } catch (error) {
-      console.error('Error adding team member:', error.response || error.message);
-      setOpenDialog(false)
-      Swal.fire('Error', 'Failed to create team member.', 'error');
-    } finally {
-      setSubmitting(false);
-    }
-  };
   
   const handleDelete = async (id) => {
     try {
@@ -200,33 +135,6 @@ export default function TeamMember({ project }) {
     }
   };
 
-  const handleUpdateTeamMember = async (values) => {
-    console.log("adasda")
-    try {
-      const formData = new FormData();
-      formData.append('Name', values.name);
-      formData.append('LastName', values.lastName);
-      formData.append('Role', values.role);
-      formData.append('TeamMemberId', teamMemberToEdit.id); 
-
-      if (values.image) {
-        formData.append('Image', values.image); 
-      } 
-  
-      await teamMemberService.edit(teamMemberToEdit.id, formData);
-  
-      setIsEditDialogOpen(false);
-      Swal.fire('Success', 'Team member has been updated!', 'success');
-  
-      const projectResponse = await projectService.getById(project.id);
-      dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
-  
-    } catch (error) {
-      console.error('Error updating team member:', error.response || error.message);
-      setIsEditDialogOpen(false);
-      Swal.fire('Error', 'Failed to update team member.', 'error');
-    }
-  };
   
   const formatDate = (date) => {
     if (!date) {
@@ -250,6 +158,7 @@ export default function TeamMember({ project }) {
       headerName: 'Name & Last name',
       minWidth: 300,
       renderCell: (params) => {
+        console.log(params)
         const fullName = `${params.row.name} ${params.row.lastName}`; 
         const image = params.row.image ? 
           `${params.row.image}` : 
@@ -280,17 +189,7 @@ export default function TeamMember({ project }) {
       renderCell: (params) => (
         <>
         <div className='text-center'>
-          <IconButton
-            onClick={() => handleEdit(params.row)}
-            sx={{
-              backgroundColor: "#f5f5f5",  
-              borderRadius: "20%",         
-              padding: "5px",               
-              border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
-              marginRight: "8px"
-            }}>
-            <EditIcon sx={{ color: "#424242" }} />
-          </IconButton>
+          
           <IconButton
             onClick={() => handleDelete(params.row.id)}
             sx={{
@@ -320,35 +219,35 @@ export default function TeamMember({ project }) {
       </Button>
 
 
-    <Paper
-      sx={{
-        //height: '600px',
-        width: '100%',
-        overflowX: 'hidden',
-        maxWidth: '100vw', // Restrict Paper width to viewport
-      }}
-    >
-      <Box
+      <Paper
         sx={{
-          maxWidth: { xs: '250px', sm: '100%' },
-          overflowX: 'auto', 
+          //height: '600px',
+          width: '100%',
+          overflowX: 'hidden',
+          maxWidth: '100vw', // Restrict Paper width to viewport
         }}
       >
-        <DataGrid
-          rows={state.data || []}
-          columns={columns}
-          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-          pageSizeOptions={[5, 10]}
+        <Box
           sx={{
-            border: 0,
-            minWidth: 640,
-            height: 'auto',
+            maxWidth: { xs: '250px', sm: '100%' },
             overflowX: 'auto', 
           }}
-          getRowId={(row) => row.id}
-        />
-      </Box>
-    </Paper>
+        >
+          <DataGrid
+            rows={state.data || []}
+            columns={columns}
+            initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+            pageSizeOptions={[5, 10]}
+            sx={{
+              border: 0,
+              minWidth: 640,
+              height: 'auto',
+              overflowX: 'auto', 
+            }}
+            getRowId={(row) => row.id}
+          />
+        </Box>
+      </Paper>
 
       {/* Modal dialog for adding team member */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth PaperProps={{
@@ -373,7 +272,6 @@ export default function TeamMember({ project }) {
         </IconButton>
         </DialogTitle>
         <DialogContent>
-          {!isCreatingNew ? (
           <FormControl fullWidth margin="dense">
           <InputLabel sx={{ color: '#1D34D8' }}>Select Team Member</InputLabel>
           <Select
@@ -391,7 +289,7 @@ export default function TeamMember({ project }) {
           >
             {allTeamMembers.map((member) => (
               <MenuItem key={member.id} value={member.id}>
-                {member.name} {member.lastName}
+                {member.fullName}
               </MenuItem>
             ))}
           </Select>
@@ -410,268 +308,11 @@ export default function TeamMember({ project }) {
           >
             Add to Project
           </Button>
-          <Button
-            onClick={() => setIsCreatingNew(true)}
-            sx={{
-              color: '#1D34D8',
-              mt: 2,
-            }}
-          >
-            Or Create New Member
-          </Button>
         </FormControl>
         
-          ) : (
-            <Formik
-            initialValues={{
-              name: '',
-              lastName: '',
-              email: '',
-              role: '',
-              image: null,
-              birthDate: '',
-              phoneNumber: '',
-            }}
-            validationSchema={validationSchema}
-            onSubmit={handleFormSubmit}
-          >
-            {({ setFieldValue, errors, touched, isSubmitting }) => (
-              <Form>
-                <Field
-                  as={TextField}
-                  name="name"
-                  label="Name"
-                  fullWidth
-                  margin="normal"
-                  error={touched.name && Boolean(errors.name)}
-                  helperText={touched.name && errors.name}
-                />
-
-                <Field
-                  as={TextField}
-                  name="lastName"
-                  label="Last Name"
-                  fullWidth
-                  margin="normal"
-                  error={touched.lastName && Boolean(errors.lastName)}
-                  helperText={touched.lastName && errors.lastName}
-                />
-
-                <Field
-                  as={TextField}
-                  name="email"
-                  label="Email"
-                  fullWidth
-                  margin="normal"
-                  error={touched.email && Boolean(errors.email)}
-                  helperText={touched.email && errors.email}
-                />
-                <Field
-                  as={TextField}
-                  name="birthDate"
-                  label="Birth Date"
-                  type="date"
-                  fullWidth
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  error={touched.birthDate && Boolean(errors.birthDate)}
-                  helperText={touched.birthDate && errors.birthDate}
-                  onChange={(e) => {
-                    setFieldValue("birthDate", e.target.value); // Manually set the value
-                    console.log("Selected Date:", e.target.value); // Debugging
-                    selectedTeamMember.birthDate = e.target.value
-                  }}
-                />
-
-
-                <Field
-                  as={TextField}
-                  name="phoneNumber"
-                  label="Phone Number"
-                  fullWidth
-                  margin="normal"
-                  error={touched.phoneNumber && Boolean(errors.phoneNumber)}
-                  helperText={touched.phoneNumber && errors.phoneNumber}
-                />
-
-                <Field name="role">
-                  {({ field, form }) => (
-                    <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
-                      <InputLabel id="role-label">Role</InputLabel>
-                      <Select
-                        {...field}
-                        labelId="role-label"
-                        label="Role" 
-                        value={field.value}
-                      >
-                        {Object.entries(RoleEnum).map(([key, value]) => (
-                          <MenuItem key={value} value={value}>
-                          {key?.split('_').join(' ')}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {form.touched.role && form.errors.role && (
-                        <FormHelperText>{form.errors.role}</FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                </Field>
-
-                <StyledBox>
-                  <Button
-                    component="label"
-                    variant="contained"
-                    startIcon={<CloudUploadIcon />}
-                  >
-                    Upload Image
-                    <VisuallyHiddenInput
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => {
-                        handleImageUpload(event);
-                        setFieldValue('image', event.currentTarget.files[0]);
-                      }}
-                    />
-                  </Button>
-                </StyledBox>
-                <DialogActions>
-                <Button onClick={() => setIsCreatingNew(false)} className='!text-[#1D34D8]'>Cancel</Button>
-                {/* <Button type="submit" onClick={() => setIsCreatingNew(false)} disabled={isSubmitting} variant="contained" className='!bg-[#1D34D8]'>Submit</Button> */}
-                <Button type="submit" disabled={isSubmitting} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
-          )}
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isEditDialogOpen} onClose={() => setIsEditDialogOpen(false)} fullWidth PaperProps={{
-          style: {
-            borderRadius: 20,
-            backgroundColor: "#fcfcfc"
-          },
-        }}
-      >
-        <DialogTitle className="!font-semibold">
-          Edit Team Member
-          <IconButton
-            className="!text-[#1D34D8]"
-            aria-label="close"
-            onClick={() => setIsEditDialogOpen(false)}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-            }}
-          >
-            <CancelOutlinedIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Formik
-            initialValues={{
-              name: teamMemberToEdit?.name || '',
-              lastName: teamMemberToEdit?.lastName || '',
-              birthDate: teamMemberToEdit?.birthDate
-              ? new Date(teamMemberToEdit?.birthDate).toLocaleDateString('en-CA')
-              : "",
-              role: teamMemberToEdit?.role === 'Project_Manager' ? RoleEnum.Project_Manager : RoleEnum.User,
-              image: teamMemberToEdit?.image,
-            }}
-            validationSchema={validationSchema}
-            onSubmit={async (values, { setSubmitting }) => {
-              await handleUpdateTeamMember(values);
-              setSubmitting(false);
-            }}
-          >
-            {({ setFieldValue, errors, touched, isSubmitting }) => (
-              <Form>
-                <Field
-                  as={TextField}
-                  name="name"
-                  label="Name"
-                  fullWidth
-                  margin="normal"
-                  error={touched.name && Boolean(errors.name)}
-                  helperText={touched.name && errors.name}
-                />
-
-                <Field
-                  as={TextField}
-                  name="lastName"
-                  label="Last Name"
-                  fullWidth
-                  margin="normal"
-                  error={touched.lastName && Boolean(errors.lastName)}
-                  helperText={touched.lastName && errors.lastName}
-                />
-
-                <Field
-                  as={TextField}
-                  type="date"
-                  name="birthDate"
-                  label="Birthdate"
-                  fullWidth
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  error={touched.birthdate && Boolean(errors.birthdate)}
-                  helperText={touched.birthdate && errors.birthdate}
-                />
-
-                <Field name="role">
-                  {({ field, form }) => (
-                    <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
-                      <InputLabel id="role-label">Role</InputLabel>
-                      <Select
-                        {...field}
-                        labelId="role-label"
-                        label="Role"
-                        value={field.value}
-                        onChange={(event) => {
-                          setFieldValue('role', event.target.value);
-                        }}
-                      >
-                        {Object.entries(RoleEnum).map(([key, value]) => (
-                          <MenuItem key={value} value={value}>
-                            {key.split('_').join(' ')}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {form.touched.role && form.errors.role && (
-                        <FormHelperText>{form.errors.role}</FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                </Field>
-
-                <StyledBox>
-                  <Button
-                    component="label"
-                    variant="contained"
-                    startIcon={<CloudUploadIcon />}
-                  >
-                    Upload Image
-                    <VisuallyHiddenInput
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => {
-                        handleImageUpload(event);
-                        setFieldValue('image', event.currentTarget.files[0]);
-                      }}
-                    />
-                  </Button>
-                </StyledBox>
-
-                <DialogActions>
-                  <Button onClick={() => setIsEditDialogOpen(false)} className="!text-[#1D34D8]">Cancel</Button>
-                  <Button type="submit" disabled={isSubmitting} variant="contained" className="!bg-[#1D34D8]">Update</Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
-        </DialogContent>
-      </Dialog>
 
     </Box>
   );

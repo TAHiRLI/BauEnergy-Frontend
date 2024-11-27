@@ -100,14 +100,28 @@ const InstrumentDetails = () => {
   const handleImageUpload = (e, setFieldValue) => {
     const files = Array.from(e.target.files);
     const previews = files.map((file) => URL.createObjectURL(file));
+
     setImagePreviews(previews);
     setFieldValue('images', files); 
   };
 
-  const handleMainImageChange = (e, setFieldValue) => {
-    const selectedIndex = parseInt(e.target.value);
-    setFieldValue('mainImageIndex', selectedIndex); 
+  // const handleMainImageChange = (e, setFieldValue) => {
+  //   const selectedIndex = parseInt(e);
+  //   setFieldValue('mainImageIndex', selectedIndex); 
+  // };
+  // const handleMainImageChange = (index, setFieldValue) => {
+  //   setFieldValue('mainImageIndex', index);
+  // };
+  const handleMainImageChange = (selectedIndex, setFieldValue) => {
+    // Update Formik's mainImageIndex field
+    setFieldValue('mainImageIndex', selectedIndex);
+  
+    // Optional: Update the state for UI purposes, if required
+    allImages.forEach((image, index) => {
+      image.isMain = index === selectedIndex;
+    });
   };
+  
 
   const handlePdfUpload = (e, setFieldValue) => {
     const files = Array.from(e.target.files);
@@ -138,7 +152,7 @@ const InstrumentDetails = () => {
     const fetchInstrumentsByName = async () => {
       try {
         const response = await instrumentService.getByExactName(instrument.name);
-        console.log(response)
+        //console.log(response)
         setfilteredInstrument(response.data)
         //console.log(response);
       } catch (error) {
@@ -156,6 +170,7 @@ const InstrumentDetails = () => {
       try {
         const response = await instrumentHistoryService.getById(id);
         setHistory(response.data);
+        //console.log(response)
       } catch (error) {
         console.error('Error fetching instrument history:', error);
       }
@@ -334,8 +349,17 @@ const handleAddNewTag = () => {
   }
   const mainImage = instrument?.images?.find((img) => img.isMain);
   const otherImages = instrument?.images?.filter((img) => !img.isMain);
-  const allImages = mainImage ? [mainImage, ...otherImages] : otherImages;
+  const backendImages = mainImage ? [mainImage, ...otherImages] : otherImages;
 
+  const allImages = [
+    ...backendImages, ...imagePreviews
+    // ...uploadedImages.map((file, index) => ({
+    //   isNew: true,
+    //   preview: URL.createObjectURL(file), // Use file preview for uploaded images
+    //   file, // Keep reference to the file object
+    // })),
+  ];
+  console.log(allImages)
   const handleDeleteImage = async (imageId) => {
     try {
       await instrumentService.removeImage(instrument.id, imageId)
@@ -377,6 +401,7 @@ const handleAddNewTag = () => {
         console.error('Error deleting instrument:', err);
     }
 };
+
   
   return (
     <Box p={1}>
@@ -385,7 +410,7 @@ const handleAddNewTag = () => {
         <div className="flex flex-col sm:flex-row">
         <div className="sm:w-1/4 p-4">
             {/* Swiper Slider */}
-            {allImages?.length > 0 ? (
+            {backendImages?.length > 0 ? (
               <Swiper
                 modules={[ Pagination]}
                 pagination={{ clickable: true }}
@@ -393,7 +418,7 @@ const handleAddNewTag = () => {
                 slidesPerView={1}
                 style={{ maxWidth: "430px", overflow: "hidden" }}
               >
-                {allImages.map((img, index) => (
+                {backendImages.map((img, index) => (
                   <SwiperSlide key={index}>
                     <img
                       src={`${process.env.REACT_APP_DOCUMENT_URL}${img.image}`}
@@ -431,7 +456,7 @@ const handleAddNewTag = () => {
                 onClick={handleShowQR}
                 className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
               >
-                Scan QR Code
+                QR Code
               </button>
               <button
                 onClick={handleOpenUpdateModal}
@@ -585,7 +610,7 @@ const handleAddNewTag = () => {
           validationSchema={validationSchema}
           onSubmit={handleUpdateSubmit}
         >
-          {({ setFieldValue, errors, touched }) => (
+          {({values, setFieldValue, errors, touched }) => (
             <Form>
               <Box my={2}>
                 <Field
@@ -656,9 +681,9 @@ const handleAddNewTag = () => {
                         </MenuItem>
                         ))}
                     </Select>
-                    </FormControl>
+              </FormControl>
 
-                    <FormControl fullWidth margin="dense" variant="outlined">
+              <FormControl fullWidth margin="dense" variant="outlined">
                     <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
                     <OutlinedInput
                         id="add-new-tag"
@@ -675,7 +700,7 @@ const handleAddNewTag = () => {
                         </InputAdornment>
                         }
                     />
-                    </FormControl>
+              </FormControl>
 
               {/* Image upload */}
               <StyledBox>
@@ -694,8 +719,9 @@ const handleAddNewTag = () => {
                 />
                 </Button>
               </StyledBox>
+
                {/* Image Previews and Main Image Selection */}
-              {imagePreviews.length > 0 && (
+              {/* {imagePreviews.length > 0 && (
                 <Box mt={2}>
                   <Typography variant="h6">Select Main Image:</Typography>
                   <Grid container spacing={2}>
@@ -716,7 +742,61 @@ const handleAddNewTag = () => {
                   </Grid>
                   
                 </Box>
-              )}
+              )} */}
+
+{allImages.length > 0 && (
+  <Box mt={2}>
+    <Typography variant="h6">Select Main Image:</Typography>
+    <Grid container spacing={2}>
+      {allImages.map((image, index) => (
+        <Grid item xs={4} key={index}>
+          {/* Display image preview */}
+          <img
+            src={
+              image.isNew
+                ? image.preview
+                : `${process.env.REACT_APP_DOCUMENT_URL}${image.image}` // For existing images
+            }
+            alt={`Image ${index}`}
+            style={{
+              width: '100%',
+              height: '100px',
+              objectFit: 'cover',
+              borderRadius: '10px',
+            }}
+            loading="lazy"
+          />
+
+          {/* Radio button to select main image */}
+          <FormControlLabel
+            control={
+              <Radio
+                checked={index === values.mainImageIndex}
+                onChange={() => handleMainImageChange(index, setFieldValue)}
+                value={index}
+                name="mainImage"
+              />
+            }
+            label="Main"
+          />
+
+          {/* Delete button */}
+          {!image.isNew ? (
+            <IconButton color="error" onClick={() => handleDeleteImage(image.id)}>
+              <DeleteIcon />
+            </IconButton>
+          ) : (
+            <IconButton color="error">
+              <DeleteIcon />
+            </IconButton>
+          )}
+        </Grid>
+      ))}
+    </Grid>
+  </Box>
+)}
+
+
 
               {/* PDF Upload */}
               <StyledBox>
@@ -736,7 +816,7 @@ const handleAddNewTag = () => {
                   </Button>
               </StyledBox>
               {/* Display uploaded PDF files */}
-              <Box mt={2}>
+              {/* <Box mt={2}>
                     {uploadedFiles.length > 0 ? (
 
                       <Grid container spacing={1}>
@@ -752,9 +832,9 @@ const handleAddNewTag = () => {
                     ) : (
                       <Typography variant="body2" color="textSecondary">No files uploaded</Typography>
                     )}          
-              </Box>
+              </Box> */}
 
-              {instrument.images.length > 0 && (
+              {/* {instrument.images.length > 0 && (
                 <Box mt={2}>
                   <Typography variant="h6">Images:</Typography>
                   <Grid container spacing={2}>
@@ -776,10 +856,10 @@ const handleAddNewTag = () => {
                     ))}
                   </Grid>
                 </Box>
-              )}
+              )} */}
 
               {/* PDF Display and Delete */}
-              {instrument.documents.length > 0 && (
+              {/* {instrument.documents.length > 0 && (
                 <Box mt={2}>
                   <Typography variant="h6">PDFs:</Typography>
                   <Grid container spacing={1}>
@@ -799,7 +879,7 @@ const handleAddNewTag = () => {
                     ))}
                   </Grid>
                 </Box>
-              )}
+              )} */}
 
               <DialogActions className='!px-0'>
               <Button variant="outlined" className='!text-[#1D34D8]' onClick={handleCloseUpdateModal}>

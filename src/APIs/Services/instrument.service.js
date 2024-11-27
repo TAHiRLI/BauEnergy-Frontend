@@ -29,10 +29,13 @@ class InstrumentService extends HttpClient {
         });
     }
 
-    async getAllByName() {
+    async getAllByName(search = "") {
         return await this.get(`Instrument/filteredbyname`, {
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
+            },
+            params: {
+                search
             }
         });
     }

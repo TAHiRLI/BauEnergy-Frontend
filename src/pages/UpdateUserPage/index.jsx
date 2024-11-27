@@ -89,7 +89,7 @@ const UpdateUserPage = () => {
     formData.append("BirthDate", new Date(values.birthDate).toISOString().split("T")[0]); 
     try {
       var response = await userSerivce.edit(userEmail, formData);
-      console.log(response)
+      //console.log(response)
       if (response.data.token) {
         cookies.remove("user", { path: "/" });
         const newToken = response.data.token;

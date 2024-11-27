@@ -8,6 +8,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { projectService } from '../../APIs/Services/project.service';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import Swal from 'sweetalert2';
 
 const NotificationModal = ({ open, onClose }) => {
@@ -186,10 +188,8 @@ const NotificationModal = ({ open, onClose }) => {
   return (
     <>
       {/* First Modal */}
-      <div
-        className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 ${open ? '' : 'hidden'}`}
-      >
-        <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg">
+      <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 ${open ? '' : 'hidden'}`} onClick={onClose} >
+        <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-4 pb-0">
             <h2 className="text-lg font-medium">Notifications</h2>
             <IconButton className="!text-blue-700" aria-label="close" onClick={onClose}>
@@ -252,37 +252,32 @@ const NotificationModal = ({ open, onClose }) => {
                             <p className="text-gray-500 text-xs">{notification.description}</p>
                           {/* Conditionally render Approve and Reject icons if hasAction is true */}
                           {notification.hasAction && notification.approvalStatus === 0 && (
-                            <div className="flex space-x-2 mt-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent the main click handler
-                                  handleApprove(notification.instrumentId, notification.id);
-                                }}
-                                className="text-green-500 hover:text-green-600"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 24 24"
-                                  className="w-6 h-6 fill-current"
+                            <div className="flex space-x-2">
+                              {/* Approve Button */}
+                              <div className="flex items-center justify-center w-10 h-10">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent the main click handler
+                                    handleApprove(notification.instrumentId, notification.id);
+                                  }}
+                                  className="text-green-500 hover:text-green-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1"
                                 >
-                                  <path d="M9 16.2l-3.5-3.5L4 14.2l5 5 10-10-1.5-1.5L9 16.2z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation(); // Prevent the main click handler
-                                  handleReject(notification.instrumentId, notification.id);
-                                }}
-                                className="text-red-500 hover:text-red-600"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 24 24"
-                                  className="w-6 h-6 fill-current"
+                                  <CheckIcon className="w-4 h-4" />
+                                </button>
+                              </div>
+
+                              {/* Reject Button */}
+                              <div className="flex items-center justify-center w-10 h-10">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // Prevent the main click handler
+                                    handleReject(notification.instrumentId, notification.id);
+                                  }}
+                                  className="text-red-500 hover:text-red-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1"
                                 >
-                                  <path d="M18.3 5.71L16.89 4.3 12 9.17 7.11 4.3 5.7 5.71l4.88 4.88-4.88 4.88 1.41 1.41L12 11.99l4.89 4.88 1.41-1.41-4.88-4.88z" />
-                                </svg>
-                              </button>
+                                  <CloseIcon className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                           )}
                           </div>
@@ -301,8 +296,8 @@ const NotificationModal = ({ open, onClose }) => {
 
       {/* Second Modal for Notification Content */}
       {openNotificationContent && selectedNotification && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={() => setOpenNotificationContent(false)}>
+          <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-medium">Notification content</h2>
               <div className="flex items-center space-x-2">
