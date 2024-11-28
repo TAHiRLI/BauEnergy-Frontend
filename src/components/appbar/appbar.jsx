@@ -18,7 +18,7 @@ import { projectService } from '../../APIs/Services/project.service';
 import { loginService } from '../../APIs/Services/login.service';
 import Swal from 'sweetalert2';
 import { Formik, Form, Field } from 'formik';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormHelperText, InputLabel, Select, TextField, useMediaQuery } from '@mui/material';
+import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormHelperText, InputLabel, Select, TextField, useMediaQuery } from '@mui/material';
 import NotificationModal from '../notification/notification';
 import { notificationService } from '../../APIs/Services/notification.service';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -32,7 +32,7 @@ import { useLocation } from "react-router-dom";
 import { userSerivce } from '../../APIs/Services/user.service';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { teamMemberService } from '../../APIs/Services/teammember.service';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
 
 const VisuallyHiddenInput = styled('input')({
@@ -62,12 +62,24 @@ export default function Appbar({ toggleSidebar }) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [openAdminCreateDialog, setOpenAdminCreateDialog] = useState(false);
 
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
+
+
+
   const { user } = useAuth(); 
   
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
 
   const userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
   const email = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
+
+  const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
+  
+  var isUser = false
+  if (userRoles.includes("User")) {
+    isUser = true;
+  }
+
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -109,6 +121,21 @@ export default function Appbar({ toggleSidebar }) {
     fetchNotifications();
   };
 
+  const RoleEnum = {
+    Company_Owner: 0,
+    User: 1,
+    Project_Manager: 2,
+  };
+
+  const handleImageUpload = (event, setFieldValue) => {
+    const file = event.target.files[0];
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setProfilePhotoPreview(previewUrl); // Update the preview
+      setFieldValue('image', file); // Set the file in Formik's state
+    }
+  };
+
   const validationSchema = Yup.object({
     Name: Yup.string()
       .required('Name is required')
@@ -135,6 +162,33 @@ export default function Appbar({ toggleSidebar }) {
       .min(Yup.ref('StartDate'), 'End date cannot be before start date')
   });
 
+
+const validationCreateUserSchema = Yup.object().shape({
+  name: Yup.string()
+    .trim()
+    .required('Name is required')
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name cannot exceed 50 characters'),
+  lastName: Yup.string()
+    .trim()
+    .required('Last Name is required')
+    .min(2, 'Last Name must be at least 2 characters')
+    .max(50, 'Last Name cannot exceed 50 characters'),
+  email: Yup.string()
+    .trim()
+    .email('Invalid email format')
+    .required('Email is required'),
+  birthDate: Yup.date()
+    .required('Birth Date is required')
+    .max(new Date(), 'Birth Date cannot be in the future'),
+  phoneNumber: Yup.string()
+    .matches(/^\+?[0-9]{10,15}$/, 'Invalid phone number format')
+    .required('Phone Number is required'),
+  role: Yup.mixed()
+    .oneOf(Object.values(RoleEnum), 'Invalid role selected')
+    .required('Role is required'),
+});
+
   const handleFormSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       const formData = new FormData();
@@ -160,18 +214,52 @@ export default function Appbar({ toggleSidebar }) {
   };
 
   const handleResetPassword = async (email) => {
-    try {        
-         const response = await loginService.generateResetToken(email);
-
-        const token = response.data.resetToken;
-
-        // Navigate to the reset password page with the token in state
-        navigate(ROUTES.RESET_PASSWORD, { state: { token } });
-
-    } catch (error) {
-        console.error("Failed to generate reset token:", error);
+    // Show confirmation dialog
+    handleMenuClose();
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you want to reset the password?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#1D34D8",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, reset it!",
+      cancelButtonText: "Cancel",
+    });
+  
+    // Exit if the user cancels
+    if (!result.isConfirmed) {
+      return;
     }
-};
+  
+    // Proceed with the reset password process
+    try {
+      const response = await loginService.generateResetToken(email);
+      const token = response.data.resetToken;
+  
+      // Navigate to the reset password page with the token in state
+      navigate(ROUTES.RESET_PASSWORD, { state: { token } });
+  
+      // Show success message
+      Swal.fire({
+        title: "Success!",
+        text: "Password reset link has been sent successfully.",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+    } catch (error) {
+      console.error("Failed to generate reset token:", error);
+  
+      // Show error message
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to reset password. Please try again later.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+  
 
 const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) => {
   try {
@@ -183,10 +271,6 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
     formData.append('BirthDate', values.birthDate);
     formData.append('PhoneNumber', values.phoneNumber);
     formData.append('Image', values.image);
-
-    // if (imageFile) {
-    //   formData.append('Image', imageFile); 
-    // }
 
     const response =  await userSerivce.AddUser(formData); 
   
@@ -305,12 +389,6 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
   );
   const isMobile = useMediaQuery('(max-width:1023px)');
 
-  const RoleEnum = {
-    Admin: 0,
-    User: 1,
-    Project_Manager: 2,
-  };
-
   return (
     <Box sx={{ flexGrow: 1}} >
       <AppBar position="static" className='rounded-t-xl' sx={{backgroundColor: '#F1F3FD'}}>
@@ -384,26 +462,29 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 }}
               />
             </IconButton>
-
-            {isSettingsAndTeamsPage ? (
-              <Button
-                variant="contained"
-                className="!m-2 !bg-[#1D34D8] !rounded-3xl !py-2 !text-base sm:text-xs"
-                onClick={handleAdminCreateOpenDialog}
-                sx={{ textTransform: "none", display: { xs: "none", md: "flex" } }}
-              >
-                Create user
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                className="!ml-6 !bg-[#1D34D8] !rounded-3xl !py-2 !text-base sm:text-xs"
-                onClick={() => setOpenDialog(true)}
-                sx={{ ml: 2, textTransform: "none", display: { xs: "none", md: "flex" } }}
-              >
-                Create new project
-              </Button>
+            {!isUser && (   
+              isSettingsAndTeamsPage ? (
+                <Button
+                  variant="contained"
+                  className="!m-2 !bg-[#1D34D8] !rounded-3xl !py-2 !text-base sm:text-xs"
+                  onClick={handleAdminCreateOpenDialog}
+                  sx={{ textTransform: "none", display: { xs: "none", md: "flex" } }}
+                >
+                  Create user
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  className="!ml-6 !bg-[#1D34D8] !rounded-3xl !py-2 !text-base sm:text-xs"
+                  onClick={() => setOpenDialog(true)}
+                  sx={{ ml: 2, textTransform: "none", display: { xs: "none", md: "flex" } }}
+                >
+                  Create new project
+                </Button>
+              )
             )}
+
+
           </div>
           </Box>
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
@@ -442,7 +523,21 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
           backgroundColor: "#fcfcfc"  
         },
       }}>
-        <DialogTitle>Add New Project</DialogTitle>
+        <DialogTitle>Add New Project
+        <IconButton
+              className="!text-[#1D34D8]"
+              aria-label="close"
+              onClick={() => setOpenDialog(false)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CancelOutlinedIcon />
+            </IconButton>
+        </DialogTitle>
+
         <DialogContent>
           <Formik
             initialValues={{
@@ -543,131 +638,160 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
       </Dialog>
 
 
-      {/* Create User Dialog */}
-      <Dialog open={openAdminCreateDialog} onClose={() => handleAdminCreateCloseDialog(false)} fullWidth PaperProps={{
+
+<Dialog
+      open={openAdminCreateDialog}
+      onClose={() => handleAdminCreateCloseDialog(false)}
+      fullWidth
+      PaperProps={{
         style: {
           borderRadius: 20,
-          //height: "500px",
-          backgroundColor: "#fcfcfc"  
+          backgroundColor: '#fcfcfc',
         },
-      }}>
-        <DialogTitle>Add New Admin</DialogTitle>
-        <DialogContent>
+      }}
+    >
+      <DialogTitle>
+        Add New User
+        <IconButton
+          className="!text-[#1D34D8]"
+          aria-label="close"
+          onClick={() => handleAdminCreateCloseDialog(false)}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+          }}
+        >
+          <CancelOutlinedIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
         <Formik
-            initialValues={{
-              name: '',
-              lastName: '',
-              email: '',
-              role: '',
-              image: null,
-              birthDate: '',
-              phoneNumber: '',
-            }}
-            //validationSchema={validationSchema}
-            onSubmit={handleCreateUserFormSubmit}
-          >
-            {({ setFieldValue, errors, touched, isSubmitting }) => (
-              <Form>
-                <StyledBox>
-                  <Button
-                    component="label"
-                    variant="contained"
-                    startIcon={<CloudUploadIcon />}
-                  >
-                    Select profile photo
-                    <VisuallyHiddenInput
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => {
-                        //handleImageUpload(event);
-                        setFieldValue('image', event.currentTarget.files[0]);
-                      }}
-                    />
-                  </Button>
-                </StyledBox>
-                <Field
-                  as={TextField}
-                  name="name"
-                  label="Name"
-                  fullWidth
-                  margin="normal"
-                  error={touched.name && Boolean(errors.name)}
-                  helperText={touched.name && errors.name}
+          initialValues={{
+            name: '',
+            lastName: '',
+            email: '',
+            role: '',
+            image: null,
+            birthDate: '',
+            phoneNumber: '',
+          }}
+          validationSchema={validationCreateUserSchema}
+          onSubmit={handleCreateUserFormSubmit}
+        >
+          {({ setFieldValue, errors, touched, isSubmitting }) => (
+            <Form>
+              <Box display="flex" flexDirection="column" alignItems="center" mb={2}>
+                {/* Circle with profile photo */}
+                <Avatar
+                  src={profilePhotoPreview || ''} // Default profile image
+                  alt="Profile Photo"
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    marginBottom: 2,
+                  }}
                 />
 
-                <Field
-                  as={TextField}
-                  name="lastName"
-                  label="Last Name"
-                  fullWidth
-                  margin="normal"
-                  error={touched.lastName && Boolean(errors.lastName)}
-                  helperText={touched.lastName && errors.lastName}
-                />
+                <Button
+                  component="label"
+                  variant="contained"
+                  startIcon={<CloudUploadIcon />}
+                >
+                  Select Profile Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(event) => handleImageUpload(event, setFieldValue)}
+                  />
+                </Button>
+              </Box>
 
-                <Field
-                  as={TextField}
-                  name="email"
-                  label="Email"
-                  fullWidth
-                  margin="normal"
-                  error={touched.email && Boolean(errors.email)}
-                  helperText={touched.email && errors.email}
-                />
-                <Field
-                  as={TextField}
-                  name="birthDate"
-                  label="Birth Date"
-                  type="date"
-                  fullWidth
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  error={touched.birthDate && Boolean(errors.birthDate)}
-                  helperText={touched.birthDate && errors.birthDate}
-                />
+              <Field
+                as={TextField}
+                name="name"
+                label="Name"
+                fullWidth
+                margin="normal"
+                error={touched.name && Boolean(errors.name)}
+                helperText={touched.name && errors.name}
+              />
 
+              <Field
+                as={TextField}
+                name="lastName"
+                label="Last Name"
+                fullWidth
+                margin="normal"
+                error={touched.lastName && Boolean(errors.lastName)}
+                helperText={touched.lastName && errors.lastName}
+              />
 
-                <Field
-                  as={TextField}
-                  name="phoneNumber"
-                  label="Phone Number"
-                  fullWidth
-                  margin="normal"
-                  error={touched.phoneNumber && Boolean(errors.phoneNumber)}
-                  helperText={touched.phoneNumber && errors.phoneNumber}
-                />
+              <Field
+                as={TextField}
+                name="email"
+                label="Email"
+                fullWidth
+                margin="normal"
+                error={touched.email && Boolean(errors.email)}
+                helperText={touched.email && errors.email}
+              />
 
-                <Field name="role">
-                  {({ field, form }) => (
-                    <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
-                      <InputLabel id="role-label">Role</InputLabel>
-                      <Select
-                        {...field}
-                        labelId="role-label"
-                        label="Role" 
-                        value={field.value}
-                      >
-                        {Object.entries(RoleEnum).map(([key, value]) => (
-                          <MenuItem key={value} value={value}>
+              <Field
+                as={TextField}
+                name="birthDate"
+                label="Birth Date"
+                type="date"
+                fullWidth
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+                error={touched.birthDate && Boolean(errors.birthDate)}
+                helperText={touched.birthDate && errors.birthDate}
+              />
+
+              <Field
+                as={TextField}
+                name="phoneNumber"
+                label="Phone Number"
+                fullWidth
+                margin="normal"
+                error={touched.phoneNumber && Boolean(errors.phoneNumber)}
+                helperText={touched.phoneNumber && errors.phoneNumber}
+              />
+
+              <Field name="role">
+                {({ field, form }) => (
+                  <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
+                    <InputLabel id="role-label">Role</InputLabel>
+                    <Select
+                      {...field}
+                      labelId="role-label"
+                      label="Role"
+                      value={field.value}
+                    >
+                      {Object.entries(RoleEnum).map(([key, value]) => (
+                        <MenuItem key={value} value={value}>
                           {key?.split('_').join(' ')}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {form.touched.role && form.errors.role && (
-                        <FormHelperText>{form.errors.role}</FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                </Field>
-                <DialogActions>
-                {/* <Button onClick={() => setIsCreatingNew(false)} className='!text-[#1D34D8]'>Cancel</Button> */}
-                <Button type="submit" disabled={isSubmitting} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
-        </DialogContent>
-      </Dialog>
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {form.touched.role && form.errors.role && (
+                      <FormHelperText>{form.errors.role}</FormHelperText>
+                    )}
+                  </FormControl>
+                )}
+              </Field>
+              <DialogActions>
+                <Button type="submit" disabled={isSubmitting} variant="contained" className="!bg-[#1D34D8]">
+                  Submit
+                </Button>
+              </DialogActions>
+            </Form>
+          )}
+        </Formik>
+      </DialogContent>
+    </Dialog>
     </Box>
   );
 }

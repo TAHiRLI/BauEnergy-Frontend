@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse, IconButton, Drawer, Icon } from "@mui/material";
+import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse, Drawer } from "@mui/material";
 import {
   Menu as MenuIcon,
   Search,
   ExpandLess,
   ExpandMore,
-  Check,
-  CheckBoxOutlineBlankOutlined,
 } from "@mui/icons-material";
 import NotificationIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import Home from "@mui/icons-material/HomeOutlined";
@@ -26,7 +24,7 @@ import { useAuth } from "../../context/authContext";
 import { notificationService } from "../../APIs/Services/notification.service";
 import { useMediaQuery } from "@mui/material";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
-import { ListItemContent } from "survey-react-ui";
+
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const [openProjectsBtn, setOpenProjectsBtn] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -90,11 +88,12 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     cookies.remove("user", { path: "/" });
     window.location.reload();
   };
-  const isMobile = useMediaQuery("(max-width:1023px)"); // Check if screen size is <= 1024px
+  const isMobile = useMediaQuery("(max-width:1023px)"); 
 
   var isAdmin = false
   const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
-  if (userRoles.includes("Admin")) {
+  if (userRoles.includes("Company_Owner")) {
+
       isAdmin = true;
   }
   var isUser = false
@@ -119,9 +118,10 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
               <div className="CompanyLogo px-4 pt-4">
                 <div className="flex items-center mb-3">
                   <img
-                    src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/logo/BauEnergylogo.png`}
+                    src='/BauEnergy logo.png'
                     alt="Company Logo"
-                    className="w-12 h-12"
+                    className="w-[76px] h-[58px]"
+
                   />
                   <span className="ml-4 text-xl font-bold">BauEnergy</span>
                 </div>
@@ -130,17 +130,21 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
               {/* Navigation */}
               <div className="p-4">
                 <List>
+
+                {!isUser && (
                   <ListItem
-                    button
-                    component={Link}
-                    className="!rounded-xl"
-                    onClick={() => navigate("/instruments", { state: { focusSearch: true } })} // Use query params instead of state
-                  >
-                    <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
-                      <Search className="text-black" />
-                    </ListItemIcon>
-                    <ListItemText primary="Search" />
-                  </ListItem>
+                      button
+                      component={Link}
+                      className="!rounded-xl"
+                      onClick={() => navigate("/instruments", { state: { focusSearch: true } })}
+                    >
+                      <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
+                        <Search className="text-black" />
+                      </ListItemIcon>
+                      <ListItemText primary="Search" />
+                  </ListItem>   
+                )}
+
                 </List>
 
                 <List>
@@ -212,14 +216,16 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       </ListItemIcon>
                       <ListItemText primary="Instruments" />
                     </ListItem>
-                  )}      
+                  )}   
 
-                  <ListItem button component={Link} to={ROUTES.DOCUMENTS} className="!rounded-xl">
-                    <ListItemIcon>
-                      <DeleteOutlinedIcon className="text-black" /> {/* Changed to trash bin icon */}
-                    </ListItemIcon>
-                    <ListItemText primary="Trash Bin" /> {/* Updated text */}
-                  </ListItem>
+                  {!isUser && (
+                    <ListItem button component={Link} to={ROUTES.DOCUMENTS} className="!rounded-xl">
+                      <ListItemIcon>
+                        <DeleteOutlinedIcon className="text-black" />
+                      </ListItemIcon>
+                      <ListItemText primary="Trash Bin" /> 
+                    </ListItem>
+                  )}   
 
                   <ListItem button component={Link} onClick={handleLogout} className="!rounded-xl">
                     <ListItemIcon>
@@ -237,11 +243,16 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
               <ListItem div>
                 <UserInfo />
               </ListItem>
+
+              <ListItem className="!mt-4" >
+                  <img src="/Powered by logo.png" alt="BauEnergy Login" className='w-[174px] h-[35px]'/>
+              </ListItem>
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 overflow-y-auto">{/* Place the main content here */}</div>
+          <div className="flex-1 overflow-y-auto"></div>
+
           <NotificationModal
             open={isNotificationModalOpen}
             onClose={handleNotificationModalClose}

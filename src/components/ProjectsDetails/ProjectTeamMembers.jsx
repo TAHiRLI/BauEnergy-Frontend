@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, FormHelperText, Paper } from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, Paper } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit'; 
 import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
 import Swal from 'sweetalert2';
 import { useProjects, ProjectsActions } from '../../context/projectContext';
@@ -10,7 +9,6 @@ import { projectService } from '../../APIs/Services/project.service';
 import { teamMemberService } from '../../APIs/Services/teammember.service'; 
 import Cookies from "universal-cookie";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { styled } from '@mui/material/styles';
 
 const cookies = new Cookies();
 
@@ -26,7 +24,7 @@ export default function TeamMember({ project }) {
 
   const fetchAllTeamMembers = async () => {
     try {
-      const response = await teamMemberService.getAllByCompany(project.id); // Pass the projectId to the service
+      const response = await teamMemberService.getAllByCompany(project.id); 
       console.log(response)
       setAllTeamMembers(response.data);
       //console.log(response.data)
@@ -64,16 +62,6 @@ export default function TeamMember({ project }) {
     User: 1,
     Project_Manager: 2,
   };
-
-
-
-
-  const handleEdit = (teamMember) => {
-    setTeamMemberToEdit(teamMember); 
-    setIsEditDialogOpen(true);  
-  };
-
-
 
   const handleAddExistingTeamMember = async () => {
     try {
@@ -199,7 +187,8 @@ export default function TeamMember({ project }) {
               border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
               marginRight: "8px"
             }}>            
-            <DeleteIcon sx={{ color: "#424242" }} />
+            <DeleteIcon sx={{ color: "" }} className='text-[#d33]' />
+
           </IconButton>
         </div>
         </>
@@ -218,13 +207,12 @@ export default function TeamMember({ project }) {
         Add New People
       </Button>
 
-
       <Paper
         sx={{
-          //height: '600px',
           width: '100%',
           overflowX: 'hidden',
-          maxWidth: '100vw', // Restrict Paper width to viewport
+          maxWidth: '100vw',
+
         }}
       >
         <Box

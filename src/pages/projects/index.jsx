@@ -392,7 +392,7 @@ export default function BasicTabs() {
 
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
                     <Button variant="outlined" className='!text-[#1D34D8] !mr-2' onClick={handleEditDialogClose}> Cancel </Button>
-                    <Button type="submit" variant="contained" className='!bg-[#1D34D8]'> Update </Button>
+                    <Button type="submit" variant="contained" className='!bg-[#1D34D8]'> Edit </Button>
                   </Box>
                 </DialogActions>
               </Form>

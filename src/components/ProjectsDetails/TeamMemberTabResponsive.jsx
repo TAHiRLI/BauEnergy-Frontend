@@ -83,23 +83,11 @@ export default function TeamMember({ project }) {
    image: Yup.mixed().nullable(),
   });
   const RoleEnum = {
-    Admin: 0,
+    CompanyOwner: 0,
     User: 1,
     ProjectManager: 2,
   };
 
-  const handleImageUpload = (event) => {
-    const files = event.target.files;
-    if (files.length > 0) {
-      const selectedFile = files[0];
-      setImageFile(selectedFile);
-    }
-  };
-
-  const handleEdit = (teamMember) => {
-    setTeamMemberToEdit(teamMember); 
-    setIsEditDialogOpen(true);       
-  };
   
 
   const handleAddExistingTeamMember = async () => {

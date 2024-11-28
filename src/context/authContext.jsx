@@ -18,7 +18,7 @@ export const AuthActions = {
 };
 
 export const Roles = {
-  admin: 'Admin',
+  admin: 'Company_Owner',
   user: 'User', 
   projectManager: 'Project_Manager',
 };

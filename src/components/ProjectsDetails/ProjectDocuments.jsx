@@ -93,15 +93,22 @@ export default function ProjectDocuments({ project }) {
 
 
   const validationSchema = Yup.object().shape({
-    Files: Yup.mixed().required("A file is required"),
+    Files: Yup.mixed().required("A file is required")
+    .test(
+      "fileSize",
+      "File size is too large (maximum 5MB)",
+      (value) => value && value.size <= 5 * 1024 * 1024 
+    ),
+
   });
 
   // Dropzone Component
   const DropzoneField = ({ setFieldValue, values }) => {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
       onDrop: (acceptedFiles) => setFieldValue("Files", acceptedFiles[0]),
-      accept: "application/pdf",
-    });
+      accept: "",
+    });  
+
 
     return (
       <Box
@@ -155,7 +162,26 @@ export default function ProjectDocuments({ project }) {
       });
     }
   };
-  
+  const getFileIcon = (fileType) => {
+    switch (fileType) {
+      case "application/pdf":
+        return <PictureAsPdfIcon sx={{ fontSize: 50, color: "#D32F2F" }} />;
+      case "application/msword":
+      case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        return <DescriptionIcon sx={{ fontSize: 50, color: "#1D34D8" }} />;
+      case "application/vnd.ms-excel":
+      case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+        return <DescriptionIcon sx={{ fontSize: 50, color: "#4CAF50" }} />;
+      case "image/png":
+      case "image/jpeg":
+        return <DescriptionIcon sx={{ fontSize: 50, color: "#FFC107" }} />;
+      case "application/acad":
+        return <DescriptionIcon sx={{ fontSize: 50, color: "#FF5722" }} />;
+      default:
+        return <DescriptionIcon sx={{ fontSize: 50 }} />;
+    }
+  };
+
   return (
     <Box mt={1} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
         <div className='flex justify-between items-center'>
@@ -172,11 +198,9 @@ export default function ProjectDocuments({ project }) {
           documents.map((doc, index) => (
             <Grid item xs={6} sm={6} key={index}>
               <Box display="flex" alignItems="center" sx={{ padding: 1 }}>
-                {doc.fileType === 'pdf' ? (
-                  <PictureAsPdfIcon sx={{ fontSize: 50, color: '#D32F2F' }} />
-                ) : (
-                  <DescriptionIcon sx={{ fontSize: 50 }} />
-                )}
+              {getFileIcon(doc.fileType)}
+
+
                 <Typography
                   variant="body1"
                   sx={{ marginLeft: '10px', cursor: 'pointer', color: '#1D34D8', fontWeight: 'bold' }}
@@ -185,7 +209,7 @@ export default function ProjectDocuments({ project }) {
                   {formatFileName(doc.fileName)}
                 </Typography>
                 <IconButton onClick={() => handleDelete(doc.id)} className="!ml-5">
-                  <DeleteIcon />
+                  <DeleteIcon  className='text-[#d33]'/>
                 </IconButton>
               </Box>
             </Grid>

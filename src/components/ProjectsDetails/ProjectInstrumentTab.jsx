@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { IconButton, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, Typography, InputAdornment, TextField, Checkbox, ListItemText, Chip, Divider, Paper} from '@mui/material';
+import { IconButton, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, Typography, TextField, Chip, Paper} from '@mui/material';
 import Swal from 'sweetalert2';
-import DateRangeIcon from '@mui/icons-material/DateRange';
 import DeleteIcon from '@mui/icons-material/Delete';
 import HistoryIcon from '@mui/icons-material/History'; 
 import { useProjects, ProjectsActions } from '../../context/projectContext';
@@ -11,7 +10,6 @@ import { instrumentService } from '../../APIs/Services/instrument.service';
 import { instrumentHistoryService } from '../../APIs/Services/instrumentHistory.service';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
-import InstrumentStatusButton from '../common/actionsBtn/InstrumentUpdateButton';
 import InstrumentStatusModal from '../common/actionsBtn/InstrumentUpdateButton';
 import EditIcon from '@mui/icons-material/Edit';
 import { teamMemberService } from '../../APIs/Services/teammember.service';
@@ -363,7 +361,7 @@ const handleManagerChange = (event) => {
               border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
               marginRight: "8px"
             }}>            
-            <DeleteIcon sx={{ color: "#424242" }} />
+            <DeleteIcon className='text-[#d33]' />
           </IconButton>
 
           <IconButton onClick={() => handleShowHistory(params.row.id)} color="primary"
@@ -479,63 +477,63 @@ const handleManagerChange = (event) => {
 
       {/* Dialog for Adding New Instrument */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} PaperProps={{
-  style: {
-    borderRadius: 20,
-    backgroundColor: "#fcfcfc"  
-  },
-}}>
-  <DialogTitle className='!font-medium'>Select instrument for adding project</DialogTitle>
-  <DialogContent>
-    <FormControl fullWidth margin="dense">
-      <InputLabel>Select Instrument</InputLabel>
-      <Select
-        value={selectedInstrumentId}
-        onChange={(e) => setSelectedInstrumentId(e.target.value)}
-        label="Select Instrument"
-      >
-        {allInstruments.map((instrument) => (
-          <MenuItem key={instrument.id} value={instrument.id}>
-            {instrument.name}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+          style: {
+            borderRadius: 20,
+            backgroundColor: "#fcfcfc"  
+          },
+        }}>
+        <DialogTitle className='!font-medium'>Select instrument for adding project</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Select Instrument</InputLabel>
+            <Select
+              value={selectedInstrumentId}
+              onChange={(e) => setSelectedInstrumentId(e.target.value)}
+              label="Select Instrument"
+            >
+              {allInstruments.map((instrument) => (
+                <MenuItem key={instrument.id} value={instrument.id}>
+                  {instrument.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-    {/* Project Manager Selection */}
-    <FormControl fullWidth margin="dense">
-      <InputLabel id="project-manager-label">Project Manager</InputLabel>
-      <Select
-        labelId="project-manager-label"
-        value={selectedManager}
-        onChange={handleManagerChange}
-        label="Project Manager"
-      >
-        {projectManagers.map((manager) => (
-          <MenuItem key={manager.id} value={manager.id}>
-            {manager.name} {manager.lastName}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+          {/* Project Manager Selection */}
+          <FormControl fullWidth margin="dense">
+            <InputLabel id="project-manager-label">Project Manager</InputLabel>
+            <Select
+              labelId="project-manager-label"
+              value={selectedManager}
+              onChange={handleManagerChange}
+              label="Project Manager"
+            >
+              {projectManagers.map((manager) => (
+                <MenuItem key={manager.id} value={manager.id}>
+                  {manager.name} {manager.lastName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-    {/* Count Input */}
-    <FormControl fullWidth margin="dense">
-      <TextField
-        type="number"
-        label="Instrument Count"
-        value={instrumentCount}
-        onChange={(e) => setInstrumentCount(e.target.value)}
-        inputProps={{ min: 1 }} // Minimum value is 1
-      />
-    </FormControl>
-  </DialogContent>
-  <DialogActions className='!px-6'>
-    <Button onClick={() => setOpenDialog(false)} className='!text-[#1D34D8]'>Cancel</Button>
-    <Button onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>
-      Add
-    </Button>
-  </DialogActions>
-</Dialog>
+          {/* Count Input */}
+          <FormControl fullWidth margin="dense">
+            <TextField
+              type="number"
+              label="Instrument Count"
+              value={instrumentCount}
+              onChange={(e) => setInstrumentCount(e.target.value)}
+              inputProps={{ min: 1 }} // Minimum value is 1
+            />
+          </FormControl>
+        </DialogContent>
+        <DialogActions className='!px-6'>
+          <Button onClick={() => setOpenDialog(false)} className='!text-[#1D34D8]'>Cancel</Button>
+          <Button onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
 
 
       {/* QR Code Dialog */}

@@ -22,39 +22,19 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from 'sweetalert2';
 import { teamMemberService } from '../../APIs/Services/teammember.service';
 import { userSerivce } from '../../APIs/Services/user.service'; 
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import EditIcon from '@mui/icons-material/Edit'; 
-import { projectService } from '../../APIs/Services/project.service';
 import { Field, Form, Formik } from 'formik';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { styled } from '@mui/material/styles';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import * as Yup from 'yup';
-
-const VisuallyHiddenInput = styled('input')({
-  display: 'none',
-});
-
-const StyledBox = styled(Box)(({ theme }) => ({
-  border: '1px solid',
-  borderColor: theme.palette.grey[400],
-  padding: theme.spacing(1),
-  marginTop: theme.spacing(1),
-  borderRadius: theme.shape.borderRadius,
-  '&:hover': {
-      borderColor: theme.palette.common.black,
-  },
-}));
 
 const SettingsAndTeams = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
 
-  const [imageFile, setImageFile] = useState(null); 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [teamMemberToEdit, setTeamMemberToEdit] = useState(null);
-
+  const [selectedImage, setSelectedImage] = useState(teamMemberToEdit?.image || null);
 
   useEffect(() => {
     fetchTeamMembers();
@@ -107,6 +87,7 @@ const SettingsAndTeams = () => {
   };
 
   const handleResetPassword = async (id) => {
+    setIsEditDialogOpen(false)
     try {
       const confirmation = await Swal.fire({
         title: "Are you sure?",
@@ -139,20 +120,29 @@ const SettingsAndTeams = () => {
   };
 
   const RoleEnum = {
+    Company_Owner: 0,
     User: 1,
     Project_Manager: 2,
   };
 
+
+
   const handleImageUpload = (event) => {
-    const files = event.target.files;
-    if (files.length > 0) {
-      const selectedFile = files[0];
-      setImageFile(selectedFile);
+    const file = event.target.files[0];
+    if (file) {
+      // Generate a temporary object URL for the preview
+      const objectUrl = URL.createObjectURL(file);
+      setSelectedImage(objectUrl); // Set preview image as object URL
+      // Optionally, store the file itself for upload
+      //setUploadedFile(file);
     }
   };
-
+  
   const handleEdit = (teamMember) => {
     setTeamMemberToEdit(teamMember); 
+    console.log(teamMemberToEdit)
+    setSelectedImage(teamMember.image)
+
     setIsEditDialogOpen(true);  
   };
 
@@ -170,8 +160,7 @@ const SettingsAndTeams = () => {
   });
 
   const handleUpdateTeamMember = async (values) => {
-    console.log(values)
-    console.log(teamMemberToEdit)
+
     try {
       const formData = new FormData();
       formData.append('Name', values.name);
@@ -203,7 +192,6 @@ const SettingsAndTeams = () => {
       Swal.fire('Error', 'Failed to update team member.', 'error');
     }
   };
-  
   const columns = [
     {
       field: 'name',
@@ -284,21 +272,7 @@ const SettingsAndTeams = () => {
               marginRight: '8px',
             }}
           >
-            <DeleteIcon sx={{ color: '#424242' }} />
-          </IconButton>
-  
-          {/* Reset Password Button */}
-          <IconButton
-            onClick={() => handleResetPassword(params.row.id)}
-            sx={{
-              backgroundColor: '#f5f5f5',
-              borderRadius: '20%',
-              padding: '5px',
-              border: '1px solid #e0e0e0',
-              '&:hover': { backgroundColor: '#e0e0e0' },
-            }}
-          >
-            <VpnKeyIcon sx={{ color: '#424242' }} />
+            <DeleteIcon sx={{ color: '#d33' }} />
           </IconButton>
         </div>
       ),
@@ -310,6 +284,7 @@ const SettingsAndTeams = () => {
   return (
     <Box>
       <Paper
+      className='!mt-4 !sm:mt-0'
         sx={{
           width: '100%',
           overflowX: 'hidden',
@@ -319,7 +294,7 @@ const SettingsAndTeams = () => {
         <Box
           sx={{
             width: '100%',
-            overflowX: { xs: 'auto', sm: 'hidden' },
+            //overflowX: { xs: 'auto', sm: 'hidden' },
           }}
         >
           <DataGrid
@@ -346,6 +321,9 @@ const SettingsAndTeams = () => {
                 textAlign: 'center', 
                 justifyContent: 'center', 
               },
+              '& .MuiDataGrid-footerContainer':{
+                justifyContent: 'flex-start'
+              }
             }}
             getRowId={(row) => row.id}
           />
@@ -353,111 +331,142 @@ const SettingsAndTeams = () => {
       </Paper>
 
 
-      {/* Modal dialog for editing team member */}
-      <Dialog open={isEditDialogOpen} onClose={() => setIsEditDialogOpen(false)} fullWidth PaperProps={{
-            style: {
-              borderRadius: 20,
-              backgroundColor: "#fcfcfc"
-            },
+     
+      <Dialog
+      open={isEditDialogOpen}
+      onClose={() => setIsEditDialogOpen(false)}
+      fullWidth
+      PaperProps={{
+        style: {
+          borderRadius: 20,
+          backgroundColor: '#fcfcfc',
+        },
+      }}
+    >
+      <DialogTitle className="!font-semibold">
+        Edit Team Member
+        <IconButton
+          className="!text-[#1D34D8]"
+          aria-label="close"
+          onClick={() => setIsEditDialogOpen(false)}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
           }}
         >
-          <DialogTitle className="!font-semibold">
-            Edit Team Member
-            <IconButton
-              className="!text-[#1D34D8]"
-              aria-label="close"
-              onClick={() => setIsEditDialogOpen(false)}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-              }}
-            >
-              <CancelOutlinedIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent>
-            <Formik
-              initialValues={{
-                name: teamMemberToEdit?.name || '',
-                lastName: teamMemberToEdit?.lastName || '',
-                birthDate: teamMemberToEdit?.birthDate
-                ? new Date(teamMemberToEdit?.birthDate).toLocaleDateString('en-CA')
-                : "",
-                phoneNumber: teamMemberToEdit?.phoneNumber,
-                role: teamMemberToEdit?.role === 'Project_Manager' ? RoleEnum.Project_Manager : RoleEnum.User,
-                image: teamMemberToEdit?.image,
-              }}
-              validationSchema={validationSchema}
-              onSubmit={async (values, { setSubmitting }) => {
-                await handleUpdateTeamMember(values);
-                setSubmitting(false);
-              }}
-            >
-              {({ setFieldValue, errors, touched, isSubmitting }) => (
-                <Form>
-                  <StyledBox>
-                    <Button
-                      component="label"
-                      variant="contained"
-                      startIcon={<CloudUploadIcon />}
-                    >
-                      Select profile photo
-                      <VisuallyHiddenInput
-                        type="file"
-                        accept="image/*"
-                        onChange={(event) => {
-                          handleImageUpload(event);
-                          setFieldValue('image', event.currentTarget.files[0]);
-                        }}
-                      />
-                    </Button>
-                  </StyledBox>
-  
-                  <Field
-                    as={TextField}
-                    name="name"
-                    label="Name"
-                    fullWidth
-                    margin="normal"
-                    error={touched.name && Boolean(errors.name)}
-                    helperText={touched.name && errors.name}
-                  />
-  
-                  <Field
-                    as={TextField}
-                    name="lastName"
-                    label="Last Name"
-                    fullWidth
-                    margin="normal"
-                    error={touched.lastName && Boolean(errors.lastName)}
-                    helperText={touched.lastName && errors.lastName}
-                  />
+          <CancelOutlinedIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        <Formik
+          initialValues={{
+            name: teamMemberToEdit?.name || '',
+            lastName: teamMemberToEdit?.lastName || '',
+            birthDate: teamMemberToEdit?.birthDate
+              ? new Date(teamMemberToEdit?.birthDate).toLocaleDateString('en-CA')
+              : '',
+            phoneNumber: teamMemberToEdit?.phoneNumber || '',
+            role:
+            teamMemberToEdit?.role && typeof teamMemberToEdit.role === 'string'
+              ? RoleEnum[teamMemberToEdit.role] // Convert string role to numeric value
+              : teamMemberToEdit?.role ?? RoleEnum.User, // Default to User if undefined
+            image: teamMemberToEdit?.image
+          }}
+          validationSchema={validationSchema}
+          onSubmit={async (values, { setSubmitting }) => {
+            await handleUpdateTeamMember({ ...values, image: selectedImage });
+            setSubmitting(false);
+          }}
+        >
+          {({ setFieldValue, errors, touched, isSubmitting }) => (
+            <Form>
+              {/* Profile Photo Section */}
+              <Box display="flex" flexDirection="column" alignItems="center" marginBottom={3}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  marginBottom: 3,
+                }}
+              >
+                {/* Profile Image */}
+                <img
+                src={
+                  selectedImage?.startsWith("blob:") 
+                    ? selectedImage // If it's a blob URL, use it directly
+                    : `${process.env.REACT_APP_DOCUMENT_URL}/assets/images/teammembers/${selectedImage || "defaultUser.png"}`
+                }
+                            alt="Profile"
+                  style={{
+                    width: 150,
+                    height: 150,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    marginBottom: 0,
+                  }}
+                />
+              </Box>
+                <Button
+                  variant="text"
+                  className="!text-[#1D34D8]"
+                  onClick={() => document.getElementById('profile-image-input').click()}
+                >
+                  Edit Image
+                </Button>
+                <input
+                  id="profile-image-input"
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={(event) => {
+                    handleImageUpload(event);
+                    setFieldValue('image', event.currentTarget.files[0]);
+                  }}
+                />
+              </Box>
 
-                  <Field
-                    as={TextField}
-                    name="birthDate"
-                    label="Birth Date"
-                    type="date"
-                    fullWidth
-                    margin="normal"
-                    InputLabelProps={{ shrink: true }}
-                    error={touched.birthDate && Boolean(errors.birthDate)}
-                    helperText={touched.birthDate && errors.birthDate}
-                  />
-
-
-                  <Field
-                    as={TextField}
-                    name="phoneNumber"
-                    label="Phone Number"
-                    fullWidth
-                    margin="normal"
-                    error={touched.phoneNumber && Boolean(errors.phoneNumber)}
-                    helperText={touched.phoneNumber && errors.phoneNumber}
-                  />
-  
-                  <Field name="role">
+              {/* Other Form Fields */}
+              <Field
+                as={TextField}
+                name="name"
+                label="Name"
+                fullWidth
+                margin="normal"
+                error={touched.name && Boolean(errors.name)}
+                helperText={touched.name && errors.name}
+              />
+              <Field
+                as={TextField}
+                name="lastName"
+                label="Last Name"
+                fullWidth
+                margin="normal"
+                error={touched.lastName && Boolean(errors.lastName)}
+                helperText={touched.lastName && errors.lastName}
+              />
+              <Field
+                as={TextField}
+                name="birthDate"
+                label="Birth Date"
+                type="date"
+                fullWidth
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+                error={touched.birthDate && Boolean(errors.birthDate)}
+                helperText={touched.birthDate && errors.birthDate}
+              />
+              <Field
+                as={TextField}
+                name="phoneNumber"
+                label="Phone Number"
+                fullWidth
+                margin="normal"
+                error={touched.phoneNumber && Boolean(errors.phoneNumber)}
+                helperText={touched.phoneNumber && errors.phoneNumber}
+              />
+              <Field name="role">
                     {({ field, form }) => (
                       <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
                         <InputLabel id="role-label">Role</InputLabel>
@@ -482,16 +491,35 @@ const SettingsAndTeams = () => {
                       </FormControl>
                     )}
                   </Field>
-  
-                  <DialogActions>
-                    <Button onClick={() => setIsEditDialogOpen(false)} className="!text-[#1D34D8]">Cancel</Button>
-                    <Button type="submit" disabled={isSubmitting} variant="contained" className="!bg-[#1D34D8]">Update</Button>
-                  </DialogActions>
-                </Form>
-              )}
-            </Formik>
-          </DialogContent>
-      </Dialog>
+
+              <DialogActions>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-start', width: '100%' }}>
+                  <Button
+                    onClick={() => handleResetPassword(teamMemberToEdit.id)}
+                    className="!text-[#1D34D8]"
+                  >
+                    Reset Password
+                  </Button>
+                </Box>
+
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                  <Button
+                    variant="outlined"
+                    className="!text-[#1D34D8] !mr-2"
+                    onClick={() => setIsEditDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" variant="contained" className="!bg-[#1D34D8]">
+                    Edit
+                  </Button>
+                </Box>
+              </DialogActions>
+            </Form>
+          )}
+        </Formik>
+      </DialogContent>
+    </Dialog>
     </Box>
 
   );
