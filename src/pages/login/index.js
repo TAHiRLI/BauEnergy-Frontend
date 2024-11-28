@@ -167,8 +167,9 @@ export const LoginPage = () => {
           <img src="/BauEnergy logo.png" alt="BauEnergy Login" className='w-[77px] h-[59px] ' />
           <img src="/Powered by logo.png" alt="BauEnergy Login" className='w-[174px] h-[35px]'/>
         </div>
-        <div className="sm:flex flex-1 bg-blue-100 justify-center items-center">
-            <img src="/Consruction.gif" alt="BauEnergy Animation" className='w-full sm:h-screen h-[200px] '/>
+        <div className="sm:flex flex-1 bg-blue-100 justify-center items-center w-full">
+            <img src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/videos/Construction.gif`}
+ alt="BauEnergy Animation" className='w-full sm:h-screen h-[200px] ' loading='lazy'/>
           </div>
       </div>
     </div>
