@@ -75,8 +75,8 @@ export const LoginPage = () => {
   return (
     <div className="flex flex-col-reverse sm:flex-row    sm:h-full bg-gray-100">
       {/* Left Section */}
-      <div className="flex flex-col justify-between items-start w-full max-w-[100%] sm:max-w-[50%] !pt-12 bg-white  shadow-md p-[30px] md:p-[100px] xl:p-[150px] h-screen">
-        <div className='hidden sm:flex justify-between items-end w-full'>
+      <div className="flex flex-col justify-start items-start w-full max-w-[100%] sm:max-w-[50%] pt-12 bg-white  shadow-md px-4 sm:px-[30px] md:px-[100px] xl:px-[150px] h-screen">
+        <div className='hidden sm:flex justify-between items-end w-full mb-14'>
           <img src="/BauEnergy logo.png" alt="BauEnergy Login" className='w-[77px] h-[59px] ' />
           <img src="/Powered by logo.png" alt="BauEnergy Login" className='w-[174px] h-[35px]'/>
         </div>
@@ -163,7 +163,7 @@ export const LoginPage = () => {
 
       {/* Right Section */}
       <div className='w-full'>
-        <div className='flex sm:hidden justify-between items-end w-full my-4 '>
+        <div className='flex sm:hidden p-2 px-5 justify-between items-end w-full mb-3 '>
           <img src="/BauEnergy logo.png" alt="BauEnergy Login" className='w-[77px] h-[59px] ' />
           <img src="/Powered by logo.png" alt="BauEnergy Login" className='w-[174px] h-[35px]'/>
         </div>
