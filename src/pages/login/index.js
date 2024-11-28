@@ -162,7 +162,7 @@ export const LoginPage = () => {
       </div>
 
       {/* Right Section */}
-      <div>
+      <div className='w-full'>
         <div className='flex sm:hidden justify-between items-end w-full my-4 '>
           <img src="/BauEnergy logo.png" alt="BauEnergy Login" className='w-[77px] h-[59px] ' />
           <img src="/Powered by logo.png" alt="BauEnergy Login" className='w-[174px] h-[35px]'/>

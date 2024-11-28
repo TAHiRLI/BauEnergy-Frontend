@@ -23,7 +23,6 @@ const UserInfo = () => {
         const response = await userSerivce.getByEmail(userEmail); 
         const updatedUser = response.data;
         setUserData(updatedUser);
-        console.log(userData)
 
       } catch (err) {
         console.error("Error fetching user data:", err);

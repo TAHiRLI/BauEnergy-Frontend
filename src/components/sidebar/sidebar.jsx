@@ -24,6 +24,7 @@ import { useAuth } from "../../context/authContext";
 import { notificationService } from "../../APIs/Services/notification.service";
 import { useMediaQuery } from "@mui/material";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const [openProjectsBtn, setOpenProjectsBtn] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -92,6 +93,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   var isAdmin = false
   const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
   if (userRoles.includes("Company_Owner")) {
+
       isAdmin = true;
   }
   var isUser = false
@@ -119,6 +121,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     src='/BauEnergy logo.png'
                     alt="Company Logo"
                     className="w-[76px] h-[58px]"
+
                   />
                   <span className="ml-4 text-xl font-bold">BauEnergy</span>
                 </div>
@@ -141,6 +144,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       <ListItemText primary="Search" />
                   </ListItem>   
                 )}
+
                 </List>
 
                 <List>
@@ -223,7 +227,6 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     </ListItem>
                   )}   
 
-
                   <ListItem button component={Link} onClick={handleLogout} className="!rounded-xl">
                     <ListItemIcon>
                       <LogoutOutlinedIcon className="text-black" />
@@ -249,6 +252,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto"></div>
+
           <NotificationModal
             open={isNotificationModalOpen}
             onClose={handleNotificationModalClose}

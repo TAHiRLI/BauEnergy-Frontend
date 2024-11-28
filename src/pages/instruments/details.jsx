@@ -78,7 +78,6 @@ const InstrumentDetails = () => {
 
   const [selectedImage, setSelectedImage] = useState(instrument?.image || null);
 
-
   const [expanded, setExpanded] = React.useState(false);
 
   const handleChange = (panel) => (event, isExpanded) => {
@@ -108,6 +107,7 @@ const InstrumentDetails = () => {
   //   setFieldValue('images', files); 
   // };
 
+
   // const handleMainImageChange = (e, setFieldValue) => {
   //   const selectedIndex = parseInt(e);
   //   setFieldValue('mainImageIndex', selectedIndex); 
@@ -115,6 +115,7 @@ const InstrumentDetails = () => {
   // const handleMainImageChange = (index, setFieldValue) => {
   //   setFieldValue('mainImageIndex', index);
   // };
+
   // const handleMainImageChange = (selectedIndex, setFieldValue) => {
   //   // Update Formik's mainImageIndex field
   //   setFieldValue('mainImageIndex', selectedIndex);
@@ -305,7 +306,7 @@ const handleAddNewTag = () => {
 };
 
   const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
-    console.log(selectedImage)
+
     const formData = new FormData();
     formData.append('Name', values.name);
     formData.append('Description', values.description);
@@ -313,7 +314,7 @@ const handleAddNewTag = () => {
     formData.append('InstrumentType', values.instrumentType);
     formData.append('Price', values.price); 
     formData.append('Image', values.image);    
-   
+  
     values.files?.forEach((file) => formData.append(`Files`, file));
     //console.log(instrument.tags)
     instrument.tags.forEach((tag) => formData.append(`Tags`, tag))
@@ -329,6 +330,7 @@ const handleAddNewTag = () => {
     } catch (error) {
       handleCloseUpdateModal();
       Swal.fire('Error', 'Failed to edit instrument.', 'error');
+
       console.error('Error submitting data:', error);
     }
   };
@@ -350,6 +352,7 @@ const handleAddNewTag = () => {
       </Box>
     );
   }
+
   const handleDeleteImage = async (imageId) => {
     try {
       await instrumentService.removeImage(instrument.id, imageId)
@@ -404,6 +407,7 @@ console.log(objectUrl)
   }
 };
 
+
   
   return (
     <Box p={1}>
@@ -415,13 +419,13 @@ console.log(objectUrl)
                     <img
                       src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${instrument.image}`}
                       alt={`${instrument.name} image`}
+
                       className="rounded-lg w-full h-auto shadow-md"
                       style={{
                         objectFit: "contain",
                         maxHeight: "430px",
                       }}
                     />
-
           </div>
           <div className="sm:w-2/3 p-5">
             <div className="text-2xl font-bold text-blue-600 mb-2">
@@ -731,6 +735,7 @@ console.log(objectUrl)
                   }}
                 />
 
+
               {/* PDF Upload */}
               <StyledBox>
                   <Button
@@ -750,6 +755,7 @@ console.log(objectUrl)
               </StyledBox>
               {/* Display uploaded PDF files */}
               <Box mt={2}>
+
                     {uploadedFiles.length > 0 ? (
 
                       <Grid container spacing={1}>
@@ -767,9 +773,9 @@ console.log(objectUrl)
                     )}          
               </Box>
 
-
               {/* PDF Display and Delete */}
               {instrument.documents.length > 0 && (
+
                 <Box mt={2}>
                   <Typography variant="h6">PDFs:</Typography>
                   <Grid container spacing={1}>
@@ -790,6 +796,7 @@ console.log(objectUrl)
                   </Grid>
                 </Box>
               )}
+
 
               <DialogActions className='!px-0'>
               <Button variant="outlined" className='!text-[#1D34D8]' onClick={handleCloseUpdateModal}>

@@ -188,6 +188,7 @@ export default function TeamMember({ project }) {
               marginRight: "8px"
             }}>            
             <DeleteIcon sx={{ color: "" }} className='text-[#d33]' />
+
           </IconButton>
         </div>
         </>
@@ -211,6 +212,7 @@ export default function TeamMember({ project }) {
           width: '100%',
           overflowX: 'hidden',
           maxWidth: '100vw',
+
         }}
       >
         <Box

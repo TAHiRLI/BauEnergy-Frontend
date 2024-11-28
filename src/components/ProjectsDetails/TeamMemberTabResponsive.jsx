@@ -87,6 +87,7 @@ export default function TeamMember({ project }) {
     User: 1,
     ProjectManager: 2,
   };
+
   
 
   const handleAddExistingTeamMember = async () => {

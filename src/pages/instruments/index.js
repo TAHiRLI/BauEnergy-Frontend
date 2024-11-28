@@ -293,6 +293,7 @@ export const Instruments = () => {
           }));
         }
       };
+
     const handleMainImageChange = (event) => {
         setNewInstrument((prevState) => ({
         ...prevState,
@@ -306,6 +307,7 @@ export const Instruments = () => {
         const formData = new FormData();
     
         formData.append('Name', name);
+
         formData.append('Description', description);
         formData.append('ShortDesc', shortDesc);
         formData.append('ProjectId', projectId || '');
@@ -313,6 +315,7 @@ export const Instruments = () => {
         formData.append('Count', count);
         formData.append('Price', price); 
         formData.append('Image', image[0]);
+
 
 
     
@@ -595,6 +598,7 @@ export const Instruments = () => {
                     <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
                     </DialogActions>
             </Dialog>
+
             </Box>
         );
     }
@@ -605,6 +609,7 @@ export const Instruments = () => {
         isActive: instrument.isActive ? 'Inactive' : 'Active',
         shortDesc: instrument.shortDesc,
         image: instrument.image,
+
         status: instrument.status,
         qr : instrument.qrImage
     }));
@@ -614,6 +619,7 @@ export const Instruments = () => {
         isActive: instrument.isActive ? 'Inactive' : 'Active',
         shortDesc: instrument.shortDesc,
         image: instrument.image,
+
         status: instrument.status,
         qr : instrument.qrImage,
         count: instrument.count,
@@ -639,6 +645,7 @@ export const Instruments = () => {
                       alt={params.row.name}
                       style={{ width: 50, height: 50, marginRight: 10 }}
                     />
+
                   <Typography>{params.row.name}</Typography>
                 </Box>
               );
@@ -763,6 +770,7 @@ export const Instruments = () => {
                             <Box p={2} boxShadow={2} className="rounded-lg">
                                 <img
                                     src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${row.image}`}
+
                                     alt={row.name}
                                     style={{ width: '100%', height: '200px', marginBottom: '10px', objectFit: 'cover' }}
                                     className="rounded-lg"
@@ -943,7 +951,6 @@ export const Instruments = () => {
                         </IconButton>
                     </DialogTitle>
                     <DialogContent>
-                        
                         <TextField
                             autoFocus
                             margin="dense"

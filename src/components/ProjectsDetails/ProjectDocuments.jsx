@@ -99,6 +99,7 @@ export default function ProjectDocuments({ project }) {
       "File size is too large (maximum 5MB)",
       (value) => value && value.size <= 5 * 1024 * 1024 
     ),
+
   });
 
   // Dropzone Component
@@ -106,10 +107,8 @@ export default function ProjectDocuments({ project }) {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
       onDrop: (acceptedFiles) => setFieldValue("Files", acceptedFiles[0]),
       accept: "",
-    });
+    });  
 
-
-    
 
     return (
       <Box
@@ -182,6 +181,7 @@ export default function ProjectDocuments({ project }) {
         return <DescriptionIcon sx={{ fontSize: 50 }} />;
     }
   };
+
   return (
     <Box mt={1} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
         <div className='flex justify-between items-center'>
@@ -199,6 +199,7 @@ export default function ProjectDocuments({ project }) {
             <Grid item xs={6} sm={6} key={index}>
               <Box display="flex" alignItems="center" sx={{ padding: 1 }}>
               {getFileIcon(doc.fileType)}
+
 
                 <Typography
                   variant="body1"

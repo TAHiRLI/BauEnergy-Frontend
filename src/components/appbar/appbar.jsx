@@ -65,6 +65,7 @@ export default function Appbar({ toggleSidebar }) {
   const [profilePhotoPreview, setProfilePhotoPreview] = useState(null);
 
 
+
   const { user } = useAuth(); 
   
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
@@ -78,6 +79,7 @@ export default function Appbar({ toggleSidebar }) {
   if (userRoles.includes("User")) {
     isUser = true;
   }
+
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -387,7 +389,6 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
   );
   const isMobile = useMediaQuery('(max-width:1023px)');
 
-
   return (
     <Box sx={{ flexGrow: 1}} >
       <AppBar position="static" className='rounded-t-xl' sx={{backgroundColor: '#F1F3FD'}}>
@@ -461,8 +462,6 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 }}
               />
             </IconButton>
-
-
             {!isUser && (   
               isSettingsAndTeamsPage ? (
                 <Button
@@ -484,6 +483,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 </Button>
               )
             )}
+
 
           </div>
           </Box>
@@ -537,6 +537,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
               <CancelOutlinedIcon />
             </IconButton>
         </DialogTitle>
+
         <DialogContent>
           <Formik
             initialValues={{
@@ -637,142 +638,6 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
       </Dialog>
 
 
-      {/* Create User Dialog */}
-      {/* <Dialog open={openAdminCreateDialog} onClose={() => handleAdminCreateCloseDialog(false)} fullWidth PaperProps={{
-        style: {
-          borderRadius: 20,
-          backgroundColor: "#fcfcfc"  
-        },
-      }}>
-        <DialogTitle>Add New User
-        <IconButton
-              className="!text-[#1D34D8]"
-              aria-label="close"
-              onClick={() => handleAdminCreateCloseDialog(false)}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-              }}
-            >
-              <CancelOutlinedIcon />
-            </IconButton>
-        </DialogTitle>
-        <DialogContent>
-        <Formik
-            initialValues={{
-              name: '',
-              lastName: '',
-              email: '',
-              role: '',
-              image: null,
-              birthDate: '',
-              phoneNumber: '',
-            }}
-            validationSchema={validationCreateUserSchema}
-            onSubmit={handleCreateUserFormSubmit}
-          >
-            {({ setFieldValue, errors, touched, isSubmitting }) => (
-              <Form>
-                <StyledBox>
-                  <Button
-                    component="label"
-                    variant="contained"
-                    startIcon={<CloudUploadIcon />}
-                  >
-                    Select profile photo
-                    <VisuallyHiddenInput
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => {
-                        //handleImageUpload(event);
-                        setFieldValue('image', event.currentTarget.files[0]);
-                      }}
-                    />
-                  </Button>
-                </StyledBox>
-                <Field
-                  as={TextField}
-                  name="name"
-                  label="Name"
-                  fullWidth
-                  margin="normal"
-                  error={touched.name && Boolean(errors.name)}
-                  helperText={touched.name && errors.name}
-                />
-
-                <Field
-                  as={TextField}
-                  name="lastName"
-                  label="Last Name"
-                  fullWidth
-                  margin="normal"
-                  error={touched.lastName && Boolean(errors.lastName)}
-                  helperText={touched.lastName && errors.lastName}
-                />
-
-                <Field
-                  as={TextField}
-                  name="email"
-                  label="Email"
-                  fullWidth
-                  margin="normal"
-                  error={touched.email && Boolean(errors.email)}
-                  helperText={touched.email && errors.email}
-                />
-                <Field
-                  as={TextField}
-                  name="birthDate"
-                  label="Birth Date"
-                  type="date"
-                  fullWidth
-                  margin="normal"
-                  InputLabelProps={{ shrink: true }}
-                  error={touched.birthDate && Boolean(errors.birthDate)}
-                  helperText={touched.birthDate && errors.birthDate}
-                />
-
-
-                <Field
-                  as={TextField}
-                  name="phoneNumber"
-                  label="Phone Number"
-                  fullWidth
-                  margin="normal"
-                  error={touched.phoneNumber && Boolean(errors.phoneNumber)}
-                  helperText={touched.phoneNumber && errors.phoneNumber}
-                />
-
-                <Field name="role">
-                  {({ field, form }) => (
-                    <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
-                      <InputLabel id="role-label">Role</InputLabel>
-                      <Select
-                        {...field}
-                        labelId="role-label"
-                        label="Role" 
-                        value={field.value}
-                      >
-                        {Object.entries(RoleEnum).map(([key, value]) => (
-                          <MenuItem key={value} value={value}>
-                          {key?.split('_').join(' ')}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {form.touched.role && form.errors.role && (
-                        <FormHelperText>{form.errors.role}</FormHelperText>
-                      )}
-                    </FormControl>
-                  )}
-                </Field>
-                <DialogActions>
-                <Button type="submit" disabled={isSubmitting} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
-        </DialogContent>
-      </Dialog> */}
 
 <Dialog
       open={openAdminCreateDialog}
