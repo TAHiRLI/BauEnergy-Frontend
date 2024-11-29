@@ -32,7 +32,7 @@ function Layout({ children }) {
         </Appbar>
 
         {/* Main Content */}
-        <main className="p-0 sm:p-6">
+        <main className="p-0 sm:p-6 ">
           {children}
         </main>
       </div>

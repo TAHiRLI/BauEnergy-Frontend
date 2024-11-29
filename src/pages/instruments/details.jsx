@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Card, CardMedia, CardContent, Button, CircularProgress, List, ListItem, ListItemText, Divider, TextField, FormControlLabel, Radio, FormControl, InputLabel, Checkbox, OutlinedInput, InputAdornment, AccordionActions } from '@mui/material';
+import { Box, Typography, Grid, Button, CircularProgress, List, ListItem, ListItemText, Divider, TextField, FormControlLabel, Radio, FormControl, InputLabel, Checkbox, OutlinedInput, InputAdornment, AccordionActions } from '@mui/material';
 import { Dialog, DialogTitle, DialogContent, IconButton, DialogActions, Select, MenuItem } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { instrumentService } from '../../APIs/Services/instrument.service';
@@ -23,12 +23,6 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { instrumentTagService } from '../../APIs/Services/instrumentTag.service';
 import StatusButton from '../../components/common/statusBtn';
-import { Swiper, SwiperSlide } from "swiper/react";
-// import { Navigation } from 'swiper/modules';
-import { Pagination } from 'swiper/modules';
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 
 
 const validationSchema = Yup.object().shape({
@@ -139,7 +133,7 @@ const InstrumentDetails = () => {
       try {
         const response = await instrumentService.getById(id);
         setInstrument(response.data);
-        setIsFirstEffectComplete(true); // Signal that the first useEffect has completed
+        setIsFirstEffectComplete(true);
       } catch (error) {
         setError('Error fetching instrument details');
       } finally {
@@ -160,7 +154,7 @@ const InstrumentDetails = () => {
         setfilteredInstrument(response.data)
         //console.log(response);
       } catch (error) {
-        setError('Error fetching instrument details');
+        console.error('Error fetching instrument details');
       } finally {
         setLoading(false);
       }
@@ -305,35 +299,39 @@ const handleAddNewTag = () => {
     }
 };
 
-  const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
+const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
+  const formData = new FormData();
+  formData.append('Name', values.name);
+  formData.append('Description', values.description);
+  formData.append('ShortDesc', values.shortDesc);
+  formData.append('InstrumentType', values.instrumentType);
+  formData.append('Price', values.price);
+  formData.append('Image', values.image);
 
-    const formData = new FormData();
-    formData.append('Name', values.name);
-    formData.append('Description', values.description);
-    formData.append('ShortDesc', values.shortDesc);
-    formData.append('InstrumentType', values.instrumentType);
-    formData.append('Price', values.price); 
-    formData.append('Image', values.image);    
-  
-    values.files?.forEach((file) => formData.append(`Files`, file));
-    //console.log(instrument.tags)
-    instrument.tags.forEach((tag) => formData.append(`Tags`, tag))
-    try {
-      const response = await instrumentService.edit(id, formData);
-      if (response.status !== 200) throw new Error('Failed to submit data');
-      Swal.fire('Success', 'Instrument has been updated!', 'success');
-      handleCloseUpdateModal();
-      resetForm();
-      setRefresh(!refresh); 
+  values.files?.forEach((file) => formData.append('Files', file));
+  instrument.tags.forEach((tag) => formData.append('Tags', tag));
 
-      //onsole.log('Data submitted successfully');
-    } catch (error) {
-      handleCloseUpdateModal();
-      Swal.fire('Error', 'Failed to edit instrument.', 'error');
+  try {
+    const response = await instrumentService.edit(id, formData);
+    if (response.status !== 200) throw new Error('Failed to submit data');
+    
+    Swal.fire('Success', 'Instrument has been updated!', 'success')
+    // .then(() => {
+    //   // Reload the page after the alert is closed
+    //   window.location.reload();
+    // });
 
-      console.error('Error submitting data:', error);
-    }
-  };
+    handleCloseUpdateModal();
+    resetForm();
+    setRefresh(!refresh);
+  } catch (error) {
+    handleCloseUpdateModal();
+    Swal.fire('Error', 'Failed to edit instrument.', 'error');
+  } finally {
+    setSubmitting(false); // End Formik's submitting state
+  }
+};
+
   
   
 
@@ -696,24 +694,25 @@ console.log(objectUrl)
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
-                  marginBottom: 3,
+                  alignItems: 'start',
+                  marginBottom: 2,
                 }}
               >
-                {/* Profile Image */}
+                {/* Instrument Image */}
                 <img
                 src={
                   selectedImage?.startsWith("blob:") 
-                    ? selectedImage // If it's a blob URL, use it directly
+                    ? selectedImage
                     : `${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${selectedImage}`
                 }
-                            alt="Profile"
+                alt="Profile"
                   style={{
-                    width: 150,
-                    height: 150,
-                    borderRadius: '50%',
+                    width: 250,
+                    height: 200,
+                    borderRadius: '10%',
                     objectFit: 'cover',
                     marginBottom: 0,
+                    marginTop: '20px'
                   }}
                 />
               </Box>
