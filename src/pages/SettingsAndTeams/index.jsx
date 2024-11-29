@@ -26,15 +26,21 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Field, Form, Formik } from 'formik';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import * as Yup from 'yup';
+import { jwtDecode } from 'jwt-decode';
+import { useAuth } from "../../context/authContext";
 
 const SettingsAndTeams = () => {
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openDialog, setOpenDialog] = useState(false);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [teamMemberToEdit, setTeamMemberToEdit] = useState(null);
   const [selectedImage, setSelectedImage] = useState(teamMemberToEdit?.image || null);
+
+  const { user } = useAuth(); 
+  
+  const decodedToken = user?.token ? jwtDecode(user.token) : null;
+  const currentUserId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
 
   useEffect(() => {
     fetchTeamMembers();
@@ -154,44 +160,39 @@ const SettingsAndTeams = () => {
     birthDate: Yup.date()
       .required('Birth Date is required')
       .max(new Date(), 'Birth Date cannot be in the future'),
-    phoneNumber: Yup.string()
-      .required('Phone number is required')
-      .matches(/^\+?[1-9]\d{1,14}$/, 'Phone number is not valid'),
+      phoneNumber: Yup.string()
+      .matches(/^\+?[0-9]{10,15}$/, 'Invalid phone number format')
+      .required('Phone Number is required'),
+      email: Yup.string().email('Invalid email format').required('Email is required'), // Email validation
+
   });
 
   const handleUpdateTeamMember = async (values) => {
-
     try {
       const formData = new FormData();
       formData.append('Name', values.name);
       formData.append('LastName', values.lastName);
       formData.append('Role', values.role);
-      formData.append("PhoneNumber", values.phoneNumber);
-      formData.append("BirthDate", new Date(values.birthDate).toISOString().split("T")[0]); 
-      //formData.append('TeamMemberId', teamMemberToEdit.id); 
-
-      if (values.image) {
-        formData.append('Image', values.image); 
-      } 
+      formData.append('PhoneNumber', values.phoneNumber);
+      formData.append('BirthDate', new Date(values.birthDate).toISOString().split('T')[0]);
+      formData.append('Image', values.Image);
+      formData.append('Email', values.email); 
   
-      //await teamMemberService.edit(teamMemberToEdit.id, formData);
-      var response = await userSerivce.edit(teamMemberToEdit.email, formData);
-
+      const response = await userSerivce.edit(teamMemberToEdit.email, formData);
+      console.log(response)
+  
       setIsEditDialogOpen(false);
-
+  
       Swal.fire('Success', 'Team member has been updated!', 'success').then(() => {
         window.location.reload();
       });
-  
-      //const projectResponse = await projectService.getById(project.id);
-      //dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
-  
     } catch (error) {
       console.error('Error updating team member:', error.response || error.message);
       setIsEditDialogOpen(false);
       Swal.fire('Error', 'Failed to update team member.', 'error');
     }
   };
+  
   const columns = [
     {
       field: 'name',
@@ -245,37 +246,46 @@ const SettingsAndTeams = () => {
     {
       field: 'actions',
       headerName: 'Actions',
-      minWidth: 180,
-      renderCell: (params) => (
-        <div className="text-center">
-          {/* Edit button */}
-          <IconButton
-            onClick={() => handleEdit(params.row)}
-            sx={{
-              backgroundColor: "#f5f5f5",  
-              borderRadius: "20%",         
-              padding: "5px",               
-              border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
-              marginRight: "8px"
-            }}>
-            <EditIcon sx={{ color: "#424242" }} />
-          </IconButton>
-          {/* Delete Button */}
-          <IconButton
-            onClick={() => handleDelete(params.row.id)}
-            sx={{
-              backgroundColor: '#f5f5f5',
-              borderRadius: '20%',
-              padding: '5px',
-              border: '1px solid #e0e0e0',
-              '&:hover': { backgroundColor: '#e0e0e0' },
-              marginRight: '8px',
-            }}
-          >
-            <DeleteIcon sx={{ color: '#d33' }} />
-          </IconButton>
-        </div>
-      ),
+      minWidth: 150,
+      renderCell: (params) => {
+        const isCurrentUser = params.row.id === currentUserId;
+    
+        return (
+          <div className="text-center">
+            {!isCurrentUser && (
+              <>
+                {/* Edit button */}
+                <IconButton
+                  onClick={() => handleEdit(params.row)}
+                  sx={{
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '20%',
+                    padding: '5px',
+                    border: '1px solid #e0e0e0',
+                    '&:hover': { backgroundColor: '#e0e0e0' },
+                    marginRight: '8px',
+                  }}
+                >
+                  <EditIcon sx={{ color: '#424242' }} />
+                </IconButton>
+                {/* Delete button */}
+                <IconButton
+                  onClick={() => handleDelete(params.row.id)}
+                  sx={{
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '20%',
+                    padding: '5px',
+                    border: '1px solid #e0e0e0',
+                    '&:hover': { backgroundColor: '#e0e0e0' },
+                  }}
+                >
+                  <DeleteIcon sx={{ color: '#d33' }} />
+                </IconButton>
+              </>
+            )}
+          </div>
+        );
+      },
     },
   ];
   
@@ -304,7 +314,7 @@ const SettingsAndTeams = () => {
             pageSizeOptions={[5, 10, 20]}
             sx={{
               border: 0,
-              minWidth: 640,
+              minWidth: 400,
               height: 'auto',
               '& .MuiDataGrid-root': {
                 overflowX: 'auto',
@@ -359,7 +369,7 @@ const SettingsAndTeams = () => {
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <Formik
+      <Formik
           initialValues={{
             name: teamMemberToEdit?.name || '',
             lastName: teamMemberToEdit?.lastName || '',
@@ -368,17 +378,18 @@ const SettingsAndTeams = () => {
               : '',
             phoneNumber: teamMemberToEdit?.phoneNumber || '',
             role:
-            teamMemberToEdit?.role && typeof teamMemberToEdit.role === 'string'
-              ? RoleEnum[teamMemberToEdit.role] // Convert string role to numeric value
-              : teamMemberToEdit?.role ?? RoleEnum.User, // Default to User if undefined
-            image: teamMemberToEdit?.image
+              teamMemberToEdit?.role && typeof teamMemberToEdit.role === 'string'
+                ? RoleEnum[teamMemberToEdit.role] 
+                : teamMemberToEdit?.role ?? RoleEnum.User, 
+            image: teamMemberToEdit?.image,
+            email: teamMemberToEdit?.email || '',
           }}
-          validationSchema={validationSchema}
+          validationSchema={validationSchema} 
           onSubmit={async (values, { setSubmitting }) => {
             await handleUpdateTeamMember({ ...values, image: selectedImage });
             setSubmitting(false);
           }}
-        >
+      >
           {({ setFieldValue, errors, touched, isSubmitting }) => (
             <Form>
               {/* Profile Photo Section */}
@@ -422,7 +433,7 @@ const SettingsAndTeams = () => {
                   style={{ display: 'none' }}
                   onChange={(event) => {
                     handleImageUpload(event);
-                    setFieldValue('image', event.currentTarget.files[0]);
+                    setFieldValue('Image', event.currentTarget.files[0]);
                   }}
                 />
               </Box>
@@ -446,6 +457,16 @@ const SettingsAndTeams = () => {
                 error={touched.lastName && Boolean(errors.lastName)}
                 helperText={touched.lastName && errors.lastName}
               />
+              <Field
+                as={TextField}
+                name="email"
+                label="Email"
+                fullWidth
+                margin="normal"
+                error={touched.email && Boolean(errors.email)}
+                helperText={touched.email && errors.email}
+              />
+
               <Field
                 as={TextField}
                 name="birthDate"

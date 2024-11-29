@@ -33,9 +33,13 @@ const UpdateUserPage = () => {
   const validationSchema = Yup.object({
     name: Yup.string().required("First name is required"),
     lastName: Yup.string().required("Last name is required"),
+    email: Yup.string()
+    .trim()
+    .email('Invalid email format')
+    .required('Email is required'),
     phoneNumber: Yup.string()
-      .matches(/^\+?[1-9]\d{1,14}$/, "Phone number is not valid")
-      .required("Phone number is required"),
+    .matches(/^\+?[0-9]{10,15}$/, 'Invalid phone number format')
+    .required('Phone Number is required'),
     birthDate: Yup.date().required("Birthdate is required"),
   });
 
@@ -76,35 +80,64 @@ const UpdateUserPage = () => {
     const { name, value } = e.target;
     setUserData((prevState) => ({ ...prevState, [name]: value }));
   };
-
   const handleSubmit = async (values, { setSubmitting }) => {
-    console.log(values)
     setLoading(true);
   
     const formData = new FormData();
     formData.append("Name", values.name);
     formData.append("LastName", values.lastName);
-    //formData.append("Email", values.email);
+    formData.append("Email", values.email);
     formData.append("PhoneNumber", values.phoneNumber);
-    formData.append("BirthDate", new Date(values.birthDate).toISOString().split("T")[0]); 
+    formData.append("BirthDate", new Date(values.birthDate).toISOString().split("T")[0]);
+  
     try {
-      var response = await userSerivce.edit(userEmail, formData);
-      //console.log(response)
+      // Confirmation dialog before submission
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to update your information?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#1D34D8",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, update it!",
+      });
+  
+      if (!result.isConfirmed) {
+        setSubmitting(false);
+        setLoading(false);
+        return;
+      }
+  
+      // Proceed with the submission if confirmed
+      const response = await userSerivce.edit(userEmail, formData);
+  
       if (response.data.token) {
         cookies.remove("user", { path: "/" });
         const newToken = response.data.token;
         cookies.set("user", { token: newToken }, { path: "/" });
-        window.location.reload();
+  
+        // Success dialog after update
+
+        Swal.fire('Success', 'Your information has been updated successfully.', 'success').then(() => {
+          window.location.reload();
+        });
       }
-      Swal.fire('Success', 'User information has been updated!', 'success');
     } catch (error) {
       console.error("Error updating user:", error);
-      Swal.fire('Error', 'Failed to add project.', 'error');
+  
+      // Error dialog
+      await Swal.fire({
+        title: "Error!",
+        text: "Failed to update your information. Please try again later.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     } finally {
       setSubmitting(false);
       setLoading(false);
     }
   };
+  
   
 
 
@@ -191,7 +224,6 @@ const UpdateUserPage = () => {
                   onChange={(e) => {
                     handleChange(e);  
                   }}
-                  disabled
                 />
                 <Field
                   as={TextField}
@@ -227,7 +259,7 @@ const UpdateUserPage = () => {
                     backgroundColor: "#1D34D8",
                     textTransform: "none",
                     marginTop: 3,
-                    padding: "10px 20px",
+                    padding: "6px 20px",
                   }}
                 >
                   Update

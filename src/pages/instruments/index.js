@@ -58,6 +58,8 @@ export const Instruments = () => {
     const [error, setError] = useState('');
     const [viewMode, setViewMode] = useState("table"); 
 
+    const [isSubmitting, setIsSubmitting] = useState(false); 
+
 
     const handleViewChange = (mode) => {
         setViewMode(mode); // Update the state with the selected mode ("card" or "table")
@@ -301,57 +303,62 @@ export const Instruments = () => {
         }));
     };
 
+
     const handleAddInstrument = async () => {
-        const { name, image, files, description, shortDesc, projectId, instrumentType, count, price, tags } = newInstrument;
-        console.log(image)
-        const formData = new FormData();
+      setIsSubmitting(true); // Disable button
+      const { name, image, files, description, shortDesc, projectId, instrumentType, count, price, tags } = newInstrument;
     
-        formData.append('Name', name);
-
-        formData.append('Description', description);
-        formData.append('ShortDesc', shortDesc);
-        formData.append('ProjectId', projectId || '');
-        formData.append('InstrumentType', instrumentType);
-        formData.append('Count', count);
-        formData.append('Price', price); 
-        formData.append('Image', image[0]);
-
-
-
+      const formData = new FormData();
+      formData.append('Name', name);
+      formData.append('Description', description);
+      formData.append('ShortDesc', shortDesc);
+      formData.append('ProjectId', projectId || '');
+      formData.append('InstrumentType', instrumentType);
+      formData.append('Count', count);
+      formData.append('Price', price);
+      formData.append('Image', image[0]);
     
-        files?.forEach((file) => {
-            formData.append('Files', file);
+      files?.forEach((file) => {
+        formData.append('Files', file);
+      });
+    
+      tags?.forEach((tag) => {
+        formData.append('Tags', tag);
+      });
+    
+      try {
+        await instrumentService.add(formData);
+        forceUpdate((x) => !x);
+        handleCloseModal();
+        fetchInstrumentsByName();
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Instrument added successfully.',
+          confirmButtonText: 'OK',
         });
-    
-        newInstrument.tags?.forEach((tag) => {
-            formData.append('Tags', tag);
+      } catch (err) {
+        console.error('Error adding instrument:', err);
+        if (err.response && err.response.status === 403) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Access Denied',
+            text: 'You do not have permission to perform this action.',
+            confirmButtonText: 'OK',
           });
-    
-        try {
-            await instrumentService.add(formData);
-            forceUpdate((x) => !x);
-            handleCloseModal();
-            fetchInstrumentsByName();
-        } catch (err) {
-            console.error('Error adding instrument:', err);
-            if (err.response && err.response.status === 403) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Access Denied',
-                    text: 'You do not have permission to perform this action.',
-                    confirmButtonText: 'OK'
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while adding the instrument. Please try again.',
-                    confirmButtonText: 'OK'
-                });
-            }
-            handleCloseModal();
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while adding the instrument. Please try again.',
+            confirmButtonText: 'OK',
+          });
         }
+      } finally {
+        setIsSubmitting(false); // Re-enable button
+      }
     };
+    
 
     const handleShare = () => {
         const shareData = {
@@ -394,6 +401,7 @@ export const Instruments = () => {
                 Add Instrument
               </Button>
                 )}
+            {/* Add Instrument Modal */}
             <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="sm" PaperProps={{
                 style: {
                     borderRadius: 20,
@@ -417,7 +425,6 @@ export const Instruments = () => {
                         </IconButton>
                     </DialogTitle>
                     <DialogContent>
-                        
                         <TextField
                             autoFocus
                             margin="dense"
@@ -595,7 +602,16 @@ export const Instruments = () => {
                     </DialogContent>
                     <DialogActions className='!px-10'>
                     <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
-                    <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
+                    {/* <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button> */}
+                    <Button 
+  type="submit" 
+  onClick={handleAddInstrument} 
+  variant="contained" 
+  className='!bg-[#1D34D8]' 
+  disabled={isSubmitting} // Disable button while submitting
+>
+  {isSubmitting ? 'Submitting...' : 'Submit'}
+</Button>
                     </DialogActions>
             </Dialog>
 
@@ -654,18 +670,18 @@ export const Instruments = () => {
         {
             field: "availability",
             headerName: "Available",
-            flex: 0.5,
+            width: 150,
             renderCell: (params) => {
                 const count = params.row.count ?? 0; // Use 0 if undefined
                 const usedCount = params.row.usedInstrumentsCount ?? 0; // Use 0 if undefined
                 return `${count - usedCount}/${count}`;
             },
         },
-        { field: "shortDesc", headerName: "Description", flex: 2 },
+        { field: "shortDesc", headerName: "Description", width: 200 },
         {
             field: "actions",
             headerName: "Actions",
-            flex: 1,
+            width: 170,
             sortable: false,
             renderCell: (params) => (
                 <div className="flex gap-2 items-center mt-2">
@@ -711,33 +727,45 @@ export const Instruments = () => {
                     List of Instruments
                 </span>
                 <div className={`flex ${isExtraSmall ? "flex-col" : "flex-row"
-                    } items-center gap-4 justify-between w-full sm:w-auto`}>
-                    <TextField
-                        id="searchbtnax"
-                        variant="outlined"
-                        placeholder="Search Instruments..."
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        onKeyDown={handleKeyDown}
+                    } items-start gap-4 justify-between w-full sm:w-auto`}>
+                    <Box
+                        className="flex w-full"
                         sx={{
-                            minWidth: "190px",
-                            width: { xs: '100%', sm: isAdmin ? "100%" : "50%" },
-                            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-                            borderRadius: '30px',
-                            '& .MuiOutlinedInput-root': { borderRadius: '30px' },
-                            '& .MuiOutlinedInput-input': { padding: '10px 15px' },
+                            flexDirection: { xs: "column", sm: "row" }, // Column for extra small screens, row for others
+                            gap: 2, // Space between items
                         }}
-                    />
-                    {isAdmin && (
-                        <Button
+                        >
+                        <TextField
+                            id="searchbtnax"
+                            variant="outlined"
+                            placeholder="Search Instruments..."
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            onKeyDown={handleKeyDown}
+                            sx={{
+                            minWidth: "190px",
+                            width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },
+                            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                            borderRadius: "30px",
+                            "& .MuiOutlinedInput-root": { borderRadius: "30px" },
+                            "& .MuiOutlinedInput-input": { padding: "10px 15px" },
+                            }}
+                        />
+                        {isAdmin && (
+                            <Button
                             variant="contained"
                             className="!bg-[#1D34D8] !rounded-3xl !ml-0 md:!ml-3 !py-2 !w-full"
-                            sx={{ width: { xs: '100%', sm: '48%' }, textTransform: "none" }}
+                            sx={{
+                                width: { xs: "100%", sm: "48%" },
+                                textTransform: "none",
+                            }}
                             onClick={handleOpenModal}
-                        >
+                            >
                             Add Instrument
-                        </Button>
-                    )}
+                            </Button>
+                        )}
+                        </Box>
+
                     {/* Switch to toggle between Card and Table views */}
                     <div className={`flex items-center border rounded-full p-1 ${!isSmallScreen ? 'gap-2' : ''}`}>
                     <button
@@ -819,17 +847,54 @@ export const Instruments = () => {
                 </Grid>
                 
             ) : (
-                <Box sx={{ marginTop: "20px", height: 500, width: "100%" }}>
-                    <DataGrid
-                        rows={rowss || []}
-                        columns={columns}
-                        pageSize={10}
-                        rowsPerPageOptions={[10, 20, 50]}
-                        loading={loading}
-                        disableSelectionOnClick
-                        autoHeight
-                    />
-                </Box>
+
+            <Paper
+            className='!mt-4 !sm:mt-0'
+            sx={{
+                width: '100%',
+                overflowX: 'hidden',
+                maxWidth: '100vw',
+            }}
+            >
+            <Box
+                sx={{
+                width: '100%',
+                //overflowX: { xs: 'auto', sm: 'hidden' },
+                }}
+            >
+                <DataGrid
+                rows={rowss}
+                columns={columns}
+                initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+                pageSizeOptions={[5, 10, 20]}
+                sx={{
+                    border: 0,
+                    minWidth: 200,
+                    height: 'auto',
+                    '& .MuiDataGrid-root': {
+                    overflowX: 'auto',
+                    },
+                    '& .MuiDataGrid-cell': {
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    textAlign: 'center', 
+                    },
+                    '& .MuiDataGrid-columnHeader': {
+                    textAlign: 'center', 
+                    justifyContent: 'center', 
+                    },
+                    '& .MuiDataGrid-footerContainer':{
+                    justifyContent: 'flex-start'
+                    }
+                }}
+                getRowId={(row) => row.id}
+                />
+            </Box>
+            </Paper>
+
             )}
 
             {/* {!loading && hasMore && (
@@ -1128,7 +1193,16 @@ export const Instruments = () => {
                     </DialogContent>
                     <DialogActions className='!px-10'>
                     <Button onClick={handleCloseModal} className='!text-[#1D34D8] '>Cancel</Button>
-                    <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button>
+                    {/* <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button> */}
+                    <Button 
+  type="submit" 
+  onClick={handleAddInstrument} 
+  variant="contained" 
+  className='!bg-[#1D34D8]' 
+  disabled={isSubmitting} // Disable button while submitting
+>
+  {isSubmitting ? 'Submitting...' : 'Submit'}
+</Button>
                     </DialogActions>
             </Dialog>
         </Box>

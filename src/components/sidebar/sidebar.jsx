@@ -136,7 +136,10 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       button
                       component={Link}
                       className="!rounded-xl"
-                      onClick={() => navigate("/instruments", { state: { focusSearch: true } })}
+                      onClick={() => {
+                        navigate("/instruments", { state: { focusSearch: true } });
+                        if (isMobile) toggleSidebar();
+                      }}
                     >
                       <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
                         <Search className="text-black" />
@@ -148,7 +151,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                 </List>
 
                 <List>
-                  <ListItem button className="!rounded-xl" onClick={handleNotificationClick} component={Link}>
+                  <ListItem button className="!rounded-xl" onClick={() => {handleNotificationClick(); if (isMobile) toggleSidebar();
+}} component={Link}>
                     <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
                       <NotificationIcon className="text-black" />
                     </ListItemIcon>
@@ -158,7 +162,10 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
                 {isAdmin && (
                   <List>
-                    <ListItem button className="!rounded-xl" component={Link} to={ROUTES.SETTINGSANDTEAMS}>
+                    <ListItem button component={Link} to={ROUTES.SETTINGSANDTEAMS} className="!rounded-xl" 
+                  onClick={() => {
+                    if (isMobile) toggleSidebar();
+                  }}>
                       <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
                         <SettingsOutlinedIcon className="text-black" />
                       </ListItemIcon>
@@ -173,18 +180,26 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
                 {/* Projects */}
                 <List>
-                  <ListItem button component={Link} to={ROUTES.BASE} className="!rounded-xl">
+                  <ListItem button component={Link} to={ROUTES.BASE} className="!rounded-xl" 
+                  onClick={() => {
+                    if (isMobile) toggleSidebar();
+                  }}>
                     <ListItemIcon>
                       <Home className="text-black" />
                     </ListItemIcon>
                     <ListItemText primary="Home" />
                   </ListItem>
-                  <ListItem button component={Link} to={ROUTES.CERTIFICATE} className="!rounded-xl">
+
+                  <ListItem button component={Link} to={ROUTES.CERTIFICATE} className="!rounded-xl"
+                  onClick={() => {
+                    if (isMobile) toggleSidebar();
+                  }}>
                     <ListItemIcon>
                       <WorkspacePremiumIcon className="text-black" />
                     </ListItemIcon>
                     <ListItemText primary={`Tutorial`} />
                   </ListItem>
+
                   <ListItem button component={Link} onClick={handleProjectsClick} className="!rounded-xl">
                     <ListItemIcon>
                       <PollOutlinedIcon className="text-black" />
@@ -192,6 +207,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     <ListItemText primary="Projects" />
                     {openProjectsBtn ? <ExpandLess /> : <ExpandMore />}
                   </ListItem>
+
                   <Collapse in={openProjectsBtn} timeout="auto" unmountOnExit={false}>
                     <List component="div" disablePadding>
                       {projects.map((project) => (
@@ -200,7 +216,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                           component={Link}
                           className="pl-12 rounded-xl"
                           key={project.id}
-                          onClick={() => handleProjectSelect(project.id)}
+                          onClick={
+                            () => {handleProjectSelect(project.id); if (isMobile) toggleSidebar();}
+                          }
                         >
                           <span className="text-[#1D34D8] mr-2 ml-7">&#x25A0;</span>
                           <ListItemText primary={project.name} />
@@ -210,7 +228,10 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                   </Collapse>
 
                   {!isUser && (
-                    <ListItem button component={Link} to={ROUTES.INSTRUMENTS} className="!rounded-xl">
+                    <ListItem button component={Link} to={ROUTES.INSTRUMENTS} className="!rounded-xl"  
+                    onClick={() => {
+                      if (isMobile) toggleSidebar();
+                    }}>
                       <ListItemIcon>
                         <BuildOutlinedIcon className="text-black" />
                       </ListItemIcon>
@@ -219,7 +240,10 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                   )}   
 
                   {!isUser && (
-                    <ListItem button component={Link} to={ROUTES.DOCUMENTS} className="!rounded-xl">
+                    <ListItem button component={Link} to={ROUTES.DOCUMENTS} className="!rounded-xl"
+                    onClick={() => {
+                      if (isMobile) toggleSidebar();
+                    }}>
                       <ListItemIcon>
                         <DeleteOutlinedIcon className="text-black" />
                       </ListItemIcon>

@@ -61,7 +61,7 @@ export const Documents = () => {
         <Grid container spacing={2}>
           {documents.length > 0 ? (
             documents.map((doc) => (
-              <Grid item xs={6} sm={12} key={doc.id}>
+              <Grid item xs={12} sm={6} key={doc.id}>
                 <Box display="flex" alignItems="center" sx={{ padding: 1, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                   {doc.fileType === 'pdf' ? (
                     <PictureAsPdfIcon sx={{ fontSize: 40, color: '#D32F2F' }} />
