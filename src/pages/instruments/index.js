@@ -655,7 +655,7 @@ export const Instruments = () => {
             width: 200,
             renderCell: (params) => {
               return (
-                <Box display="flex" alignItems="center" sx={{ cursor: 'pointer' }} onClick={() => handleShowQR(params.row)}>
+                <Box display="flex" alignItems="center" sx={{ cursor: 'pointer' }} onClick={() => handleShowQR(params.row.qrImage, params.row.name)}>
                     <img
                       src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${params.row.image}`}
                       alt={params.row.name}

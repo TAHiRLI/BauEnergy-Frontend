@@ -514,14 +514,15 @@ console.log(objectUrl)
                 <IconButton
                 onClick={() => handleDelete(instrument.id)}
                 sx={{
+                  color:"#d333",
                   backgroundColor: "#f5f5f5",  
                   borderRadius: "20%",         
                   padding: "5px",               
                   border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
                   marginRight: "8px"
                 }}>            
-                <DeleteIcon sx={{ color: "#424242" }} />
-              </IconButton>
+                  <DeleteIcon sx={{ color: '#d33' }} />
+                </IconButton>
               </AccordionSummary>
               <AccordionDetails>
                 <Box mt={0} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
@@ -600,6 +601,53 @@ console.log(objectUrl)
         >
           {({values, setFieldValue, errors, touched }) => (
             <Form>
+              <Box display="flex" flexDirection="column" alignItems="center" marginBottom={3}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    marginBottom: 2,
+                  }}
+                >
+                  {/* Instrument Image */}
+                  <img
+                  src={
+                    selectedImage?.startsWith("blob:") 
+                      ? selectedImage
+                      : `${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${selectedImage}`
+                  }
+                  alt="Profile"
+                    style={{
+                      width: 250,
+                      height: 200,
+                      borderRadius: '10%',
+                      objectFit: 'cover',
+                      marginBottom: 0,
+                      marginTop: '20px'
+                    }}
+                  />
+                </Box>
+                
+                  <Button
+                    variant="text"
+                    className="!text-[#1D34D8]"
+                    onClick={() => document.getElementById('profile-image-input').click()}
+                  >
+                    Edit Image
+                  </Button>
+                  <input
+                    id="profile-image-input"
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={(event) => {
+                      handleImageUpload(event);
+                      setFieldValue('image', event.currentTarget.files[0]);
+                    }}
+                  />
+              </Box>
+
               <Box my={2}>
                 <Field
                   as={TextField}
@@ -716,6 +764,7 @@ console.log(objectUrl)
                   }}
                 />
               </Box>
+              
                 <Button
                   variant="text"
                   className="!text-[#1D34D8]"
@@ -802,7 +851,7 @@ console.log(objectUrl)
                   Cancel
                 </Button>
                 <Button type="submit" variant="contained" className='!bg-[#1D34D8]'>
-                  Update
+                  Edit
                 </Button>
         </DialogActions>
             </Form>
