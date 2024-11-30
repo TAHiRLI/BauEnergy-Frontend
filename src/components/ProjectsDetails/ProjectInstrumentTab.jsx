@@ -97,19 +97,14 @@ export default function InstrumentTab({ project }) {
       dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
       setFilteredInstruments(response.data.instruments);
       setSelectedInstrumentId('');
-      setInstrumentCount(1); // Reset count to default
+      setInstrumentCount(1);
       setOpenDialog(false);
   
     } catch (error) {
-      console.error('Error adding instrument:', error);
+      console.error('Error adding instrument:', error.response.data);
       setOpenDialog(false);
-  
-      Swal.fire({
-        title: 'Error!',
-        text: 'Failed to add instrument.',
-        icon: 'error',
-        timer: 2000,
-      });
+
+      Swal.fire('Error!', error.response.data, 'error')
     }
   };
   
@@ -444,35 +439,41 @@ const handleManagerChange = (event) => {
       </div>
 
       <Paper
-      className='!lg:max-w-[100%]'
-        sx={{
-          //height: '200px',
-          //width: '800px',
-          overflowX: 'hidden',
-          maxWidth: { xs: '250px', sm: '700px', md:'750px', lg:'100%' },
-          //minWidth:
-        }}
-      >
-        <Box
-          sx={{
-            maxWidth: { xs: '250px', sm: '700px', md:'750px', lg:'100%' },
-            overflowX: 'auto', 
-          }}
-        >
-          <DataGrid
-            rows={filteredInstruments}
-            columns={columns}
-            initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
-            pageSizeOptions={[20, 40]}
-            sx={{
-              border: 0,
-              minWidth: 640, 
-              overflowX: 'auto',
-            }}
-            getRowId={(row) => row.id}
-          />
-        </Box>
-      </Paper>
+  className="!lg:max-w-[100%]"
+  sx={{
+    overflowX: 'hidden',
+    maxWidth: { xs: '250px', sm: '700px', md: '750px', lg: '100%' },
+  }}
+>
+  <Box
+    sx={{
+      maxWidth: { xs: '250px', sm: '700px', md: '750px', lg: '100%' },
+      overflowX: 'auto',
+    }}
+  >
+    <DataGrid
+      rows={filteredInstruments}
+      columns={columns}
+      initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
+      pageSizeOptions={[20, 40]}
+      sx={{
+        border: 0,
+        minWidth: 640,
+        overflowX: 'auto',
+        '& .MuiDataGrid-cell': {
+          display: 'flex',       
+          alignItems: 'center',  
+        },
+        '& .MuiDataGrid-columnHeader': {
+          display: 'flex',
+          alignItems: 'center',    
+        },
+      }}
+      getRowId={(row) => row.id}
+    />
+  </Box>
+</Paper>
+
 
 
       {/* Dialog for Adding New Instrument */}

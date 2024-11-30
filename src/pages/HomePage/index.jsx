@@ -111,7 +111,7 @@ function HomePage() {
           xAxis={[{ data: chartData.xLabels, scaleType: 'band' }]}
         />
       ) : (
-        <p>Loading chart...</p> // Fallback UI while data loads
+        <p>Loading chart...</p> 
       )}
     </div>
   );

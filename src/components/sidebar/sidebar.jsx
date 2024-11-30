@@ -116,19 +116,21 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
             <div>
               {/* Company Logo */}
               <div className="CompanyLogo px-4 pt-4">
-                <div className="flex items-center mb-3">
+                <div className="flex items-end">
                   <img
                     src='/BauEnergy logo.png'
                     alt="Company Logo"
-                    className="w-[76px] h-[58px]"
+                    className="w-[76px] h-[58px] pb-[6px]"
 
                   />
-                  <span className="ml-4 text-xl font-bold">BauEnergy</span>
+                  <div className="ml-1 text-2xl font-bold text-[#843c0c]">BauEnergy</div>
                 </div>
               </div>
 
               {/* Navigation */}
-              <div className="p-4">
+              <div className="p-4 flex flex-col h-full">
+              <div className="flex-grow">
+
                 <List>
 
                 {!isUser && (
@@ -258,20 +260,23 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     <ListItemText primary="Logout" />
                   </ListItem>
                 </List>
+
+              {/* Bottom User Info */}
+              <div className="px-4">
+                <Divider className="bg-gray-200 mx-4" />
+                <ListItem div>
+                  <UserInfo />
+                </ListItem>
+
+              </div>
+                </div>
+
+              <ListItem className="!mt-4" >
+                    <img src="/Powered by logo.png" alt="BauEnergy Login" className='w-[174px] h-[35px]'/>
+                </ListItem>
               </div>
             </div>
 
-            {/* Bottom User Info */}
-            <div className="px-4">
-              <Divider className="bg-gray-200 mx-4" />
-              <ListItem div>
-                <UserInfo />
-              </ListItem>
-
-              <ListItem className="!mt-4" >
-                  <img src="/Powered by logo.png" alt="BauEnergy Login" className='w-[174px] h-[35px]'/>
-              </ListItem>
-            </div>
           </div>
 
           {/* Main Content */}

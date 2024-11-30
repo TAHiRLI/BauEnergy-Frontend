@@ -169,7 +169,7 @@ export const LoginPage = () => {
         </div>
         <div className="sm:flex flex-1 bg-blue-100 justify-center items-center w-full">
             <img src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/videos/Construction.gif`}
- alt="BauEnergy Animation" className='w-full sm:h-screen h-[200px] ' loading='lazy'/>
+ alt="BauEnergy Animation" className='w-full sm:h-screen h-[300px] ' loading='lazy'/>
           </div>
       </div>
     </div>
