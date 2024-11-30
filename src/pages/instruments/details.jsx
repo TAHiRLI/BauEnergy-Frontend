@@ -738,51 +738,6 @@ console.log(objectUrl)
                     />
               </FormControl>
 
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'start',
-                  marginBottom: 2,
-                }}
-              >
-                {/* Instrument Image */}
-                <img
-                src={
-                  selectedImage?.startsWith("blob:") 
-                    ? selectedImage
-                    : `${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${selectedImage}`
-                }
-                alt="Profile"
-                  style={{
-                    width: 250,
-                    height: 200,
-                    borderRadius: '10%',
-                    objectFit: 'cover',
-                    marginBottom: 0,
-                    marginTop: '20px'
-                  }}
-                />
-              </Box>
-              
-                <Button
-                  variant="text"
-                  className="!text-[#1D34D8]"
-                  onClick={() => document.getElementById('profile-image-input').click()}
-                >
-                  Edit Image
-                </Button>
-                <input
-                  id="profile-image-input"
-                  type="file"
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  onChange={(event) => {
-                    handleImageUpload(event);
-                    setFieldValue('image', event.currentTarget.files[0]);
-                  }}
-                />
-
 
               {/* PDF Upload */}
               <StyledBox>
