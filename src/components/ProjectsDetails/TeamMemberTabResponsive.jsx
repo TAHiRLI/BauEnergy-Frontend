@@ -41,17 +41,14 @@ export default function TeamMember({ project }) {
   const [imageFile, setImageFile] = useState(null); 
   const [isCreatingNew, setIsCreatingNew] = useState(false); 
   const [selectedTeamMember, setSelectedTeamMember] = useState(null); 
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false); // For the edit modal
-  const [teamMemberToEdit, setTeamMemberToEdit] = useState(null);
 
   const fetchAllTeamMembers = async () => {
     try {
-      const response = await teamMemberService.getAllByCompany(project.id); // Pass the projectId to the service
+      const response = await teamMemberService.getAllByCompany(project.id); 
       setAllTeamMembers(response.data);
       console.log(response.data)
     } catch (error) {
       console.error('Error fetching all team members:', error);
-      // Handle error accordingly
     }
   };
 
@@ -149,33 +146,6 @@ export default function TeamMember({ project }) {
       Swal.fire('Error!', 'Failed to remove team member.', 'error');
     }
   };
-
-  const handleUpdateTeamMember = async (values) => {
-    try {
-      const formData = new FormData();
-      formData.append('Name', values.name);
-      formData.append('LastName', values.lastName);
-      formData.append('Email', values.email);
-      formData.append('Role', values.role);
-      formData.append('TeamMemberId', teamMemberToEdit.id); 
-  
-      if (values.image) {
-        formData.append('Image', values.image); 
-      }
-  
-      await teamMemberService.edit(teamMemberToEdit.id, formData);
-  
-      Swal.fire('Success', 'Team member has been updated!', 'success');
-      setIsEditDialogOpen(false);
-  
-      const projectResponse = await projectService.getById(project.id);
-      dispatch({ type: ProjectsActions.success, payload: projectResponse.data.teamMembers });
-  
-    } catch (error) {
-      console.error('Error updating team member:', error.response || error.message);
-      Swal.fire('Error', 'Failed to update team member.', 'error');
-    }
-  };
   
   const formatDate = (date) => {
     if (!date) {
@@ -194,7 +164,6 @@ export default function TeamMember({ project }) {
     }
   };
 
-  console.log(state.data)
     return (
         <Grid container spacing={2}>
 
@@ -268,7 +237,7 @@ export default function TeamMember({ project }) {
                         Role:
                     </Typography>
                     <Box component="span" className='font-semibold'>
-                        {tm.role}
+                        {tm.role?.split('_').join(' ')}
                     </Box>
                     </Box>
                 </CardContent>

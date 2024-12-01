@@ -62,7 +62,7 @@ function HomePage() {
   
   // Use `useMediaQuery` to dynamically adjust chart dimensions
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const chartWidth = isMobile ? 350 : 800;
+  const chartWidth = isMobile ? 350 : 608;
   const chartHeight = isMobile ? 250 : 400;
 
   useEffect(() => {
@@ -105,6 +105,7 @@ function HomePage() {
     <div style={{ display: 'flex', justifyContent: 'center', padding: isMobile ? '10px' : '20px' }}>
       {isDataLoaded ? (
         <BarChart
+        className="!max-w-[80vw]"
           width={chartWidth}
           height={chartHeight}
           series={chartData.seriesData}
