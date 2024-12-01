@@ -207,7 +207,10 @@ export default function BasicTabs() {
   const isSmallScreen = useMediaQuery('(max-width:800px)');
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box 
+    className="!max-w-[90vw]"
+    sx={{ width: '100%' }}
+    >
       <div className="sm:flex sm:flex-row flex-col justify-between items-center pl-2 pr-6 pt-4 sm:pt-0">
         <div>
           <div className="text-2xl font-semibold">• {project?.name}</div>

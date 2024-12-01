@@ -308,6 +308,7 @@ const SettingsAndTeams = () => {
           }}
         >
           <DataGrid
+            className="!max-w-[90vw]"
             rows={teamMembers}
             columns={columns}
             initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}

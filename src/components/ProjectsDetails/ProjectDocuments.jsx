@@ -184,7 +184,7 @@ export default function ProjectDocuments({ project }) {
 
   return (
     <Box mt={1} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
-        <div className='flex justify-between items-center'>
+        <div className='flex sm:flex-row flex-col justify-between items-start sm:items-center'>
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8', mb: 2 }}>
                 Project documents
             </Typography>
@@ -196,8 +196,8 @@ export default function ProjectDocuments({ project }) {
       <Grid container spacing={2}>
         {documents?.length > 0 ? (
           documents.map((doc, index) => (
-            <Grid item xs={6} sm={6} key={index}>
-              <Box display="flex" alignItems="center" sx={{ padding: 1 }}>
+            <Grid item xs={12} sm={12} md={6} key={index}>
+              <Box display="flex" alignItems="center" sx={{ padding: 1, marginTop: 2}}>
               {getFileIcon(doc.fileType)}
 
 
@@ -215,7 +215,7 @@ export default function ProjectDocuments({ project }) {
             </Grid>
           ))
         ) : (
-          <Typography variant="body2" color="textSecondary" className='!pl-4'>
+          <Typography variant="body2" color="textSecondary" className='!pl-4 !mt-7'>
             No documents found for this project.
           </Typography>
         )}

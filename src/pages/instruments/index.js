@@ -863,6 +863,7 @@ export const Instruments = () => {
                 }}
             >
                 <DataGrid
+                className='max-w-[80vw]'
                 rows={rowss}
                 columns={columns}
                 initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
