@@ -308,14 +308,14 @@ const SettingsAndTeams = () => {
           }}
         >
           <DataGrid
-            className="!max-w-[90vw]"
+            className="!max-w-[80vw]"
             rows={teamMembers}
             columns={columns}
             initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
             pageSizeOptions={[5, 10, 20]}
             sx={{
               border: 0,
-              minWidth: 400,
+              minWidth: 200,
               height: 'auto',
               '& .MuiDataGrid-root': {
                 overflowX: 'auto',
