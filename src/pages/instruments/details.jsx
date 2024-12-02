@@ -379,19 +379,40 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
   };
   
   const handleDelete = async (id) => {
-    try {
-        var response =  await instrumentService.remove(id);
-
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to delete this instrument? This action cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1D34D8',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        const response = await instrumentService.remove(id);
+        // Show success message
         Swal.fire({
           icon: 'success',
           title: 'Instrument Deleted',
           text: response.data?.message || 'The instrument has been successfully deleted...',
         });
+        // Trigger refresh or update the UI
         setRefresh((prev) => !prev);
-    } catch (err) {
+      } catch (err) {
+        // Show error message
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err.response?.data?.message || 'Failed to delete the instrument. Please try again later.',
+        });
         console.error('Error deleting instrument:', err);
+      }
     }
-};
+  };
+  
 
 const handleImageUpload = (event) => {
   const file = event.target.files[0];
@@ -504,27 +525,50 @@ console.log(objectUrl)
                 <Typography sx={{ width: '25%', flexShrink: 0 }}>
                   {instrument.name}
                 </Typography>
-                <Typography sx={{ width: '25%', color: 'text.secondary' }}>
-                  Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
-                </Typography>
-                <Typography sx={{ width: '25%', color: 'text.secondary' }}>
-                  Project: {instrument.projectName || 'Not assigned'}
-                </Typography>
+                <div className='w-[50%] gap-10 hidden sm:flex'>
+                  <Typography sx={{ color: 'text.secondary' }}>
+                    Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+                  </Typography>
+                  <Typography sx={{color: 'text.secondary' }}>
+                    Project: {instrument.projectName || 'Not assigned'}
+                  </Typography>
+                </div>
 
+                <div className='!flex !justify-end !items-end w-full sm:w-[25%] mr-5' >
                 <IconButton
-                onClick={() => handleDelete(instrument.id)}
-                sx={{
-                  color:"#d333",
-                  backgroundColor: "#f5f5f5",  
-                  borderRadius: "20%",         
-                  padding: "5px",               
-                  border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
-                  marginRight: "8px"
-                }}>            
-                  <DeleteIcon sx={{ color: '#d33' }} />
+                  onClick={(event) => {
+                    event.stopPropagation(); // Prevents the accordion toggle
+                    handleDelete(instrument.id); // Executes the delete logic
+                  }}
+                  sx={{
+                    color: "#d333",
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: "20%",
+                    padding: "5px",
+                    border: "1px solid #e0e0e0",
+                    "&:hover": { backgroundColor: "#e0e0e0" },
+                    marginRight: "8px",
+                  }}
+                >
+                  <DeleteIcon sx={{ color: "#d33" }} />
                 </IconButton>
+                </div>
               </AccordionSummary>
+
               <AccordionDetails>
+                <Box 
+                  sx={{
+                    display: { xs: 'block', sm: 'none' },
+                    marginBottom: 2,
+                  }}
+                >
+                  <Typography sx={{ color: 'text.secondary', marginBottom: 1 }}>
+                    Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+                  </Typography>
+                  <Typography sx={{ color: 'text.secondary', marginBottom: 2 }}>
+                    Project: {instrument.projectName || 'Not assigned'}
+                  </Typography>
+                </Box>
                 <Box mt={0} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8', mb: 2 }}>
                     Instrument History
@@ -737,6 +781,7 @@ console.log(objectUrl)
                         }
                     />
               </FormControl>
+
 
 
               {/* PDF Upload */}
