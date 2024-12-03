@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Button, CircularProgress, List, ListItem, ListItemText, Divider, TextField, FormControlLabel, Radio, FormControl, InputLabel, Checkbox, OutlinedInput, InputAdornment, AccordionActions } from '@mui/material';
+import { Box, Typography, Grid, Button, CircularProgress, ListItemText, TextField, FormControl, InputLabel, Checkbox, OutlinedInput, InputAdornment } from '@mui/material';
 import { Dialog, DialogTitle, DialogContent, IconButton, DialogActions, Select, MenuItem } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { instrumentService } from '../../APIs/Services/instrument.service';
@@ -17,12 +17,9 @@ import { styled } from '@mui/material/styles';
 import Cookies from 'universal-cookie';
 import { jwtDecode } from 'jwt-decode';
 import AddIcon from '@mui/icons-material/Add';
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { instrumentTagService } from '../../APIs/Services/instrumentTag.service';
 import StatusButton from '../../components/common/statusBtn';
+import HistoryIcon from '@mui/icons-material/History'; 
 
 
 const validationSchema = Yup.object().shape({
@@ -59,8 +56,6 @@ const InstrumentDetails = () => {
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [refresh, setRefresh] = useState(false); 
 
-  const [imagePreviews, setImagePreviews] = useState([]);
-  const [newInstrument, setNewInstrument] = useState({ mainImageIndex: null });
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [existingPdfs, setExistingPdfs] = useState([]);
@@ -69,18 +64,13 @@ const InstrumentDetails = () => {
   const [tagInput, setTagInput] = useState('');
   const [isFirstEffectComplete, setIsFirstEffectComplete] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState(instrument?.image || null);
 
-  const [expanded, setExpanded] = React.useState(false);
-
-  const handleChange = (panel) => (event, isExpanded) => {
-    setExpanded(isExpanded ? panel : false);
-  };
 
   const cookies = new Cookies();
   let user = cookies.get('user'); 
-  //console.log(user)
   let token = user?.token
 
   let decodedToken;
@@ -91,35 +81,6 @@ const InstrumentDetails = () => {
   }
   const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
   const canViewPrice = userRoles.includes('Company_Owner') || userRoles.includes('Project_Manager');
-
-
-  // const handleImageUpload = (e, setFieldValue) => {
-  //   const files = Array.from(e.target.files);
-  //   const previews = files.map((file) => URL.createObjectURL(file));
-
-  //   setImagePreviews(previews);
-  //   setFieldValue('images', files); 
-  // };
-
-
-  // const handleMainImageChange = (e, setFieldValue) => {
-  //   const selectedIndex = parseInt(e);
-  //   setFieldValue('mainImageIndex', selectedIndex); 
-  // };
-  // const handleMainImageChange = (index, setFieldValue) => {
-  //   setFieldValue('mainImageIndex', index);
-  // };
-
-  // const handleMainImageChange = (selectedIndex, setFieldValue) => {
-  //   // Update Formik's mainImageIndex field
-  //   setFieldValue('mainImageIndex', selectedIndex);
-  
-  //   // Optional: Update the state for UI purposes, if required
-  //   allImages.forEach((image, index) => {
-  //     image.isMain = index === selectedIndex;
-  //   });
-  // };
-  
 
   const handlePdfUpload = (e, setFieldValue) => {
     const files = Array.from(e.target.files);
@@ -178,26 +139,6 @@ const InstrumentDetails = () => {
       fetchHistory();
     }
   }, [id, instrument]);
-
-  const handleChangeAccardion = (panel, instrumentId) => async (event, isExpanded) => {
-    setExpanded(isExpanded ? panel : false);
-
-    if (isExpanded) {
-      try {
-        setLoadingHistory(true);
-        const response = await instrumentHistoryService.getById(instrumentId);
-        //console.log(response)
-        setHistory((prevHistory) => ({
-          ...prevHistory,
-          [instrumentId]: response.data,
-        }));
-      } catch (error) {
-        console.error('Error fetching instrument history:', error);
-      } finally {
-        setLoadingHistory(false);
-      }
-    }
-  };
   
   const handleShowQR = () => {
     setOpenQRDialog(true);
@@ -251,6 +192,23 @@ const InstrumentDetails = () => {
         return 'green';
       default:
         return 'gray';
+    }
+  };
+
+  const formatDate = (date) => {
+    if (!date) {
+      return 'N/A'; 
+    }
+    
+    try {
+      return new Intl.DateTimeFormat('en-GB', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      }).format(new Date(date));
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid date'; 
     }
   };
 
@@ -332,9 +290,6 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
   }
 };
 
-  
-  
-
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
@@ -350,6 +305,20 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
       </Box>
     );
   }
+
+  const handleCloseHistoryDialog = () => setOpenHistoryDialog(false);
+
+  const handleShowHistory = async (id) => {
+    console.log(id)
+    try {
+      const response = await instrumentHistoryService.getById(id); 
+      setHistory(response.data);
+      //setInstrument(filteredInstrument.find(inst => inst.id === id))
+      setOpenHistoryDialog(true);
+    } catch (error) {
+      console.error("Error fetching instrument history:", error);
+    }
+  };
 
   const handleDeleteImage = async (imageId) => {
     try {
@@ -426,7 +395,7 @@ console.log(objectUrl)
   }
 };
 
-
+console.log(filteredInstrument)
   
   return (
     <Box p={1}>
@@ -509,37 +478,28 @@ console.log(objectUrl)
         </Grid>
       </Box>
 
+
+      {/* All Instruments */}
       <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
         <div>
           {filteredInstrument?.map((instrument, index) => (
-            <Accordion
-              key={instrument.id}
-              expanded={expanded === `panel${index}`}
-              onChange={handleChangeAccardion(`panel${index}`, instrument.id)}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls={`panel${index}bh-content`}
-                id={`panel${index}bh-header`}
-              >
-                <Typography sx={{ width: '25%', flexShrink: 0 }}>
+            <Box key={instrument.id} mb={3} sx={{ backgroundColor: '#f9f9f9', borderRadius: 3, p: 2, boxShadow: 1 }} className="!flex !gap-5 justify-between items-center ">
+              <div className='flex gap-5 xl:gap-10 items-center'>
+                <Typography sx={{ flexShrink: 0, fontWeight: 'bold' }}>
                   {instrument.name}
                 </Typography>
-                <div className='w-[50%] gap-10 hidden sm:flex'>
-                  <Typography sx={{ color: 'text.secondary' }}>
-                    Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
-                  </Typography>
-                  <Typography sx={{color: 'text.secondary' }}>
-                    Project: {instrument.projectName || 'Not assigned'}
-                  </Typography>
-                </div>
 
-                <div className='!flex !justify-end !items-end w-full sm:w-[25%] mr-5' >
+                <Typography sx={{ color: 'text.secondary' }} className='sm:w-[220px] hidden sm:block'>
+                  Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+                </Typography>
+                <Typography sx={{ color: 'text.secondary' }}>
+                  Project: {instrument.projectName || 'Not assigned'}
+                </Typography>
+              </div>
+
+              <Box className='!flex gap-2 sm:gap-4 sm:mr-8'>
                 <IconButton
-                  onClick={(event) => {
-                    event.stopPropagation(); // Prevents the accordion toggle
-                    handleDelete(instrument.id); // Executes the delete logic
-                  }}
+                  onClick={() => handleDelete(instrument.id)}
                   sx={{
                     color: "#d333",
                     backgroundColor: "#f5f5f5",
@@ -547,62 +507,27 @@ console.log(objectUrl)
                     padding: "5px",
                     border: "1px solid #e0e0e0",
                     "&:hover": { backgroundColor: "#e0e0e0" },
-                    marginRight: "8px",
                   }}
                 >
                   <DeleteIcon sx={{ color: "#d33" }} />
                 </IconButton>
-                </div>
-              </AccordionSummary>
 
-              <AccordionDetails>
-                <Box 
+                <IconButton onClick={() => handleShowHistory(instrument.id)} color="primary"
                   sx={{
-                    display: { xs: 'block', sm: 'none' },
-                    marginBottom: 2,
-                  }}
-                >
-                  <Typography sx={{ color: 'text.secondary', marginBottom: 1 }}>
-                    Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
-                  </Typography>
-                  <Typography sx={{ color: 'text.secondary', marginBottom: 2 }}>
-                    Project: {instrument.projectName || 'Not assigned'}
-                  </Typography>
-                </Box>
-                <Box mt={0} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8', mb: 2 }}>
-                    Instrument History
-                  </Typography>
+                    backgroundColor: "#f5f5f5",  
+                    borderRadius: "20%",         
+                    padding: "5px",               
+                    border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
+                  }}>            
+                  <HistoryIcon sx={{ color: "#424242" }} />
+                </IconButton>
+              </Box>
 
-                  {loadingHistory ? (
-                    <Typography variant="body2" color="textSecondary">
-                      Loading history...
-                    </Typography>
-                  ) : history[instrument.id]?.length > 0 ? (
-                    <List>
-                      {history[instrument.id].map((event, idx) => (
-                        <React.Fragment key={idx}>
-                          <ListItem className="!px-0">
-                            <ListItemText
-                              primary={`Event: ${event.description}`}
-                              secondary={`Date: ${new Date(event.eventDate).toLocaleDateString()}`}
-                            />
-                          </ListItem>
-                          {idx < history[instrument.id].length - 1 && <Divider />}
-                        </React.Fragment>
-                      ))}
-                    </List>
-                  ) : (
-                    <Typography variant="body2" color="textSecondary">
-                      No history available for this instrument.
-                    </Typography>
-                  )}
-                </Box>
-              </AccordionDetails>
-            </Accordion>
+            </Box>
           ))}
         </div>
       </Box>
+
 
       {/* Edit Instrument Modal */}
       <Dialog open={openUpdateModal} onClose={handleCloseUpdateModal} fullWidth maxWidth="sm" PaperProps={{
@@ -950,6 +875,91 @@ console.log(objectUrl)
                           />
                     </Box>
                 </DialogContent>
+      </Dialog>
+
+      {/* Instrument History Dialog */}
+      <Dialog open={openHistoryDialog} onClose={handleCloseHistoryDialog}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          style: {
+            borderRadius: 20,
+            height: "500px",
+            backgroundColor: "#fcfcfc"  
+          },
+        }}
+      >
+        <DialogTitle>
+          Instrument History
+          <IconButton
+            className="!text-blue-700"
+            aria-label="close"
+            onClick={handleCloseHistoryDialog}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+            }}
+          >
+            <CancelOutlinedIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent
+          className="!border !border-gray-300 rounded-xl !p-2 !m-6 !mt-0 bg-white"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: history && history.length > 0 ? "flex-start" : "center",
+            alignItems: history && history.length > 0 ? "flex-start" : "center",
+            overflowY: "auto",
+            overflowX: "hidden",  
+            maxHeight: "calc(100% - 64px)",  
+            paddingRight: "8px" 
+          }}
+        >
+          {history && history.length > 0 ? (
+            <>
+              <Box display="flex" gap={2} mb={2} >
+                {instrument?.images?.slice(0, 3).map((img, index) => (
+                  <img
+                    key={index}
+                    src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${img.image}`}
+                    alt="Instrument"
+                    style={{
+                      flexGrow: 1, 
+                      width: '32%', 
+                      height: 100,
+                      borderRadius: 8,
+                      objectFit: 'cover' 
+                    }}
+                  />
+                ))}
+              </Box> 
+              <Box mb={2} p={2} sx={{ borderRadius: 3 }} className="block sm:!hidden !w-full !p-0">
+              <Typography variant="h6" className=" block sm:!hidden">
+                Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+              </Typography>
+            </Box>
+
+              <Typography variant="h6" dividers>Details</Typography>
+              <div className='border-b border-slate-300 w-full my-2'></div>
+              {history.map((entry, index) => (
+                <Box key={index} mb={2} width="100%">
+                  <div className="flex justify-between items-center">
+                    <Typography variant="subtitle1" className='!font-medium'>{entry.title}</Typography>
+                    <Typography variant="subtitle2" color="textSecondary">
+                      {formatDate(entry.eventDate)}
+                    </Typography>
+                  </div>
+                  <Typography variant="body2" className='!text-gray-500 !ml-1'>{entry.description}</Typography>
+                </Box>
+              ))}
+            </>
+          ) : (
+            <Typography variant="body2" className='text-gray-500'>Nothing here yet...</Typography>
+          )}
+        </DialogContent>
       </Dialog>
     </Box>
   );
