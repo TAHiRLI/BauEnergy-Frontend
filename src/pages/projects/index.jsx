@@ -248,6 +248,8 @@ export default function BasicTabs() {
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs
+          scrollButtons="auto"
+
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"

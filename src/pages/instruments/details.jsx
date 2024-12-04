@@ -140,7 +140,7 @@ const InstrumentDetails = () => {
     }
   }, [id, instrument]);
   
-  const handleShowQR = () => {
+  function handleShowQR() {
     setOpenQRDialog(true);
   };
 

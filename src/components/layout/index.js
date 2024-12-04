@@ -20,7 +20,7 @@ function Layout({ children }) {
       <nav className="h-screen lg:bg-blue-500">
         <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       </nav>
-
+      {/* Problem px-5 here  */}
       <div className="flex-grow px-5 h-full mt-3 lg:ml-[260px]">
         {/* Appbar */}
         <Appbar position="static" className="bg-blue-200 "  toggleSidebar={toggleSidebar} >

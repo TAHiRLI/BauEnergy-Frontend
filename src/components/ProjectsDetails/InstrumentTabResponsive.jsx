@@ -11,6 +11,7 @@ import InstrumentStatusModal from '../common/actionsBtn/InstrumentUpdateButton';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { teamMemberService } from '../../APIs/Services/teammember.service';
+import AddInstrumentWithQr from '../addInstrumentWithQr/addInstrumentWithQr';
 
 const InstrumentTabResponsive = ({ project }) => {
   const { state, dispatch } = useProjects();
@@ -29,7 +30,7 @@ const InstrumentTabResponsive = ({ project }) => {
   const [selectedManager, setSelectedManager] = useState('');
 
     const [editOpen, setEditOpen] = useState(false);
-    const [selectedInstrumentId, setSelectedInstrumentId] = useState(null);
+    const [selectedInstrumentId, setSelectedInstrumentId] = useState("");
     const [selectedInstrumentStatus, setSelectedInstrumentStatus] = useState("");
 
     // Function to open the edit dialog
@@ -134,8 +135,8 @@ const InstrumentTabResponsive = ({ project }) => {
             const response = await teamMemberService.getAllProjectManagers(project.id)
             //const data = await response.json();
             setProjectManagers(response.data);
-            if (response.data && response.data.length > 0) {
-              setSelectedManager(response.data[0].id); // Set first manager's ID as the default
+            if (response.data && response.data.length > 0 && response?.data[0]?.id) {
+              setSelectedManager(response?.data[0]?.id); // Set first manager's ID as the default
           }} catch (error) {
               console.error("Failed to fetch project managers:", error);
           }
@@ -587,11 +588,12 @@ const InstrumentTabResponsive = ({ project }) => {
         <DialogTitle className='!font-medium'>Select instrument for adding project</DialogTitle>
         <DialogContent>
           <FormControl fullWidth margin="dense">
-            <InputLabel>Select Instrument</InputLabel>
+            <InputLabel >Select Instrument</InputLabel>
             <Select
               value={selectedInstrumentId}
               onChange={(e) => setSelectedInstrumentId(e.target.value)}
               label="Select Instrument"
+
             >
               {allInstruments.map((instrument) => (
                 <MenuItem key={instrument.id} value={instrument.id}>
@@ -617,6 +619,16 @@ const InstrumentTabResponsive = ({ project }) => {
               ))}
             </Select>
           </FormControl>
+
+          <AddInstrumentWithQr
+            onComplete={(instrumentId) => {
+              if (!allInstruments?.find((x) => x?.id == instrumentId)) {
+                Swal.fire(`Not Found ${instrumentId}`, `Invalid QR Code ${JSON.stringify(allInstruments)}, `);
+                return;
+              }
+              setSelectedInstrumentId(instrumentId);
+            }}
+          />
         </DialogContent>
         <DialogActions className='!px-6'>
           <Button onClick={() => setOpenDialog(false)} className='!text-[#1D34D8] '>Cancel</Button>
