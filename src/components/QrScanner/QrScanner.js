@@ -108,7 +108,6 @@ const QrReader = ({ onComplete }) => {
   };
   return (
     <>
-    <div>{JSON.stringify(cameras)}</div>
       <div className="qr-reader relative p-3 qrScannerContainer">
         <video
           className="scanner"
@@ -129,9 +128,9 @@ const QrReader = ({ onComplete }) => {
         >
           {flashEnabled ? <FlashlightOff color="primary" /> : <FlashlightOn color="primary" />}
         </IconButton>
-        <IconButton onClick={flipCamera} sx={{ backgroundColor: "#fff" }} className="!absolute top-16 right-5">
+        {/* <IconButton onClick={flipCamera} sx={{ backgroundColor: "#fff" }} className="!absolute top-16 right-5">
           <FlipCameraAndroid color="primary" />
-        </IconButton>
+        </IconButton> */}
         <em></em>
         <span className="searcher"></span>
       </div>
