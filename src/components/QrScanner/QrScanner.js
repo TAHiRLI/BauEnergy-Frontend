@@ -3,64 +3,53 @@ import QrScanner from "qr-scanner";
 import { IconButton } from "@mui/material";
 import { FlashlightOff, FlashlightOn, FlipCameraAndroid } from "@mui/icons-material";
 
-const QrReader = ({ocComplete}) => {
-  // QR Scanner and video references
+const QrReader = ({ ocComplete }) => {
   const scanner = useRef(null);
   const videoEl = useRef(null);
+
   const [scannedResult, setScannedResult] = useState("");
-
-
-  // States
-  const [qrOn, setQrOn] = useState(false);
   const [cameras, setCameras] = useState([]);
   const [currentCamera, setCurrentCamera] = useState(null);
   const [flashEnabled, setFlashEnabled] = useState(false);
 
-  // Success Callback
   const onScanSuccess = (result) => {
     setScannedResult(result?.data);
-    ocComplete(result?.data) // Update scanned result state
+    ocComplete(result?.data); // Callback with scanned result
   };
 
-  // Error Callback
   const onScanFail = (err) => {
   };
 
   useEffect(() => {
     const initScanner = async () => {
       try {
-        // Get available cameras
         const devices = await QrScanner.listCameras();
-        setCameras(devices);
-
+        console.log("🚀 ~ initScanner ~ devices:", devices)
         if (devices.length > 0) {
-          const defaultCamera = devices[0];
-          setCurrentCamera(defaultCamera.id);
+          setCameras(devices);
+          setCurrentCamera(devices[0].id);
 
-          // Initialize QR Scanner with the default camera
           scanner.current = new QrScanner(videoEl.current, onScanSuccess, {
             onDecodeError: onScanFail,
-            preferredCamera: defaultCamera.id,
+            preferredCamera: devices[0].id,
           });
 
           await scanner.current.start();
-          setQrOn(true);
         } else {
           alert("No cameras found on this device.");
         }
       } catch (err) {
-        alert("Failed to initialize QR scanner. Please check camera permissions.");
+        console.error("Failed to initialize QR scanner:", err);
+        alert("Error initializing QR scanner. Check camera permissions.");
       }
     };
 
     initScanner();
 
-    // Cleanup: Stop scanner on component unmount
     return () => {
       if (scanner.current) {
         scanner.current.stop();
         scanner.current.destroy();
-        scanner.current = null;
       }
     };
   }, []);
@@ -88,11 +77,15 @@ const QrReader = ({ocComplete}) => {
       const currentIndex = cameras.findIndex((camera) => camera.id === currentCamera);
       const nextCamera = cameras[(currentIndex + 1) % cameras.length];
 
-      setCurrentCamera(nextCamera.id);
-
-      if (scanner.current) {
-        await scanner.current.stop();
-        await scanner.current.start({ deviceId: nextCamera.id });
+      try {
+        setCurrentCamera(nextCamera.id);
+        if (scanner.current) {
+          await scanner.current.stop();
+          await scanner.current.start({ deviceId: nextCamera.id });
+        }
+      } catch (err) {
+        console.error("Error flipping camera:", err);
+        alert("Unable to switch cameras.");
       }
     } else {
       alert("No additional cameras available to flip.");
@@ -101,39 +94,33 @@ const QrReader = ({ocComplete}) => {
 
   return (
     <div className="qr-reader relative p-3 qrScannerContainer">
-
       <video
-      className="scanner"
         ref={videoEl}
+        className="scanner"
         style={{
           width: "100%",
           maxWidth: "500px",
-          aspectRatio: 1, 
+          aspectRatio: 1,
           height: "auto",
           borderRadius: "3px",
         }}
       ></video>
 
-        <IconButton
-          onClick={toggleFlash}
-          color="secondary"
-          sx={{backgroundColor:"#fff"}}
-          className="!absolute top-5 right-5"
-        >
-          {flashEnabled ? <FlashlightOff color="primary" /> : <FlashlightOn color="primary" />}
-        </IconButton>
-        <IconButton
-          onClick={flipCamera}
-          sx={{backgroundColor:"#fff"}}
-
-          className="!absolute top-16 right-5"
-        >
-          <FlipCameraAndroid color="primary" />
-        </IconButton>
-
-        <em></em>
-        <span className="searcher"></span>
-     
+      <IconButton
+        onClick={toggleFlash}
+        color="secondary"
+        sx={{ backgroundColor: "#fff" }}
+        className="!absolute top-5 right-5"
+      >
+        {flashEnabled ? <FlashlightOff color="primary" /> : <FlashlightOn color="primary" />}
+      </IconButton>
+      <IconButton
+        onClick={flipCamera}
+        sx={{ backgroundColor: "#fff" }}
+        className="!absolute top-16 right-5"
+      >
+        <FlipCameraAndroid color="primary" />
+      </IconButton>
     </div>
   );
 };
