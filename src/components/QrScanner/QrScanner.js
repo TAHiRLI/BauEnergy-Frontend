@@ -4,6 +4,7 @@ import { IconButton } from "@mui/material";
 import { FlashlightOff, FlashlightOn, FlipCameraAndroid } from "@mui/icons-material";
 
 const QrReader = ({ onComplete }) => {
+  console.log("🚀 ~ QrReader ~ onComplete:", onComplete);
   const scanner = useRef(null); // QR Scanner instance
   const videoEl = useRef(null); // Reference to the video element
 
@@ -16,7 +17,7 @@ const QrReader = ({ onComplete }) => {
   const onScanSuccess = (result) => {
     console.log("Scanned QR Code:", result?.data);
     setScannedResult(result?.data);
-    if (onComplete) onComplete(result?.data); // Trigger the callback with scanned data
+    onComplete(result?.data); // Trigger the callback with scanned data
   };
 
   // Error callback for QR code scanning
@@ -106,37 +107,35 @@ const QrReader = ({ onComplete }) => {
     }
   };
   return (
-    <div className="qr-reader relative p-3 qrScannerContainer">
-      <video
-      className="scanner"
-        ref={videoEl}
-        style={{
-          width: "100%",
-          maxWidth: "500px",
-          aspectRatio: 1, 
-          height: "auto",
-          borderRadius: "3px",
-        }}
-      ></video>
+    <>
+    <div>{JSON.stringify(cameras)}</div>
+      <div className="qr-reader relative p-3 qrScannerContainer">
+        <video
+          className="scanner"
+          ref={videoEl}
+          style={{
+            width: "100%",
+            maxWidth: "500px",
+            aspectRatio: 1,
+            height: "auto",
+            borderRadius: "3px",
+          }}
+        ></video>
         <IconButton
           onClick={toggleFlash}
           color="secondary"
-          sx={{backgroundColor:"#fff"}}
+          sx={{ backgroundColor: "#fff" }}
           className="!absolute top-5 right-5"
         >
           {flashEnabled ? <FlashlightOff color="primary" /> : <FlashlightOn color="primary" />}
         </IconButton>
-        <IconButton
-          onClick={flipCamera}
-          sx={{backgroundColor:"#fff"}}
-          className="!absolute top-16 right-5"
-        >
+        <IconButton onClick={flipCamera} sx={{ backgroundColor: "#fff" }} className="!absolute top-16 right-5">
           <FlipCameraAndroid color="primary" />
         </IconButton>
         <em></em>
         <span className="searcher"></span>
-     
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -10,15 +10,28 @@ const AddInstrumentWithQr = ({ onComplete }) => {
   useEffect(() => {
     if (!scannedResult) return;
     const itemId = scannedResult?.split("/")?.pop();
-    onComplete(itemId); 
-    setShowScaner(false)
-
+    onComplete(itemId);
+    setShowScaner(false);
   }, [scannedResult]);
 
   return (
     <>
-     
-      {showScanner ? <QrReader ocComplete={setScannedResult} />: <IconButton onClick={()=>{setShowScaner(true)}}><DocumentScannerSharp fontSize={"large"} color={"success"} /></IconButton> }
+      {showScanner ? (
+        <QrReader
+          onComplete={(id) => {
+            setScannedResult(id);
+            setShowScaner(false);
+          }}
+        />
+      ) : (
+        <IconButton
+          onClick={() => {
+            setShowScaner(true);
+          }}
+        >
+          <DocumentScannerSharp fontSize={"large"} color={"success"} />
+        </IconButton>
+      )}
     </>
   );
 };
