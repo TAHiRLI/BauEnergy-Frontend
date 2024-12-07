@@ -28,11 +28,14 @@ const InstrumentTabResponsive = ({ project }) => {
   const [refresh, setRefresh] = useState(false);
   const [projectManagers, setProjectManagers] = useState([]);
   const [selectedManager, setSelectedManager] = useState('');
+  
+  const [instrumentError, setInstrumentError] = useState(false);
+  const [managerError, setManagerError] = useState(false);
 
     const [editOpen, setEditOpen] = useState(false);
     const [selectedInstrumentId, setSelectedInstrumentId] = useState("");
     const [selectedInstrumentStatus, setSelectedInstrumentStatus] = useState("");
-
+ 
     // Function to open the edit dialog
     const handleEditOpen = (instrumentId, currentStatus) => {
       setSelectedInstrumentId(instrumentId);
@@ -83,10 +86,29 @@ const InstrumentTabResponsive = ({ project }) => {
     }; 
   
     const handleAddInstrument = async () => {
+      // Check if both instrument and manager are selected
+      if (!selectedInstrumentId || !selectedManager) {
+        Swal.fire({
+          title: 'Error!',
+          text: 'Please select both an instrument and a project manager before adding.',
+          icon: 'warning',
+          timer: 3000,
+        });
+        return; // Exit the function if validation fails
+      }
+    
       try {
-        const body = { projectId: project.id, instrumentId: selectedInstrumentId, projectManagerId: selectedManager };
-        console.log(selectedManager)
+        const body = {
+          projectId: project.id,
+          instrumentId: selectedInstrumentId,
+          projectManagerId: selectedManager,
+        };
+    
+        console.log('Selected Manager:', selectedManager);
+    
+        // API call to add instrument to project
         await projectService.addInstrumentToProject(body);
+    
         Swal.fire({
           title: 'Added!',
           text: 'Instrument has been added to the project.',
@@ -94,25 +116,30 @@ const InstrumentTabResponsive = ({ project }) => {
           timer: 2000,
         });
     
+        // Fetch updated project details
         const response = await projectService.getById(project.id);
         dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
         setFilteredInstruments(response.data.instruments);
-        setSelectedInstrumentId(''); 
-        setOpenDialog(false); 
     
+        // Reset state and close dialog
+        setSelectedInstrumentId('');
+        setSelectedManager(''); // Clear the manager selection as well
+        setOpenDialog(false);
       } catch (error) {
-        setOpenDialog(false); 
+        // Handle errors during the API call
         console.error('Error adding instrument:', error);
-        
+    
         Swal.fire({
           title: 'Error!',
           text: 'Failed to add instrument.',
-          icon: 'error',
+          icon: 'success',
           timer: 2000,
         });
-        setOpenDialog(false); 
+    
+        setOpenDialog(false);
       }
     };
+    
     
     const handleCloseHistoryDialog = () => setOpenHistoryDialog(false);
   
@@ -155,19 +182,10 @@ const InstrumentTabResponsive = ({ project }) => {
       let filtered = allInstruments; 
       if (searchType) {
         filtered = filtered.filter((instrument) => 
-          instrument.instrumentType.toLowerCase().includes(searchType.toLowerCase())
+          instrument.ame.toLowerCase().includes(searchType.toLowerCase())
         );
       }
-      if (searchDate) {
-        filtered = filtered.filter((instrument) => {
-          const instrumentDate = new Date(instrument.addedProjectDate);
-      
-          const formattedInstrumentDate = instrumentDate.toISOString().split('T')[0]; 
-          const formattedSearchDate = new Date(searchDate).toISOString().split('T')[0]; 
-      
-          return formattedInstrumentDate === formattedSearchDate;
-        });
-      }
+
       
       if (searchStatus) {
         filtered = filtered.filter(instrument => instrument.status.split('_').join(' ').includes(searchStatus));
@@ -278,23 +296,10 @@ const InstrumentTabResponsive = ({ project }) => {
         <div className="flex flex-col gap-3 sm:flex-row ">
             {/* Type Input */}
             <TextField
-              label="Type"
+              label="Name"
               variant="outlined"
               onChange={(e) => setSearchType(e.target.value)}
               value={searchType}
-              className="rounded-3xl w-full sm:w-auto"
-            />
-
-            {/* Date Input */}
-            <TextField
-              label="Search by Date"
-              type="date"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              variant="outlined"
-              value={searchDate}
-              onChange={(e) => setSearchDate(e.target.value)}
               className="rounded-3xl w-full sm:w-auto"
             />
 
@@ -636,7 +641,7 @@ const InstrumentTabResponsive = ({ project }) => {
             Add
           </Button>
         </DialogActions>
-      </Dialog>
+        </Dialog>
 
         <InstrumentStatusModal
             instrumentId={selectedInstrumentId} 

@@ -262,7 +262,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                 </List>
 
               {/* Bottom User Info */}
-              <div className="px-4">
+              <div className="">
                 <Divider className="bg-gray-200 mx-4" />
                 <ListItem div>
                   <UserInfo />
@@ -271,8 +271,15 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
               </div>
                 </div>
 
-              <ListItem className="!mt-4" >
-                    <img src="/Powered by logo.png" alt="BauEnergy Login" className='w-[174px] h-[35px]'/>
+                <ListItem
+                    className="!mt-4 cursor-pointer"
+                    onClick={() => window.open("https://www.musts.io/", "_blank")}
+                >
+                    <img
+                        src="/Powered by logo.png"
+                        alt="BauEnergy Login"
+                        className="w-[174px] h-[35px]"
+                    />
                 </ListItem>
               </div>
             </div>

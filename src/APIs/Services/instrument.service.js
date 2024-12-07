@@ -21,13 +21,31 @@ class InstrumentService extends HttpClient {
         });
     }
 
-    async getByExactName(name) {
-        return await this.get(`Instrument/ByExactName?name=${name}`, {
+    // async getByExactName(name) {
+    //     return await this.get(`Instrument/ByExactName?name=${name}`, {
+    //         headers: {
+    //             authorization: `Bearer ${cookies.get('user')?.token}`
+    //         }
+    //     });
+    // }
+    async getByExactName( projectName, status, name, pageNumber = 1, pageSize = 20) {
+        // Construct query parameters
+        const params = new URLSearchParams({
+            projectName,
+            status,
+            name,
+            pageNumber,
+            pageSize: 20
+        });
+    
+        // Make the API call
+        return await this.get(`Instrument/ByExactName?${params.toString()}`, {
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }
         });
     }
+    
 
     async getAllByName(search = "") {
         return await this.get(`Instrument/filteredbyname`, {

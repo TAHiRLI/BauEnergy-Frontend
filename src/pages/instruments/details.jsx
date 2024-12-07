@@ -57,17 +57,19 @@ const InstrumentDetails = () => {
   const [refresh, setRefresh] = useState(false); 
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [existingImages, setExistingImages] = useState([]);
   const [existingPdfs, setExistingPdfs] = useState([]);
 
   const [availableTags, setAvailableTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
   const [isFirstEffectComplete, setIsFirstEffectComplete] = useState(false);
-  const [loadingHistory, setLoadingHistory] = useState(false);
   const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState(instrument?.image || null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [projectSearch, setProjectSearch] = useState(''); // Project name search
+  const [statusSearch, setStatusSearch] = useState('');
 
   const cookies = new Cookies();
   let user = cookies.get('user'); 
@@ -104,25 +106,50 @@ const InstrumentDetails = () => {
   
     fetchInstrument();
   }, [id, refresh]);
-  
+
   useEffect(() => {
-    if (!isFirstEffectComplete || !instrument) return; 
-  
+    if (!isFirstEffectComplete || !instrument) return;
+
     const fetchInstrumentsByName = async () => {
-      try {
-        const response = await instrumentService.getByExactName(instrument.name);
-        //console.log(response)
-        setfilteredInstrument(response.data)
-        //console.log(response);
-      } catch (error) {
-        console.error('Error fetching instrument details');
-      } finally {
-        setLoading(false);
-      }
+        setLoading(true);
+        try {
+            const response = await instrumentService.getByExactName(
+                projectSearch, // Pass project search
+                statusSearch ,  // Pass status search
+                instrument.name, 
+                currentPage,
+            );
+
+            const { instruments, totalPages } = response.data;
+            console.log(response.data);
+
+            setfilteredInstrument(prevInstruments => [
+                ...(Array.isArray(prevInstruments) ? prevInstruments : []), 
+                ...instruments
+            ]);
+            setTotalPages(totalPages);
+        } catch (error) {
+            console.error('Error fetching instrument details', error);
+        } finally {
+            setLoading(false);
+        }
     };
-  
+
     fetchInstrumentsByName();
-  }, [isFirstEffectComplete, instrument, refresh]);
+}, [isFirstEffectComplete, instrument, currentPage, projectSearch, statusSearch]);
+
+const loadMoreInstruments = () => {
+  if (currentPage < totalPages) {
+      setCurrentPage(prevPage => prevPage + 1);
+  }
+};
+
+const instrumentStatusOptions = [
+  { label: 'Available', value: 'Available' },
+  { label: 'In Use', value: 'In_use' },
+  { label: 'Under Maintenance', value: 'Under_maintenance' },
+];
+
   
   useEffect(() => {
     const fetchHistory = async () => {
@@ -319,19 +346,6 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
       console.error("Error fetching instrument history:", error);
     }
   };
-
-  const handleDeleteImage = async (imageId) => {
-    try {
-      await instrumentService.removeImage(instrument.id, imageId)
-      // Update state to remove deleted image from UI
-      setExistingImages(existingImages.filter(image => image.id !== imageId));
-      handleCloseUpdateModal();
-      Swal.fire('Success', 'Document deleted successfully!', 'success');
-      setRefresh(!refresh); 
-    } catch (error) {
-      console.error("Failed to delete image:", error);
-    }
-  };
   
   const handleDeletePdf = async (pdfId) => {
     try {
@@ -389,13 +403,11 @@ const handleImageUpload = (event) => {
     // Generate a temporary object URL for the preview
     const objectUrl = URL.createObjectURL(file);
     setSelectedImage(objectUrl); // Set preview image as object URL
-console.log(objectUrl)
     // Optionally, store the file itself for upload
     //setUploadedFile(file);
   }
 };
 
-console.log(filteredInstrument)
   
   return (
     <Box p={1}>
@@ -479,54 +491,115 @@ console.log(filteredInstrument)
       </Box>
 
 
-      {/* All Instruments */}
-      <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
-        <div>
-          {filteredInstrument?.map((instrument, index) => (
-            <Box key={instrument.id} mb={3} sx={{ backgroundColor: '#f9f9f9', borderRadius: 3, p: 2, boxShadow: 1 }} className="!flex !gap-5 justify-between items-center ">
-              <div className='flex gap-5 xl:gap-10 items-center'>
-                <Typography sx={{ flexShrink: 0, fontWeight: 'bold' }}>
-                  {instrument.name}
-                </Typography>
+{/* All Instruments */}
+<Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
+  <Box mt={3} mb={3} className='!flex !gap-2 sm:!flex-row !flex-col'>
+      <TextField
+          label="Search by Project"
+          value={projectSearch}
+          onChange={(e) => {
+              setProjectSearch(e.target.value);
+              setCurrentPage(1); // Reset pagination
+              setfilteredInstrument([]); // Clear current results
+          }}
+          fullWidth
+      />
+        <FormControl fullWidth>
+          <InputLabel>Search by Status</InputLabel>
+          <Select
+            label="Search by Status"
+            value={statusSearch || ''}
+            onChange={(e) => {
+              setStatusSearch(e.target.value);
+              setCurrentPage(1);  // Reset pagination when status changes
+              setfilteredInstrument([]);  // Clear current results
+            }}
+          >
+            {instrumentStatusOptions.map((status) => (
+              <MenuItem key={status.value} value={status.value}>
+                {status.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+  </Box>
 
-                <Typography sx={{ color: 'text.secondary' }} className='sm:w-[220px] hidden sm:block'>
-                  Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
-                </Typography>
-                <Typography sx={{ color: 'text.secondary' }}>
-                  Project: {instrument.projectName || 'Not assigned'}
-                </Typography>
-              </div>
+  <div>
+    {filteredInstrument?.map((instrument, index) => (
+      <Box
+        key={instrument.id}
+        mb={3}
+        sx={{ backgroundColor: '#f9f9f9', borderRadius: 3, p: 2, boxShadow: 1 }}
+        className="!flex !gap-5 justify-between items-center"
+      >
+        <div className="flex gap-5 xl:gap-10 items-center">
+          <Typography sx={{ flexShrink: 0, fontWeight: 'bold' }}>
+            {instrument.name}
+          </Typography>
 
-              <Box className='!flex gap-2 sm:gap-4 sm:mr-8'>
-                <IconButton
-                  onClick={() => handleDelete(instrument.id)}
-                  sx={{
-                    color: "#d333",
-                    backgroundColor: "#f5f5f5",
-                    borderRadius: "20%",
-                    padding: "5px",
-                    border: "1px solid #e0e0e0",
-                    "&:hover": { backgroundColor: "#e0e0e0" },
-                  }}
-                >
-                  <DeleteIcon sx={{ color: "#d33" }} />
-                </IconButton>
-
-                <IconButton onClick={() => handleShowHistory(instrument.id)} color="primary"
-                  sx={{
-                    backgroundColor: "#f5f5f5",  
-                    borderRadius: "20%",         
-                    padding: "5px",               
-                    border: "1px solid #e0e0e0", "&:hover": {backgroundColor: "#e0e0e0"},
-                  }}>            
-                  <HistoryIcon sx={{ color: "#424242" }} />
-                </IconButton>
-              </Box>
-
-            </Box>
-          ))}
+          <Typography sx={{ color: 'text.secondary' }} className="sm:w-[220px] hidden sm:block">
+            Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+          </Typography>
+          <Typography sx={{ color: 'text.secondary' }}>
+            Project: {instrument.projectName || 'Not assigned'}
+          </Typography>
         </div>
+
+        <Box className="!flex gap-2 sm:gap-4 sm:mr-8">
+          <IconButton
+            onClick={() => handleDelete(instrument.id)}
+            sx={{
+              color: "#d333",
+              backgroundColor: "#f5f5f5",
+              borderRadius: "20%",
+              padding: "5px",
+              border: "1px solid #e0e0e0",
+              "&:hover": { backgroundColor: "#e0e0e0" },
+            }}
+          >
+            <DeleteIcon sx={{ color: "#d33" }} />
+          </IconButton>
+
+          <IconButton
+            onClick={() => handleShowHistory(instrument.id)}
+            color="primary"
+            sx={{
+              backgroundColor: "#f5f5f5",
+              borderRadius: "20%",
+              padding: "5px",
+              border: "1px solid #e0e0e0",
+              "&:hover": { backgroundColor: "#e0e0e0" },
+            }}
+          >
+            <HistoryIcon sx={{ color: "#424242" }} />
+          </IconButton>
+        </Box>
       </Box>
+    ))}
+
+    {/* Load More Button */}
+    {currentPage < totalPages && (
+      <Box mt={3} textAlign="center">
+        <Button
+        className='!rounded-3xl'
+          variant="contained"
+          onClick={loadMoreInstruments}
+          disabled={loading}
+          sx={{
+            backgroundColor: loading ? '#e0e0e0' : '#1D34D8',
+            color: '#ffffff',
+            "&:hover": {
+              backgroundColor: loading ? '#e0e0e0' : '#1 64cb8',
+            },
+          }}
+        >
+          {loading ? 'Loading...' : 'Load More'}
+        </Button>
+      </Box>
+    )}
+  </div>
+</Box>
+
 
 
       {/* Edit Instrument Modal */}

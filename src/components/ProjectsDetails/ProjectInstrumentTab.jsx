@@ -14,6 +14,7 @@ import {
   InputLabel,
   Typography,
   TextField,
+  FormHelperText,
   Chip,
   Paper,
 } from "@mui/material";
@@ -51,8 +52,12 @@ export default function InstrumentTab({ project }) {
   const [selectedManager, setSelectedManager] = useState("");
   const [instrumentCount, setInstrumentCount] = useState(1);
 
+  const [instrumentError, setInstrumentError] = useState(false);
+  const [managerError, setManagerError] = useState(false);
+
   const [editOpen, setEditOpen] = useState(false);
   const [selectedInstrumentStatus, setSelectedInstrumentStatus] = useState("");
+  
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
@@ -91,24 +96,73 @@ export default function InstrumentTab({ project }) {
     }
   };
 
+  // const handleAddInstrument = async () => {
+  //   try {
+  //     const body = {
+  //       projectId: project.id,
+  //       instrumentId: selectedInstrumentId,
+  //       projectManagerId: selectedManager,
+  //       count: instrumentCount, 
+  //     };
+  //     await projectService.addInstrumentToProject(body);
+  //     setOpenDialog(false);
+
+  //     Swal.fire({
+  //       title: "Added!",
+  //       text: "Instrument has been added to the project.",
+  //       icon: "success",
+  //       timer: 2000,
+  //     });
+
+  //     const response = await projectService.getById(project.id);
+  //     dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
+  //     setFilteredInstruments(response.data.instruments);
+  //     setSelectedInstrumentId("");
+  //     setInstrumentCount(1);
+  //     setOpenDialog(false);
+  //   } catch (error) {
+  //     console.error("Error adding instrument:", error);
+  //     setOpenDialog(false);
+
+  //     Swal.fire("Error!", error.response.data, "error");
+  //   }
+  // };
+
   const handleAddInstrument = async () => {
+    // Reset errors
+    setInstrumentError(false);
+    setManagerError(false);
+  
+    if (!selectedInstrumentId) {
+      setInstrumentError(true);
+    }
+    if (!selectedManager) {
+      setManagerError(true);
+    }
+  
+    if (!selectedInstrumentId || !selectedManager) {
+      Swal.fire("Error!", "Please select an instrument and a project manager.", "error");
+      return;
+    }
+  
     try {
       const body = {
         projectId: project.id,
         instrumentId: selectedInstrumentId,
         projectManagerId: selectedManager,
-        count: instrumentCount, // Include the count property
+        count: instrumentCount, 
       };
+  
       await projectService.addInstrumentToProject(body);
       setOpenDialog(false);
-
+  
       Swal.fire({
         title: "Added!",
         text: "Instrument has been added to the project.",
         icon: "success",
         timer: 2000,
       });
-
+  
       const response = await projectService.getById(project.id);
       dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
       setFilteredInstruments(response.data.instruments);
@@ -116,9 +170,9 @@ export default function InstrumentTab({ project }) {
       setInstrumentCount(1);
       setOpenDialog(false);
     } catch (error) {
-      console.error("Error adding instrument:", error.response.data);
+      console.error("Error adding instrument:", error);
       setOpenDialog(false);
-
+  
       Swal.fire("Error!", error.response.data, "error");
     }
   };
@@ -140,18 +194,8 @@ export default function InstrumentTab({ project }) {
     let filtered = allInstruments;
     if (searchType) {
       filtered = filtered.filter((instrument) =>
-        instrument.instrumentType.toLowerCase().includes(searchType.toLowerCase())
+        instrument.name.toLowerCase().includes(searchType.toLowerCase())
       );
-    }
-    if (searchDate) {
-      filtered = filtered.filter((instrument) => {
-        const instrumentDate = new Date(instrument.addedProjectDate);
-
-        const formattedInstrumentDate = instrumentDate.toISOString().split("T")[0];
-        const formattedSearchDate = new Date(searchDate).toISOString().split("T")[0];
-
-        return formattedInstrumentDate === formattedSearchDate;
-      });
     }
 
     if (searchStatus) {
@@ -168,7 +212,7 @@ export default function InstrumentTab({ project }) {
         //const data = await response.json();
         setProjectManagers(response.data);
         if (response.data && response.data.length > 0) {
-          setSelectedManager(response.data[0].id); // Set first manager's ID as the default
+          setSelectedManager(response.data[0].id); 
         }
       } catch (error) {
         console.error("Failed to fetch project managers:", error);
@@ -417,23 +461,10 @@ export default function InstrumentTab({ project }) {
         <div className="flex flex-col gap-2 sm:flex-row sm:gap-1">
           {/* Type Input */}
           <TextField
-            label="Type"
+            label="Name"
             variant="outlined"
             onChange={(e) => setSearchType(e.target.value)}
             value={searchType}
-            className="rounded-3xl w-full sm:w-[200px]"
-          />
-
-          {/* Date Input */}
-          <TextField
-            label="Search by Date"
-            type="date"
-            InputLabelProps={{
-              shrink: true,
-            }}
-            variant="outlined"
-            value={searchDate}
-            onChange={(e) => setSearchDate(e.target.value)}
             className="rounded-3xl w-full sm:w-[200px]"
           />
 
@@ -510,37 +541,45 @@ export default function InstrumentTab({ project }) {
       >
         <DialogTitle className="!font-medium">Select instrument for adding project</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Select Instrument</InputLabel>
-            <Select
-              value={selectedInstrumentId}
-              onChange={(e) => setSelectedInstrumentId(e.target.value)}
-              label="Select Instrument"
-            >
-              {allInstruments.map((instrument) => (
-                <MenuItem key={instrument.id} value={instrument.id}>
-                  {instrument.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        <FormControl fullWidth margin="dense" error={instrumentError}>
+        <InputLabel>Select Instrument</InputLabel>
+        <Select
+          value={selectedInstrumentId}
+          onChange={(e) => {
+            setSelectedInstrumentId(e.target.value);
+            setInstrumentError(false);
+          }}
+          label="Select Instrument"
+        >
+          {allInstruments.map((instrument) => (
+            <MenuItem key={instrument.id} value={instrument.id}>
+              {instrument.name}
+            </MenuItem>
+          ))}
+        </Select>
+          {instrumentError && <FormHelperText>Please select an instrument.</FormHelperText>}
+        </FormControl>
 
-          {/* Project Manager Selection */}
-          <FormControl fullWidth margin="dense">
-            <InputLabel id="project-manager-label">Project Manager</InputLabel>
-            <Select
-              labelId="project-manager-label"
-              value={selectedManager}
-              onChange={handleManagerChange}
-              label="Project Manager"
-            >
-              {projectManagers.map((manager) => (
-                <MenuItem key={manager.id} value={manager.id}>
-                  {manager.name} {manager.lastName}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        <FormControl fullWidth margin="dense" error={managerError}>
+          <InputLabel id="project-manager-label">Project Manager</InputLabel>
+          <Select
+            labelId="project-manager-label"
+            value={selectedManager}
+            onChange={(e) => {
+              setSelectedManager(e.target.value);
+              setManagerError(false); // Clear error on selection
+            }}
+            label="Project Manager"
+          >
+            {projectManagers.map((manager) => (
+              <MenuItem key={manager.id} value={manager.id}>
+                {manager.name} {manager.lastName}
+              </MenuItem>
+            ))}
+          </Select>
+          {managerError && <FormHelperText>Please select a project manager.</FormHelperText>}
+        </FormControl>
+
 
           {/* Count Input */}
           <FormControl fullWidth margin="dense">
@@ -549,7 +588,7 @@ export default function InstrumentTab({ project }) {
               label="Instrument Count"
               value={instrumentCount}
               onChange={(e) => setInstrumentCount(e.target.value)}
-              inputProps={{ min: 1 }} // Minimum value is 1
+              inputProps={{ min: 1 }}
             />
           </FormControl>
 

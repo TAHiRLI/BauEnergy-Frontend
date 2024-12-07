@@ -10,8 +10,6 @@ import {
   IconButton,
   Box,
   Grid,
-  FormControlLabel,
-  Radio,
   CircularProgress,
   FormControl,
   InputLabel,
@@ -22,13 +20,6 @@ import {
   OutlinedInput,
   InputAdornment,
   Paper,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Switch,
   useMediaQuery,
 } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
@@ -73,7 +64,7 @@ export const Instruments = () => {
   const [openQRDialog, setOpenQRDialog] = useState(false);
   const [qrImage, setQrImage] = useState(null);
   const [qrInstrumentName, setQrInstrumentName] = useState(null);
-  const [imagePreviews, setImagePreviews] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
@@ -89,6 +80,12 @@ export const Instruments = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [selectedImage, setSelectedImage] = useState( "/toolimage.png" || null);
+  const [imageError, setImageError] = useState("");
+
+  const handleInstrumentClick = ( id) => {
+    navigate(`/instruments/details/${id}`);
+};
   const columns = useMemo(() => {
     return [
       {
@@ -101,7 +98,7 @@ export const Instruments = () => {
               display="flex"
               alignItems="center"
               sx={{ cursor: "pointer" }}
-              onClick={() => handleShowQR(params.row.qrImage, params.row.name)}
+              onClick={() => handleInstrumentClick(params.row.id)}
             >
               <img
                 src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${params.row.image}`}
@@ -167,7 +164,7 @@ export const Instruments = () => {
   }, []);
 
   const handleViewChange = (mode) => {
-    setViewMode(mode); // Update the state with the selected mode ("card" or "table")
+    setViewMode(mode); 
   };
 
   const isSmallScreen = useMediaQuery("(max-width:800px)");
@@ -203,9 +200,6 @@ export const Instruments = () => {
   // const searchInputRef = useRef(null);
   //console.log(location)
 
-  //#region Qr scan
-
-  //#endregion
 
   const cookies = new Cookies();
   let user = cookies.get("user");
@@ -348,7 +342,7 @@ export const Instruments = () => {
     //console.log(value)
     if (value === "+" || value === "-") {
       setError('Invalid input: Price cannot be just "+" or "-"');
-      setNewInstrument((prev) => ({ ...prev, [name]: "" })); // Clear invalid input
+      setNewInstrument((prev) => ({ ...prev, [name]: "" })); 
     } else {
       setNewInstrument((prevState) => ({
         ...prevState,
@@ -387,44 +381,53 @@ export const Instruments = () => {
   };
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0]; // Get the first (and only) file
+    const file = event.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
+      const imageUrl = URL.createObjectURL(file); 
       setImagePreviews(imageUrl);
-      setNewInstrument((prevInstrument) => ({
-        ...prevInstrument,
-        image: [file],
-      }));
+      setSelectedImage(file); 
     }
   };
+  
+  
+
+  const renderImage = () => {
+    if (selectedImage.startsWith("blob:")) {
+      return selectedImage; 
+    }
+    return selectedImage; 
+  };
+  
 
   const handleAddInstrument = async () => {
-    setIsSubmitting(true); // Disable button
-    const { name, image, files, description, shortDesc, projectId, instrumentType, count, price, tags } = newInstrument;
-
-    const formData = new FormData();
-    formData.append("Name", name);
-    formData.append("Description", description);
-    formData.append("ShortDesc", shortDesc);
-    formData.append("ProjectId", projectId || "");
-    formData.append("InstrumentType", instrumentType);
-    formData.append("Count", count);
-    formData.append("Price", price);
-    formData.append("Image", image[0]);
-
-    files?.forEach((file) => {
-      formData.append("Files", file);
-    });
-
-    tags?.forEach((tag) => {
-      formData.append("Tags", tag);
-    });
-
+    if (!selectedImage || selectedImage === "/toolimage.png") {
+      setImageError("Please upload an image before submitting.");
+      return;
+    }
+    setImageError(""); // Clear any existing error
+  
     try {
+      setIsSubmitting(true); // Disable button
+  
+      const { name, description, shortDesc, instrumentType, count, price, tags } = newInstrument;
+      const formData = new FormData();
+      formData.append("Name", name);
+      formData.append("Description", description);
+      formData.append("ShortDesc", shortDesc);
+      formData.append("InstrumentType", instrumentType);
+      formData.append("Count", count);
+      formData.append("Price", price);
+      formData.append("Image", selectedImage); 
+  
+      tags?.forEach((tag) => {
+        formData.append("Tags", tag);
+      });
+  
       await instrumentService.add(formData);
       forceUpdate((x) => !x);
       handleCloseModal();
       fetchInstrumentsByName();
+  
       Swal.fire({
         icon: "success",
         title: "Success",
@@ -433,25 +436,17 @@ export const Instruments = () => {
       });
     } catch (err) {
       console.error("Error adding instrument:", err);
-      if (err.response && err.response.status === 403) {
-        Swal.fire({
-          icon: "error",
-          title: "Access Denied",
-          text: "You do not have permission to perform this action.",
-          confirmButtonText: "OK",
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "An error occurred while adding the instrument. Please try again.",
-          confirmButtonText: "OK",
-        });
-      }
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while adding the instrument. Please try again.",
+        confirmButtonText: "OK",
+      });
     } finally {
       setIsSubmitting(false); // Re-enable button
     }
   };
+  
 
   const handleShare = () => {
     const shareData = {
@@ -478,6 +473,34 @@ export const Instruments = () => {
     setOpenQRDialog(true);
   };
   const handleCloseQRDialog = () => setOpenQRDialog(false);
+
+  const rows = instruments.map((instrument) => ({
+    id: instrument.id,
+    name: instrument.name,
+    isActive: instrument.isActive ? "Inactive" : "Active",
+    shortDesc: instrument.shortDesc,
+    image: instrument.image,
+
+    status: instrument.status,
+    qr: instrument.qrImage,
+  }));
+  const instrumentsFilteredByName = instrumentsByName.data?.map((instrument) => ({
+    id: instrument.id,
+    name: instrument.name,
+    isActive: instrument.isActive ? "Inactive" : "Active",
+    shortDesc: instrument.shortDesc,
+    image: instrument.image,
+
+    status: instrument.status,
+    qr: instrument.qrImage,
+    count: instrument.count,
+    usedInstrumentCount: instrument.usedInstrumentsCount,
+  }));
+
+  const rowss = instrumentsByName.data?.map((instrument, index) => ({
+    id: instrument.id || index,
+    ...instrument,
+  }));
 
   if (!state.data || state.data.length === 0) {
     return (
@@ -701,34 +724,7 @@ export const Instruments = () => {
     );
   }
 
-  const rows = instruments.map((instrument) => ({
-    id: instrument.id,
-    name: instrument.name,
-    isActive: instrument.isActive ? "Inactive" : "Active",
-    shortDesc: instrument.shortDesc,
-    image: instrument.image,
-
-    status: instrument.status,
-    qr: instrument.qrImage,
-  }));
-  const instrumentsFilteredByName = instrumentsByName.data?.map((instrument) => ({
-    id: instrument.id,
-    name: instrument.name,
-    isActive: instrument.isActive ? "Inactive" : "Active",
-    shortDesc: instrument.shortDesc,
-    image: instrument.image,
-
-    status: instrument.status,
-    qr: instrument.qrImage,
-    count: instrument.count,
-    usedInstrumentCount: instrument.usedInstrumentsCount,
-  }));
-
-  const rowss = instrumentsByName.data?.map((instrument, index) => ({
-    id: instrument.id || index,
-    ...instrument,
-  }));
-
+  console.log(imagePreviews)
 
   return (
     <Box m={{ xs: "0px", sm: "20px" }} mt={{ xs: "10px", sm: "20px" }}>
@@ -1019,6 +1015,52 @@ export const Instruments = () => {
           </IconButton>
         </DialogTitle>
         <DialogContent>
+        <Box
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    marginBottom: 2,
+  }}
+>
+  {/* Display the selected image */}
+  <img
+  src={imagePreviews ?? "/toolimage.png"} 
+  alt="Instrument Preview"
+  style={{
+    width: 250,
+    height: 200,
+    borderRadius: "10%",
+    objectFit: "cover",
+    marginBottom: 0,
+    marginTop: "20px",
+  }}
+  />
+
+  {/* Upload button */}
+  <Button
+    variant="text"
+    className="!text-[#1D34D8]"
+    onClick={() => document.getElementById("profile-image-input").click()}
+  >
+    Upload Image
+  </Button>
+  <input
+    id="profile-image-input"
+    type="file"
+    accept="image/*"
+    style={{ display: "none" }}
+    onChange={handleImageUpload}
+  />
+  {/* Show error message */}
+  {error && (
+    <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
+      {imageError}
+    </Typography>
+  )}
+</Box>
+
+
           <TextField
             autoFocus
             margin="dense"
@@ -1120,34 +1162,6 @@ export const Instruments = () => {
             margin="normal"
             inputProps={{ min: 1 }}
           />
-          {/* Image upload */}
-          <StyledBox>
-            <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
-              Upload Images
-              <VisuallyHiddenInput type="file" accept="image/*" onChange={handleImageUpload} />
-            </Button>
-          </StyledBox>
-
-          {/* Image Previews and Main Image Selection */}
-          {imagePreviews && imagePreviews != "" && (
-            <Box mt={2}>
-              <Typography variant="h6">Uploaded Image:</Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <img
-                    src={imagePreviews}
-                    alt="Uploaded Preview"
-                    style={{
-                      width: "200px",
-                      height: "200px",
-                      objectFit: "cover",
-                      borderRadius: "10px",
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Box>
-          )}
 
           {/* PDF Upload */}
           <StyledBox>
@@ -1187,7 +1201,7 @@ export const Instruments = () => {
             onClick={handleAddInstrument}
             variant="contained"
             className="!bg-[#1D34D8]"
-            disabled={isSubmitting} // Disable button while submitting
+            disabled={isSubmitting} 
           >
             {isSubmitting ? "Submitting..." : "Submit"}
           </Button>

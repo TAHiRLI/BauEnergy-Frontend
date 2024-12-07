@@ -143,6 +143,7 @@ const UpdateUserPage = () => {
 
   return (
     <Box
+    className="!mt-6 "
       sx={{
         padding: 4,
         display: "flex",
