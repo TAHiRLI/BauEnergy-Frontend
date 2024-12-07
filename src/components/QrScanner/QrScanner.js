@@ -38,7 +38,7 @@ const QrReader = ({ onComplete }) => {
       await scanner.current.start();
     } catch (error) {
       console.error("Failed to initialize QR scanner:", error);
-      alert("Error initializing QR scanner. Check camera permissions.");
+      alert(`Error initializing QR scanner. Check camera permissions. ${JSON.stringify(error)}`);
     }
   };
 
