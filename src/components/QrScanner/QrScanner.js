@@ -5,47 +5,53 @@ import { useEffect, useRef, useState } from "react";
 import QrScanner from "qr-scanner";
 
 const QrReader = ({ onComplete }) => {
-  const scanner = useRef(null); // QR Scanner instance
+  const scanner = useRef(null); // QrScanner instance
   const videoEl = useRef(null); // Reference to the video element
 
   const [cameras, setCameras] = useState([]); // List of available cameras
-  const [selectedCamera, setSelectedCamera] = useState("user"); // Currently selected camera
+  const [selectedCamera, setSelectedCamera] = useState(""); // Selected camera ID
   const [flashEnabled, setFlashEnabled] = useState(false);
 
   // Success callback for QR code scanning
   const onScanSuccess = (result) => {
     console.log("Scanned QR Code:", result?.data);
-    onComplete(result?.data); // Trigger the callback with scanned data
+    onComplete(result?.data); // Pass result to parent
   };
 
   const onScanFail = (error) => {
     console.warn("QR Scan Error:", error);
   };
 
-  // Initialize the QR scanner with the specified camera
-  const initializeScanner = async (camera) => {
+  // Initialize scanner with a specific camera
+  const initializeScanner = async (cameraId) => {
     try {
-      // Stop and destroy the current scanner instance
+      // Stop and clean up the existing scanner
       if (scanner.current) {
         await scanner.current.stop();
         scanner.current.destroy();
         scanner.current = null;
       }
 
-      // Initialize a new scanner instance
+      // Ensure the video element is ready
+      if (videoEl.current) {
+        videoEl.current.srcObject = null; // Reset video element source
+      }
+
+      // Create a new scanner instance
       scanner.current = new QrScanner(videoEl.current, onScanSuccess, {
         onDecodeError: onScanFail,
-        preferredCamera: camera,
+        preferredCamera: cameraId,
       });
 
       await scanner.current.start();
-      console.log("Scanner initialized with camera:", camera);
+      console.log("Scanner initialized with camera:", cameraId);
     } catch (error) {
       console.error("Failed to initialize QR scanner:", error);
-      alert(`Error initializing QR scanner. Check camera permissions. ${JSON.stringify(error)}`);
+      alert("Error initializing QR scanner. Check camera permissions.");
     }
   };
 
+  // Fetch camera list on mount
   useEffect(() => {
     const fetchCameras = async () => {
       const availableCameras = await QrScanner.listCameras();
@@ -54,6 +60,8 @@ const QrReader = ({ onComplete }) => {
       if (availableCameras.length > 0) {
         setSelectedCamera(availableCameras[0].id);
         initializeScanner(availableCameras[0].id);
+      } else {
+        alert("No cameras found on this device.");
       }
     };
 
@@ -69,10 +77,9 @@ const QrReader = ({ onComplete }) => {
 
   // Handle camera selection
   const handleCameraChange = (event) => {
-    const selectedCameraId = event.target.value;
-    setSelectedCamera(cam=> cam == "user"? "environment":"user");
-    let a = selectedCamera == "user"?"environment":"user" 
-    initializeScanner(a);
+    const cameraId = event.target.value;
+    setSelectedCamera(cameraId);
+    initializeScanner(cameraId); // Reinitialize scanner with selected camera
   };
 
   // Toggle flashlight
