@@ -22,23 +22,27 @@ const QrReader = ({ onComplete }) => {
     console.warn("QR Scan Error:", error);
   };
 
-  // Fetch camera list and initialize scanner
+  // Initialize the QR scanner with the specified camera
   const initializeScanner = async (cameraId) => {
     try {
+      // Stop and destroy the current scanner instance
       if (scanner.current) {
-        scanner.current.stop();
+        await scanner.current.stop();
         scanner.current.destroy();
+        scanner.current = null;
       }
 
+      // Initialize a new scanner instance
       scanner.current = new QrScanner(videoEl.current, onScanSuccess, {
         onDecodeError: onScanFail,
         preferredCamera: cameraId,
       });
 
       await scanner.current.start();
+      console.log("Scanner initialized with camera:", cameraId);
     } catch (error) {
       console.error("Failed to initialize QR scanner:", error);
-      alert(`Error initializing QR scanner. Check camera permissions. ${JSON.stringify(error)}`);
+      alert("Error initializing QR scanner. Check camera permissions.");
     }
   };
 
@@ -119,10 +123,8 @@ const QrReader = ({ onComplete }) => {
         value={selectedCamera}
         onChange={handleCameraChange}
         displayEmpty
+        fullWidth
         sx={{
-          position: "absolute",
-          top: "10px",
-          left: "10px",
           backgroundColor: "#fff",
           borderRadius: "4px",
           minWidth: "200px",
