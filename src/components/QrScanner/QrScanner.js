@@ -9,7 +9,7 @@ const QrReader = ({ onComplete }) => {
   const videoEl = useRef(null); // Reference to the video element
 
   const [cameras, setCameras] = useState([]); // List of available cameras
-  const [selectedCamera, setSelectedCamera] = useState(""); // Currently selected camera
+  const [selectedCamera, setSelectedCamera] = useState("user"); // Currently selected camera
   const [flashEnabled, setFlashEnabled] = useState(false);
 
   // Success callback for QR code scanning
@@ -23,7 +23,7 @@ const QrReader = ({ onComplete }) => {
   };
 
   // Initialize the QR scanner with the specified camera
-  const initializeScanner = async (cameraId) => {
+  const initializeScanner = async (camera) => {
     try {
       // Stop and destroy the current scanner instance
       if (scanner.current) {
@@ -35,14 +35,14 @@ const QrReader = ({ onComplete }) => {
       // Initialize a new scanner instance
       scanner.current = new QrScanner(videoEl.current, onScanSuccess, {
         onDecodeError: onScanFail,
-        preferredCamera: cameraId,
+        preferredCamera: camera,
       });
 
       await scanner.current.start();
-      console.log("Scanner initialized with camera:", cameraId);
+      console.log("Scanner initialized with camera:", camera);
     } catch (error) {
       console.error("Failed to initialize QR scanner:", error);
-      alert("Error initializing QR scanner. Check camera permissions.");
+      alert(`Error initializing QR scanner. Check camera permissions. ${JSON.stringify(error)}`);
     }
   };
 
@@ -70,8 +70,9 @@ const QrReader = ({ onComplete }) => {
   // Handle camera selection
   const handleCameraChange = (event) => {
     const selectedCameraId = event.target.value;
-    setSelectedCamera(selectedCameraId);
-    initializeScanner(selectedCameraId);
+    setSelectedCamera(cam=> cam == "user"? "environment":"user");
+    let a = selectedCamera == "user"?"environment":"user" 
+    initializeScanner(a);
   };
 
   // Toggle flashlight
