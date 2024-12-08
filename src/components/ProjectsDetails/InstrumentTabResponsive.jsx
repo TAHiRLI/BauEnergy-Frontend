@@ -12,6 +12,7 @@ import DateRangeIcon from '@mui/icons-material/DateRange';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { teamMemberService } from '../../APIs/Services/teammember.service';
 import AddInstrumentWithQr from '../addInstrumentWithQr/addInstrumentWithQr';
+import FormHelperText from '@mui/material/FormHelperText';
 
 const InstrumentTabResponsive = ({ project }) => {
   const { state, dispatch } = useProjects();
@@ -35,7 +36,8 @@ const InstrumentTabResponsive = ({ project }) => {
     const [editOpen, setEditOpen] = useState(false);
     const [selectedInstrumentId, setSelectedInstrumentId] = useState("");
     const [selectedInstrumentStatus, setSelectedInstrumentStatus] = useState("");
- 
+    const [instrumentCount, setInstrumentCount] = useState(1);
+
     // Function to open the edit dialog
     const handleEditOpen = (instrumentId, currentStatus) => {
       setSelectedInstrumentId(instrumentId);
@@ -86,59 +88,54 @@ const InstrumentTabResponsive = ({ project }) => {
     }; 
   
     const handleAddInstrument = async () => {
-      // Check if both instrument and manager are selected
-      if (!selectedInstrumentId || !selectedManager) {
-        Swal.fire({
-          title: 'Error!',
-          text: 'Please select both an instrument and a project manager before adding.',
-          icon: 'warning',
-          timer: 3000,
-        });
-        return; // Exit the function if validation fails
-      }
-    
-      try {
-        const body = {
-          projectId: project.id,
-          instrumentId: selectedInstrumentId,
-          projectManagerId: selectedManager,
-        };
-    
-        console.log('Selected Manager:', selectedManager);
-    
-        // API call to add instrument to project
-        await projectService.addInstrumentToProject(body);
-    
-        Swal.fire({
-          title: 'Added!',
-          text: 'Instrument has been added to the project.',
-          icon: 'success',
-          timer: 2000,
-        });
-    
-        // Fetch updated project details
-        const response = await projectService.getById(project.id);
-        dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
-        setFilteredInstruments(response.data.instruments);
-    
-        // Reset state and close dialog
-        setSelectedInstrumentId('');
-        setSelectedManager(''); // Clear the manager selection as well
-        setOpenDialog(false);
-      } catch (error) {
-        // Handle errors during the API call
-        console.error('Error adding instrument:', error);
-    
-        Swal.fire({
-          title: 'Error!',
-          text: 'Failed to add instrument.',
-          icon: 'success',
-          timer: 2000,
-        });
-    
-        setOpenDialog(false);
-      }
-    };
+    // Reset errors
+    setInstrumentError(false);
+    setManagerError(false);
+  
+    if (!selectedInstrumentId) {
+      setInstrumentError(true);
+    }
+    if (!selectedManager) {
+      setManagerError(true);
+    }
+  
+    if (!selectedInstrumentId || !selectedManager) {
+      Swal.fire("Error!", "Please select an instrument and a project manager.", "error");
+      return;
+    }
+  
+    try {
+      const body = {
+        projectId: project.id,
+        instrumentId: selectedInstrumentId,
+        projectManagerId: selectedManager,
+        count: instrumentCount, 
+      };
+  
+      await projectService.addInstrumentToProject(body);
+      setOpenDialog(false);
+  
+      Swal.fire({
+        title: "Added!",
+        text: "Instrument has been added to the project.",
+        icon: "success",
+        timer: 2000,
+      });
+  
+      const response = await projectService.getById(project.id);
+      dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
+      setFilteredInstruments(response.data.instruments);
+      setSelectedInstrumentId("");
+      setInstrumentCount(1);
+      setOpenDialog(false);
+    } catch (error) {
+      console.error("Error adding instrument:", error);
+      setOpenDialog(false);
+  
+      Swal.fire("Error!", error.response.data, "error");
+    }
+  };
+
     
     
     const handleCloseHistoryDialog = () => setOpenHistoryDialog(false);
@@ -213,11 +210,11 @@ const InstrumentTabResponsive = ({ project }) => {
   
     const fetchAllInstruments = async () => {
       try {
-        const response = await instrumentService.getAviableInstruments(); 
+        const response = await instrumentService.getAllByName();
         setAllInstruments(response.data);
         //console.log(response.data)
       } catch (error) {
-        console.error('Error fetching available instruments:', error);
+        console.error("Error fetching available instruments:", error);
       }
     };
   
@@ -583,46 +580,68 @@ const InstrumentTabResponsive = ({ project }) => {
         </Dialog> */}
 
         {/* Dialog for Adding New Instrument */}
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} PaperProps={{
+        {/* Dialog for Adding New Instrument */}
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        PaperProps={{
           style: {
             borderRadius: 20,
-            //height: "500px",
-            backgroundColor: "#fcfcfc"  
+            backgroundColor: "#fcfcfc",
           },
-        }}>
-        <DialogTitle className='!font-medium'>Select instrument for adding project</DialogTitle>
+        }}
+      >
+        <DialogTitle className="!font-medium">Select instrument for adding project</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth margin="dense">
-            <InputLabel >Select Instrument</InputLabel>
-            <Select
-              value={selectedInstrumentId}
-              onChange={(e) => setSelectedInstrumentId(e.target.value)}
-              label="Select Instrument"
+        <FormControl fullWidth margin="dense" error={instrumentError}>
+        <InputLabel>Select Instrument</InputLabel>
+        <Select
+          value={selectedInstrumentId}
+          onChange={(e) => {
+            setSelectedInstrumentId(e.target.value);
+            setInstrumentError(false);
+          }}
+          label="Select Instrument"
+        >
+          {allInstruments.map((instrument) => (
+            <MenuItem key={instrument.id} value={instrument.id}>
+              {instrument.name}
+            </MenuItem>
+          ))}
+        </Select>
+          {instrumentError && <FormHelperText>Please select an instrument.</FormHelperText>}
+        </FormControl>
 
-            >
-              {allInstruments.map((instrument) => (
-                <MenuItem key={instrument.id} value={instrument.id}>
-                  {instrument.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        <FormControl fullWidth margin="dense" error={managerError}>
+          <InputLabel id="project-manager-label">Project Manager</InputLabel>
+          <Select
+            labelId="project-manager-label"
+            value={selectedManager}
+            onChange={(e) => {
+              setSelectedManager(e.target.value);
+              setManagerError(false); // Clear error on selection
+            }}
+            label="Project Manager"
+          >
+            {projectManagers.map((manager) => (
+              <MenuItem key={manager.id} value={manager.id}>
+                {manager.name} {manager.lastName}
+              </MenuItem>
+            ))}
+          </Select>
+          {managerError && <FormHelperText>Please select a project manager.</FormHelperText>}
+        </FormControl>
 
-          {/* Project Manager Selection */}
+
+          {/* Count Input */}
           <FormControl fullWidth margin="dense">
-            <InputLabel id="project-manager-label">Project Manager</InputLabel>
-            <Select
-              labelId="project-manager-label"
-              value={selectedManager}
-              onChange={handleManagerChange}
-              label="Project Manager"
-            >
-              {projectManagers.map((manager) => (
-                  <MenuItem key={manager.id} value={manager.id}>
-                      {manager.name} {manager.lastName}
-                  </MenuItem>
-              ))}
-            </Select>
+            <TextField
+              type="number"
+              label="Instrument Count"
+              value={instrumentCount}
+              onChange={(e) => setInstrumentCount(e.target.value)}
+              inputProps={{ min: 1 }}
+            />
           </FormControl>
 
           <AddInstrumentWithQr
@@ -635,14 +654,15 @@ const InstrumentTabResponsive = ({ project }) => {
             }}
           />
         </DialogContent>
-        <DialogActions className='!px-6'>
-          <Button onClick={() => setOpenDialog(false)} className='!text-[#1D34D8] '>Cancel</Button>
-          <Button onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8] '>
+        <DialogActions className="!px-6">
+          <Button onClick={() => setOpenDialog(false)} className="!text-[#1D34D8]">
+            Cancel
+          </Button>
+          <Button onClick={handleAddInstrument} variant="contained" className="!bg-[#1D34D8]">
             Add
           </Button>
         </DialogActions>
-        </Dialog>
-
+      </Dialog>
         <InstrumentStatusModal
             instrumentId={selectedInstrumentId} 
             currentStatus={selectedInstrumentStatus} 
