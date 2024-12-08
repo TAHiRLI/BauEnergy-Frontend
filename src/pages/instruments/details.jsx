@@ -491,116 +491,114 @@ const handleImageUpload = (event) => {
       </Box>
 
 
-{/* All Instruments */}
-<Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
-  <Box mt={3} mb={3} className='!flex !gap-2 sm:!flex-row !flex-col'>
-      <TextField
-          label="Search by Project"
-          value={projectSearch}
-          onChange={(e) => {
-              setProjectSearch(e.target.value);
-              setCurrentPage(1); // Reset pagination
-              setfilteredInstrument([]); // Clear current results
-          }}
-          fullWidth
-      />
-        <FormControl fullWidth>
-          <InputLabel>Search by Status</InputLabel>
-          <Select
-            label="Search by Status"
-            value={statusSearch || ''}
-            onChange={(e) => {
-              setStatusSearch(e.target.value);
-              setCurrentPage(1);  // Reset pagination when status changes
-              setfilteredInstrument([]);  // Clear current results
-            }}
-          >
-            {instrumentStatusOptions.map((status) => (
-              <MenuItem key={status.value} value={status.value}>
-                {status.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-  </Box>
-
-  <div>
-    {filteredInstrument?.map((instrument, index) => (
-      <Box
-        key={instrument.id}
-        mb={3}
-        sx={{ backgroundColor: '#f9f9f9', borderRadius: 3, p: 2, boxShadow: 1 }}
-        className="!flex !gap-5 justify-between items-center"
-      >
-        <div className="flex gap-5 xl:gap-10 items-center">
-          <Typography sx={{ flexShrink: 0, fontWeight: 'bold' }}>
-            {instrument.name}
-          </Typography>
-
-          <Typography sx={{ color: 'text.secondary' }} className="sm:w-[220px] hidden sm:block">
-            Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
-          </Typography>
-          <Typography sx={{ color: 'text.secondary' }}>
-            Project: {instrument.projectName || 'Not assigned'}
-          </Typography>
-        </div>
-
-        <Box className="!flex gap-2 sm:gap-4 sm:mr-8">
-          <IconButton
-            onClick={() => handleDelete(instrument.id)}
-            sx={{
-              color: "#d333",
-              backgroundColor: "#f5f5f5",
-              borderRadius: "20%",
-              padding: "5px",
-              border: "1px solid #e0e0e0",
-              "&:hover": { backgroundColor: "#e0e0e0" },
-            }}
-          >
-            <DeleteIcon sx={{ color: "#d33" }} />
-          </IconButton>
-
-          <IconButton
-            onClick={() => handleShowHistory(instrument.id)}
-            color="primary"
-            sx={{
-              backgroundColor: "#f5f5f5",
-              borderRadius: "20%",
-              padding: "5px",
-              border: "1px solid #e0e0e0",
-              "&:hover": { backgroundColor: "#e0e0e0" },
-            }}
-          >
-            <HistoryIcon sx={{ color: "#424242" }} />
-          </IconButton>
+      {/* All Instruments */}
+      <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
+        <Box mt={3} mb={3} className='!flex !gap-2 sm:!flex-row !flex-col'>
+            <TextField
+                label="Search by Project"
+                value={projectSearch}
+                onChange={(e) => {
+                    setProjectSearch(e.target.value);
+                    setCurrentPage(1); // Reset pagination
+                    setfilteredInstrument([]); // Clear current results
+                }}
+                fullWidth
+            />
+              <FormControl fullWidth>
+                <InputLabel>Search by Status</InputLabel>
+                <Select
+                  label="Search by Status"
+                  value={statusSearch || ''}
+                  onChange={(e) => {
+                    setStatusSearch(e.target.value);
+                    setCurrentPage(1);  // Reset pagination when status changes
+                    setfilteredInstrument([]);  // Clear current results
+                  }}
+                >
+                  {instrumentStatusOptions.map((status) => (
+                    <MenuItem key={status.value} value={status.value}>
+                      {status.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
         </Box>
+
+        <div>
+          {filteredInstrument?.map((instrument, index) => (
+            <Box
+              key={instrument.id}
+              mb={3}
+              sx={{ backgroundColor: '#f9f9f9', borderRadius: 3, p: 2, boxShadow: 1 }}
+              className="!flex !gap-5 justify-between items-center"
+            >
+              <div className="flex gap-5 xl:gap-10 items-center">
+                <Typography sx={{ flexShrink: 0, fontWeight: 'bold' }}>
+                  {instrument.name}
+                </Typography>
+
+                <Typography sx={{ color: 'text.secondary' }} className="sm:w-[220px] hidden sm:block">
+                  Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+                </Typography>
+                <Typography sx={{ color: 'text.secondary' }}>
+                  Project: {instrument.projectName || 'Not assigned'}
+                </Typography>
+              </div>
+
+              <Box className="!flex gap-2 sm:gap-4 sm:mr-8">
+                <IconButton
+                  onClick={() => handleDelete(instrument.id)}
+                  sx={{
+                    color: "#d333",
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: "20%",
+                    padding: "5px",
+                    border: "1px solid #e0e0e0",
+                    "&:hover": { backgroundColor: "#e0e0e0" },
+                  }}
+                >
+                  <DeleteIcon sx={{ color: "#d33" }} />
+                </IconButton>
+
+                <IconButton
+                  onClick={() => handleShowHistory(instrument.id)}
+                  color="primary"
+                  sx={{
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: "20%",
+                    padding: "5px",
+                    border: "1px solid #e0e0e0",
+                    "&:hover": { backgroundColor: "#e0e0e0" },
+                  }}
+                >
+                  <HistoryIcon sx={{ color: "#424242" }} />
+                </IconButton>
+              </Box>
+            </Box>
+          ))}
+
+          {/* Load More Button */}
+          {currentPage < totalPages && (
+            <Box mt={3} textAlign="center">
+              <Button
+              className='!rounded-3xl'
+                variant="contained"
+                onClick={loadMoreInstruments}
+                disabled={loading}
+                sx={{
+                  backgroundColor: loading ? '#e0e0e0' : '#1D34D8',
+                  color: '#ffffff',
+                  "&:hover": {
+                    backgroundColor: loading ? '#e0e0e0' : '#1 64cb8',
+                  },
+                }}
+              >
+                {loading ? 'Loading...' : 'Load More'}
+              </Button>
+            </Box>
+          )}
+        </div>
       </Box>
-    ))}
-
-    {/* Load More Button */}
-    {currentPage < totalPages && (
-      <Box mt={3} textAlign="center">
-        <Button
-        className='!rounded-3xl'
-          variant="contained"
-          onClick={loadMoreInstruments}
-          disabled={loading}
-          sx={{
-            backgroundColor: loading ? '#e0e0e0' : '#1D34D8',
-            color: '#ffffff',
-            "&:hover": {
-              backgroundColor: loading ? '#e0e0e0' : '#1 64cb8',
-            },
-          }}
-        >
-          {loading ? 'Loading...' : 'Load More'}
-        </Button>
-      </Box>
-    )}
-  </div>
-</Box>
-
-
 
       {/* Edit Instrument Modal */}
       <Dialog open={openUpdateModal} onClose={handleCloseUpdateModal} fullWidth maxWidth="sm" PaperProps={{
