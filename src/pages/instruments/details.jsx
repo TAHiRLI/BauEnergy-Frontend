@@ -68,7 +68,7 @@ const InstrumentDetails = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [projectSearch, setProjectSearch] = useState(''); // Project name search
+  const [projectSearch, setProjectSearch] = useState('');
   const [statusSearch, setStatusSearch] = useState('');
 
   const cookies = new Cookies();
@@ -114,14 +114,13 @@ const InstrumentDetails = () => {
         setLoading(true);
         try {
             const response = await instrumentService.getByExactName(
-                projectSearch, // Pass project search
-                statusSearch ,  // Pass status search
+                projectSearch,
+                statusSearch ,  
                 instrument.name, 
                 currentPage,
             );
 
             const { instruments, totalPages } = response.data;
-            console.log(response.data);
 
             setfilteredInstrument(prevInstruments => [
                 ...(Array.isArray(prevInstruments) ? prevInstruments : []), 
@@ -210,17 +209,25 @@ const instrumentStatusOptions = [
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Under_maintenance':
-        return 'red';
+      case 'Available':
+        return 'green';
       case 'In_use':
         return 'blue';
-      case 'Available':
-      case 'Aviable':
-        return 'green';
+      case 'Under_maintenance':
+        return 'red';
+      case 'In_delivery':
+        return 'orange';
+      case 'In_controlling':
+        return 'purple';
+      case 'Controlled':
+        return 'teal';
+      case 'To_be_controlled':
+        return 'darkgoldenrod';
       default:
         return 'gray';
     }
   };
+  
 
   const formatDate = (date) => {
     if (!date) {
@@ -511,8 +518,8 @@ const handleImageUpload = (event) => {
                   value={statusSearch || ''}
                   onChange={(e) => {
                     setStatusSearch(e.target.value);
-                    setCurrentPage(1);  // Reset pagination when status changes
-                    setfilteredInstrument([]);  // Clear current results
+                    setCurrentPage(1);  
+                    setfilteredInstrument([]);  
                   }}
                 >
                   {instrumentStatusOptions.map((status) => (
@@ -847,7 +854,7 @@ const handleImageUpload = (event) => {
                   Cancel
                 </Button>
                 <Button type="submit" variant="contained" className='!bg-[#1D34D8]'>
-                  Edit
+                  Save
                 </Button>
         </DialogActions>
             </Form>

@@ -96,38 +96,6 @@ export default function InstrumentTab({ project }) {
     }
   };
 
-  // const handleAddInstrument = async () => {
-  //   try {
-  //     const body = {
-  //       projectId: project.id,
-  //       instrumentId: selectedInstrumentId,
-  //       projectManagerId: selectedManager,
-  //       count: instrumentCount, 
-  //     };
-  //     await projectService.addInstrumentToProject(body);
-  //     setOpenDialog(false);
-
-  //     Swal.fire({
-  //       title: "Added!",
-  //       text: "Instrument has been added to the project.",
-  //       icon: "success",
-  //       timer: 2000,
-  //     });
-
-  //     const response = await projectService.getById(project.id);
-  //     dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
-  //     setFilteredInstruments(response.data.instruments);
-  //     setSelectedInstrumentId("");
-  //     setInstrumentCount(1);
-  //     setOpenDialog(false);
-  //   } catch (error) {
-  //     console.error("Error adding instrument:", error);
-  //     setOpenDialog(false);
-
-  //     Swal.fire("Error!", error.response.data, "error");
-  //   }
-  // };
-
   const handleAddInstrument = async () => {
     // Reset errors
     setInstrumentError(false);
@@ -321,12 +289,25 @@ export default function InstrumentTab({ project }) {
       case "Under maintenance":
         chipProps = { label: "Under maintenance", style: { borderColor: "red", color: "red" }, variant: "outlined" };
         break;
+      case "In delivery":
+        chipProps = { label: "In delivery", style: { borderColor: "orange", color: "orange" }, variant: "outlined" };
+        break;
+      case "In controlling":
+        chipProps = { label: "In controlling", style: { borderColor: "purple", color: "purple" }, variant: "outlined" };
+        break;
+      case "Controlled":
+        chipProps = { label: "Controlled", style: { borderColor: "teal", color: "teal" }, variant: "outlined" };
+        break;
+      case "To be controlled":
+        chipProps = { label: "To be controlled", style: { borderColor: "darkgoldenrod", color: "darkgoldenrod" }, variant: "outlined" };
+        break;
       default:
         chipProps = { label: "Unknown", style: { borderColor: "grey", color: "grey" }, variant: "outlined" };
         break;
     }
     return <Chip {...chipProps} />;
   };
+  
   const handleShare = () => {
     const shareData = {
       title: instrument.name,

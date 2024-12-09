@@ -32,7 +32,7 @@ import { useLocation } from "react-router-dom";
 import { userSerivce } from '../../APIs/Services/user.service';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 export default function Appbar({ toggleSidebar }) {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -264,11 +264,11 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
       window.location.reload();
     });
     resetForm();
-    
+    setProfilePhotoPreview(null)
   } catch (error) {
-    console.error('Error adding team member:', error.response || error.message);
+    console.error('Error adding team member:', error);
     setOpenAdminCreateDialog(false)
-    Swal.fire('Error', 'Failed to create team member.', 'error');
+    Swal.fire('Error', error.response.data.error, 'error');
   } finally {
     setSubmitting(false);
   }
@@ -356,6 +356,13 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
             <AddIcon />
         </IconButton>
         <p>Create Project</p>
+      </MenuItem>
+      <MenuItem onClick={handleAdminCreateOpenDialog}>
+        <IconButton size="large" aria-label="create new project" color="inherit" 
+        >
+            <PersonAddIcon />
+        </IconButton>
+        <p>Create User</p>
       </MenuItem>
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton

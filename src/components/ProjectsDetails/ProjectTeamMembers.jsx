@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, Paper } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, Paper } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
 import Swal from 'sweetalert2';
@@ -10,7 +10,6 @@ import { teamMemberService } from '../../APIs/Services/teammember.service';
 import Cookies from "universal-cookie";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
-const cookies = new Cookies();
 
 export default function TeamMember({ project }) {
   const { state, dispatch } = useProjects();
@@ -19,13 +18,10 @@ export default function TeamMember({ project }) {
   const [imageFile, setImageFile] = useState(null); 
   const [isCreatingNew, setIsCreatingNew] = useState(false); 
   const [selectedTeamMember, setSelectedTeamMember] = useState(null); 
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [teamMemberToEdit, setTeamMemberToEdit] = useState(null);
 
   const fetchAllTeamMembers = async () => {
     try {
       const response = await teamMemberService.getAllByCompany(project.id); 
-      console.log(response)
       setAllTeamMembers(response.data);
       //console.log(response.data)
     } catch (error) {
@@ -55,8 +51,6 @@ export default function TeamMember({ project }) {
     
     fetchTeamMembersForProject();
   }, [dispatch, project.id]);
-
-
   
   const RoleEnum = {
     User: 1,
@@ -70,7 +64,7 @@ export default function TeamMember({ project }) {
         const roleEnumValue = RoleEnum[selectedTeamMember.role];
 
         const [firstName, ...lastNameParts] = selectedTeamMember.fullName.split(' ');
-        const lastName = lastNameParts.join(' '); // Join the remaining parts for multi-word last names
+        const lastName = lastNameParts.join(' '); 
   
         formData.append('Name', firstName || '');
         formData.append('LastName', lastName || '');
@@ -146,7 +140,6 @@ export default function TeamMember({ project }) {
       headerName: 'Name & Last name',
       minWidth: 300,
       renderCell: (params) => {
-        console.log(params)
         const fullName = `${params.row.name} ${params.row.lastName}`; 
         const image = params.row.image ? 
           `${params.row.image}` : 

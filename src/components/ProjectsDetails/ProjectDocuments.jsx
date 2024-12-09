@@ -26,7 +26,6 @@ export default function ProjectDocuments({ project }) {
   }, [project]);
 
   const fetchProjectDocuments = async (projectId) => {
-    console.log("szdzs")
     setLoading(true);
     setError(null);
     try {

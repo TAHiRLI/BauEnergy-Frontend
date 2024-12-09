@@ -533,7 +533,7 @@ const SettingsAndTeams = () => {
                     Cancel
                   </Button>
                   <Button type="submit" variant="contained" className="!bg-[#1D34D8]">
-                    Edit
+                    Save
                   </Button>
                 </Box>
               </DialogActions>
