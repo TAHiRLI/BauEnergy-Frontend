@@ -20,6 +20,8 @@ import AddIcon from '@mui/icons-material/Add';
 import { instrumentTagService } from '../../APIs/Services/instrumentTag.service';
 import StatusButton from '../../components/common/statusBtn';
 import HistoryIcon from '@mui/icons-material/History'; 
+import AddDocumentsDialog from  '../../components/Dialogs/AddDocument'
+import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 
 
 const validationSchema = Yup.object().shape({
@@ -71,6 +73,18 @@ const InstrumentDetails = () => {
   const [projectSearch, setProjectSearch] = useState('');
   const [statusSearch, setStatusSearch] = useState('');
 
+  const [openAddDocumentDialog, setOpenAddDocumentDialog] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [qrImage, setQrImage] = useState("");
+
+  const handleAddDocumentOpenDialog = () => setOpenAddDocumentDialog(true);
+  const handleAddDocumentCloseDialog = () => setOpenAddDocumentDialog(false);
+
+  const handleFileChange = (event) => {
+    setSelectedFiles([...event.target.files]);
+  };
+
+
   const cookies = new Cookies();
   let user = cookies.get('user'); 
   let token = user?.token
@@ -90,20 +104,47 @@ const InstrumentDetails = () => {
     setFieldValue('files', files); 
   };
 
+  const handleDocumentUpload = async (selectedFiles) => {
+    if (selectedFiles.length === 0) {
+        Swal.fire('Error', 'Please select at least one file.', 'error');
+        return;
+    }
 
+    const formData = new FormData();
+    selectedFiles.forEach((file) => formData.append('Files', file));
+
+    try {
+        const response = await instrumentService.addDocument(instrument.id, selectedFiles); 
+        console.log('Response:', response);
+
+        if (response.status !== 200) {
+            throw new Error(response.data.message || 'Failed to upload documents.');
+        }
+
+        Swal.fire('Success', 'Documents uploaded successfully!', 'success');
+        handleAddDocumentCloseDialog();
+        fetchInstrument();
+
+    } catch (error) {
+        console.error('Error details:', error.response || error.message || error);
+        Swal.fire('Error', error.response?.data?.message || 'Failed to upload documents.', 'error');
+    }
+};
+
+
+const fetchInstrument = async () => {
+  try {
+    const response = await instrumentService.getById(id);
+    setInstrument(response.data);
+    setIsFirstEffectComplete(true);
+  } catch (error) {
+    setError('Error fetching instrument details');
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
-    const fetchInstrument = async () => {
-      try {
-        const response = await instrumentService.getById(id);
-        setInstrument(response.data);
-        setIsFirstEffectComplete(true);
-      } catch (error) {
-        setError('Error fetching instrument details');
-      } finally {
-        setLoading(false);
-      }
-    };
-  
+
     fetchInstrument();
   }, [id, refresh]);
 
@@ -115,20 +156,29 @@ const InstrumentDetails = () => {
         try {
             const response = await instrumentService.getByExactName(
                 projectSearch,
-                statusSearch ,  
-                instrument.name, 
-                currentPage,
+                statusSearch,
+                instrument.name,
+                currentPage
             );
 
             const { instruments, totalPages } = response.data;
 
-            setfilteredInstrument(prevInstruments => [
-                ...(Array.isArray(prevInstruments) ? prevInstruments : []), 
-                ...instruments
-            ]);
+            setfilteredInstrument((prevInstruments) => {
+                // Clear the list if it's the first page or new search criteria
+                if (currentPage === 1 || projectSearch || statusSearch) {
+                    return instruments;
+                }
+                // Append only for subsequent pages
+                return [
+                    ...(Array.isArray(prevInstruments) ? prevInstruments : []),
+                    ...instruments,
+                ];
+            });
+
+            console.log(response);
             setTotalPages(totalPages);
         } catch (error) {
-            console.error('Error fetching instrument details', error);
+            console.error("Error fetching instrument details", error);
         } finally {
             setLoading(false);
         }
@@ -136,6 +186,7 @@ const InstrumentDetails = () => {
 
     fetchInstrumentsByName();
 }, [isFirstEffectComplete, instrument, currentPage, projectSearch, statusSearch]);
+
 
 const loadMoreInstruments = () => {
   if (currentPage < totalPages) {
@@ -166,9 +217,14 @@ const instrumentStatusOptions = [
     }
   }, [id, instrument]);
   
-  function handleShowQR() {
+  // function handleShowQR() {
+  //   setOpenQRDialog(true);
+  // };
+  function handleShowQR(instrument) {
+    setInstrument(instrument);
+    setQrImage(instrument.qrImage);
     setOpenQRDialog(true);
-  };
+  }
 
   const handleCloseShowQR = () => {
     setOpenQRDialog(false);
@@ -320,7 +376,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     handleCloseUpdateModal();
     Swal.fire('Error', 'Failed to edit instrument.', 'error');
   } finally {
-    setSubmitting(false); // End Formik's submitting state
+    setSubmitting(false);
   }
 };
 
@@ -450,12 +506,12 @@ const handleImageUpload = (event) => {
               </div>            
             )}
             <div className="mt-4 flex gap-4">
-              <button
+              {/* <button
                 onClick={handleShowQR}
                 className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
               >
                 QR Code
-              </button>
+              </button> */}
               <button
                 onClick={handleOpenUpdateModal}
                 className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
@@ -469,20 +525,36 @@ const handleImageUpload = (event) => {
 
       {/* Document Section */}
       <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8', mb: 2 }}>
-          Documents
-        </Typography>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8' }}>
+            Documents
+          </Typography>
+          <IconButton onClick={handleAddDocumentOpenDialog}>
+            <AddIcon sx={{ fontSize: 30, color: '#1D34D8' }} />
+          </IconButton>
+        </Box>
 
-        <Grid spacing={2}>
+        <Grid container spacing={2}>
           {instrument.documents?.length > 0 ? (
             instrument.documents.map((doc, index) => (
               <Grid item xs={6} sm={3} key={index}>
                 <Box display="flex" alignItems="center" sx={{ padding: 1 }}>
-                  {doc.fileType === 'pdf' ? <PictureAsPdfIcon sx={{ fontSize: 50, color: '#D32F2F' }} /> : <DescriptionIcon sx={{ fontSize: 50 }} />}
+                  {doc.fileType === 'pdf' ? (
+                    <PictureAsPdfIcon sx={{ fontSize: 50, color: '#D32F2F' }} />
+                  ) : (
+                    <DescriptionIcon sx={{ fontSize: 50 }} />
+                  )}
                   <Typography
                     variant="body1"
-                    sx={{ marginLeft: '10px', cursor: 'pointer', color: '#1D34D8', fontWeight: 'bold' }}
-                    onClick={() => handleDownload(`${process.env.REACT_APP_DOCUMENT_URL}/assets/pdf/${doc.fileName}`)}
+                    sx={{
+                      marginLeft: '10px',
+                      cursor: 'pointer',
+                      color: '#1D34D8',
+                      fontWeight: 'bold',
+                    }}
+                    onClick={() =>
+                      handleDownload(`${process.env.REACT_APP_DOCUMENT_URL}/assets/pdf/${doc.fileName}`)
+                    }
                   >
                     {formatFileName(doc.fileName)}
                   </Typography>
@@ -490,13 +562,12 @@ const handleImageUpload = (event) => {
               </Grid>
             ))
           ) : (
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" color="textSecondary" className='!ml-4'>
               No documents available for this instrument.
             </Typography>
           )}
         </Grid>
       </Box>
-
 
       {/* All Instruments */}
       <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
@@ -553,6 +624,20 @@ const handleImageUpload = (event) => {
               </div>
 
               <Box className="!flex gap-2 sm:gap-4 sm:mr-8">
+                <IconButton
+              onClick={() => handleShowQR(instrument)}
+              sx={{
+                color: "gray",
+                backgroundColor: "#f0f0f0",
+                borderRadius: "8px",
+                padding: "5px",
+                "&:hover": {
+                  backgroundColor: "#e0e0e0",
+                },
+              }}
+            >
+              <QrCodeScannerIcon />
+            </IconButton>
                 <IconButton
                   onClick={() => handleDelete(instrument.id)}
                   sx={{
@@ -800,7 +885,7 @@ const handleImageUpload = (event) => {
                       type="file"
                       onChange={(e) => handlePdfUpload(e, setFieldValue)}
                       multiple
-                      accept="application/pdf"
+                      accept=""
                     />
                   </Button>
               </StyledBox>
@@ -943,7 +1028,7 @@ const handleImageUpload = (event) => {
 
                           <img
                           className='border-[30px] border-gray-200 rounded-xl'
-                              src={`${process.env.REACT_APP_DOCUMENT_URL}/${instrument.qrImage}`}
+                              src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
                               alt="QR Code"
                               style={{
                                   width: '200px',
@@ -1039,6 +1124,14 @@ const handleImageUpload = (event) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Add Documents Dialog */}
+      <AddDocumentsDialog
+        open={openAddDocumentDialog}
+        handleClose={handleAddDocumentCloseDialog}
+        handleFileChange={handleFileChange}
+        handleDocumentUpload={handleDocumentUpload}
+      />
     </Box>
   );
 };

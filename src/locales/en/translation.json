@@ -1,0 +1,42 @@
+{
+    "light": "Light mode",
+    "dark": "Dark mode",
+    "role": "Role",
+    "CompanyOwner": "Company owner",
+    "ProjectManager": "Project manager",
+    "User": "User",
+    "TeamMembers" : "Team Members",
+    "Instruments" : "Instruments",
+    "Search" : "Search",
+    "Notifications" : "Notifications",
+    "SettingTeams" : "Settings and Teams",
+    "Home" : "Home",
+    "Tutorial": "Tutorial",
+    "Projects": "Projects",
+    "Trahsbin": "Trash Bin",
+    "Logout": "Log Out",
+    "Profile": "Profile",
+    "ResetPassword": "Reset Password",
+    "CreateProject": "Create new project",
+    "login": {
+        "Welcome": "Welcome",
+        "YouDonthaveAccount": "You don't have an account? Please contact info@must-analytics.com",
+        "EmailAddress": "Email address",
+        "Password": "Password",
+        "Continue": "Continue",
+        "ResetRequiredByAdmin": "Password reset required by admin. Please reset your password."
+    },
+    "messages":{
+        "NoData": "No data to display"
+
+    },
+    "columns":{
+        "Name&Lastname": "Name & Last name",
+        "Email": "Email",
+        "Phonenumber": "Phone Number",
+        "Role": "Role",
+        "JoinedDate": "Joined date",
+        "Actions": "Actions"
+        
+    }
+}

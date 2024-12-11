@@ -18,6 +18,7 @@ export default function TeamMember({ project }) {
   const [imageFile, setImageFile] = useState(null); 
   const [isCreatingNew, setIsCreatingNew] = useState(false); 
   const [selectedTeamMember, setSelectedTeamMember] = useState(null); 
+  const [loading, setLoading] = useState(false);
 
   const fetchAllTeamMembers = async () => {
     try {
@@ -53,44 +54,54 @@ export default function TeamMember({ project }) {
   }, [dispatch, project.id]);
   
   const RoleEnum = {
+    Company_Owner: 0,
     User: 1,
     Project_Manager: 2,
   };
 
-  const handleAddExistingTeamMember = async () => {
-    try {
-      if (selectedTeamMember) {
-        const formData = new FormData();
-        const roleEnumValue = RoleEnum[selectedTeamMember.role];
+const handleAddExistingTeamMember = async () => {
+  try {
+    if (selectedTeamMember) {
+      setLoading(true); // Disable button
 
-        const [firstName, ...lastNameParts] = selectedTeamMember.fullName.split(' ');
-        const lastName = lastNameParts.join(' '); 
-  
-        formData.append('Name', firstName || '');
-        formData.append('LastName', lastName || '');
+      const formData = new FormData();
+      const roleEnumValue = RoleEnum[selectedTeamMember.role];
+      const [firstName, ...lastNameParts] = selectedTeamMember.fullName.split(" ");
+      const lastName = lastNameParts.join(" ");
+      console.log(selectedTeamMember.role);
 
-      formData.append('Email', selectedTeamMember.email);
-      formData.append('Role', roleEnumValue);
-      formData.append('BirthDate', selectedTeamMember.birthDate)
-      formData.append('PhoneNumber', selectedTeamMember.phoneNumber)
-      formData.append('ProjectId', project.id);
+      formData.append("Name", firstName || "");
+      formData.append("LastName", lastName || "");
+      formData.append("Email", selectedTeamMember.email);
+      formData.append("Role", roleEnumValue);
+      formData.append("BirthDate", selectedTeamMember.birthDate);
+      formData.append("PhoneNumber", selectedTeamMember.phoneNumber);
+      formData.append("ProjectId", project.id);
+
       if (imageFile) {
-        formData.append('Image', imageFile); 
+        formData.append("Image", imageFile);
       }
-        
-        await teamMemberService.add(formData);
-        Swal.fire('Success', 'Team member has been added to the project!', 'success');
-        setOpenDialog(false);
-        const response = await projectService.getById(project.id);
-        dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
-      }
-    } 
-    catch (error) {
+
+      console.log("FormData elements:");
+      formData.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+      });
+
+      await teamMemberService.add(formData);
+
+      Swal.fire("Success", "Team member has been added to the project!", "success");
       setOpenDialog(false);
-      console.error('Error adding team member:', error);
-      Swal.fire('Error', 'Failed to add team member.', 'error');
+
+      const response = await projectService.getById(project.id);
+      dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
     }
-  };
+  } catch (error) {
+    console.error("Error adding team member:", error);
+    Swal.fire("Error", error.message, "error");
+  } finally {
+    setLoading(false); // Re-enable button
+  }
+};
 
   
   const handleDelete = async (id) => {
@@ -278,14 +289,14 @@ export default function TeamMember({ project }) {
           <Button
             variant="contained"
             sx={{
-              backgroundColor: '#1D34D8',
-              '&:hover': {
-                backgroundColor: '#1730b5', 
+              backgroundColor: "#1D34D8",
+              "&:hover": {
+                backgroundColor: "#1730b5",
               },
               mt: 2,
             }}
             onClick={handleAddExistingTeamMember}
-            disabled={!selectedTeamMember}
+            disabled={!selectedTeamMember || loading} 
           >
             Add to Project
           </Button>

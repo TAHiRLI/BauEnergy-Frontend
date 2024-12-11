@@ -143,7 +143,7 @@ export const Instruments = () => {
             >
               <InfoIcon />
             </IconButton>
-            <IconButton
+            {/* <IconButton
               onClick={() => handleShowQR(params.row.qrImage, params.row.name)}
               sx={{
                 color: "gray",
@@ -156,7 +156,7 @@ export const Instruments = () => {
               }}
             >
               <QrCodeScannerIcon />
-            </IconButton>
+            </IconButton> */}
           </div>
         ),
       },
@@ -373,6 +373,7 @@ export const Instruments = () => {
 
   const handlePdfUpload = (event) => {
     const files = event.target.files;
+    console.log(files)
     setUploadedFiles((prevFiles) => [...prevFiles, ...files]);
     setNewInstrument((prevInstrument) => ({
       ...prevInstrument,
@@ -404,12 +405,12 @@ export const Instruments = () => {
       setImageError("Please upload an image before submitting.");
       return;
     }
-    setImageError(null); // Clear any existing error
+    setImageError(null); 
   
     try {
       setIsSubmitting(true); 
   
-      const { name, description, shortDesc, instrumentType, count, price, tags } = newInstrument;
+      const { name, description, shortDesc, instrumentType, count, price, tags, files } = newInstrument;
       const formData = new FormData();
       formData.append("Name", name);
       formData.append("Description", description);
@@ -421,6 +422,10 @@ export const Instruments = () => {
   
       tags?.forEach((tag) => {
         formData.append("Tags", tag);
+      });
+
+      files?.forEach((file) => {
+        formData.append("Files", file);
       });
   
       await instrumentService.add(formData);
@@ -443,7 +448,7 @@ export const Instruments = () => {
         confirmButtonText: "OK",
       });
     } finally {
-      setIsSubmitting(false); // Re-enable button
+      setIsSubmitting(false);
     }
   };
   
@@ -698,7 +703,7 @@ export const Instruments = () => {
           <StyledBox>
             <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
               Upload files
-              <VisuallyHiddenInput type="file" onChange={handlePdfUpload} multiple accept="application/pdf" />
+              <VisuallyHiddenInput type="file" onChange={handlePdfUpload} multiple accept="" />
             </Button>
           </StyledBox>
 
@@ -1184,7 +1189,7 @@ export const Instruments = () => {
           <StyledBox>
             <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
               Upload files
-              <VisuallyHiddenInput type="file" onChange={handlePdfUpload} multiple accept="application/pdf" />
+              <VisuallyHiddenInput type="file" onChange={handlePdfUpload} multiple accept="" />
             </Button>
           </StyledBox>
 

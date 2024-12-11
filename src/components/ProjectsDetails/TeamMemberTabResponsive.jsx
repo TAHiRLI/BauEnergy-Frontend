@@ -41,6 +41,7 @@ export default function TeamMember({ project }) {
   const [imageFile, setImageFile] = useState(null); 
   const [isCreatingNew, setIsCreatingNew] = useState(false); 
   const [selectedTeamMember, setSelectedTeamMember] = useState(null); 
+  const [loading, setLoading] = useState(false);
 
   const fetchAllTeamMembers = async () => {
     try {
@@ -85,43 +86,49 @@ export default function TeamMember({ project }) {
     ProjectManager: 2,
   };
 
-  
-
   const handleAddExistingTeamMember = async () => {
     try {
       if (selectedTeamMember) {
+        setLoading(true); // Disable button
+  
         const formData = new FormData();
         const roleEnumValue = RoleEnum[selectedTeamMember.role];
-
-        const [firstName, ...lastNameParts] = selectedTeamMember.fullName.split(' ');
-        const lastName = lastNameParts.join(' '); // Join the remaining parts for multi-word last names
+        const [firstName, ...lastNameParts] = selectedTeamMember.fullName.split(" ");
+        const lastName = lastNameParts.join(" ");
+        console.log(selectedTeamMember.role);
   
-        formData.append('Name', firstName || '');
-        formData.append('LastName', lastName || '');
-
-      formData.append('Email', selectedTeamMember.email);
-      formData.append('Role', roleEnumValue);
-      formData.append('BirthDate', selectedTeamMember.birthDate)
-      formData.append('PhoneNumber', selectedTeamMember.phoneNumber)
-      formData.append('ProjectId', project.id);
-      if (imageFile) {
-        formData.append('Image', imageFile); 
-      }
-        
+        formData.append("Name", firstName || "");
+        formData.append("LastName", lastName || "");
+        formData.append("Email", selectedTeamMember.email);
+        formData.append("Role", roleEnumValue);
+        formData.append("BirthDate", selectedTeamMember.birthDate);
+        formData.append("PhoneNumber", selectedTeamMember.phoneNumber);
+        formData.append("ProjectId", project.id);
+  
+        if (imageFile) {
+          formData.append("Image", imageFile);
+        }
+  
+        console.log("FormData elements:");
+        formData.forEach((value, key) => {
+          console.log(`${key}: ${value}`);
+        });
+  
         await teamMemberService.add(formData);
-        Swal.fire('Success', 'Team member has been added to the project!', 'success');
+  
+        Swal.fire("Success", "Team member has been added to the project!", "success");
         setOpenDialog(false);
+  
         const response = await projectService.getById(project.id);
         dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
       }
-    } 
-    catch (error) {
-      setOpenDialog(false);
-      console.error('Error adding team member:', error);
-      Swal.fire('Error', 'Failed to add team member.', 'error');
+    } catch (error) {
+      console.error("Error adding team member:", error);
+      Swal.fire("Error", error.message, "error");
+    } finally {
+      setLoading(false); // Re-enable button
     }
   };
-
   
   const handleDelete = async (id) => {
     try {
@@ -301,14 +308,14 @@ export default function TeamMember({ project }) {
           <Button
             variant="contained"
             sx={{
-              backgroundColor: '#1D34D8',
-              '&:hover': {
-                backgroundColor: '#1730b5', 
+              backgroundColor: "#1D34D8",
+              "&:hover": {
+                backgroundColor: "#1730b5",
               },
               mt: 2,
             }}
             onClick={handleAddExistingTeamMember}
-            disabled={!selectedTeamMember}
+            disabled={!selectedTeamMember || loading} 
           >
             Add to Project
           </Button>

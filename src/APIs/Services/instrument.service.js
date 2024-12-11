@@ -120,6 +120,21 @@ class InstrumentService extends HttpClient {
             }
         });
     }
+
+    async addDocument(instrumentId, files) {
+        const formData = new FormData();
+        files.forEach((file) => formData.append('Files', file));
+    
+        console.log('FormData Entries:', [...formData.entries()]);
+    
+        return await this.post(`Instrument/${instrumentId}/documents`, formData, {
+            headers: {
+                authorization: `Bearer ${cookies.get('user')?.token}`
+            }
+        });
+    }
+    
+
 }
 
 export const instrumentService = new InstrumentService();

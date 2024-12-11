@@ -199,6 +199,7 @@ export default function InstrumentTab({ project }) {
   useEffect(() => {
     setFilteredInstruments(state.project?.instruments || []);
   }, [state.project?.instruments]);
+  console.log(state)
 
   useEffect(() => {
     handleSearch();
@@ -227,6 +228,7 @@ export default function InstrumentTab({ project }) {
       dispatch({ type: ProjectsActions.start });
       try {
         const response = await projectService.getById(project.id);
+        console.log(response)
         setAllInstruments(response.data.instruments);
         setFilteredInstruments(response.data.instruments);
         //console.log(response.data.instruments)

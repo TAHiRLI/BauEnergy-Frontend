@@ -246,14 +246,15 @@ const validationCreateUserSchema = Yup.object().shape({
   
 
 const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) => {
+  console.log(values)
   try {
     const formData = new FormData();
     formData.append('Name', values.name);
     formData.append('LastName', values.lastName);
-    formData.append('Email', values.email);
+    formData.append('Email', values.email.trim());
     formData.append('Role', values.role);
     formData.append('BirthDate', values.birthDate);
-    formData.append('PhoneNumber', values.phoneNumber);
+    formData.append('PhoneNumber', values.phoneNumber.trim());
     formData.append('Image', values.image);
 
     const response =  await userSerivce.AddUser(formData); 

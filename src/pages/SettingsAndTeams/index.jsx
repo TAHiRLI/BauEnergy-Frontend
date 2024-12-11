@@ -51,6 +51,7 @@ const SettingsAndTeams = () => {
     try {
       const data = await teamMemberService.getAllMembers();
       setTeamMembers(data.data);
+      //console.log(data.data)
     } catch (error) {
       console.error('Error fetching team members:', error);
     } finally {
@@ -146,7 +147,6 @@ const SettingsAndTeams = () => {
   
   const handleEdit = (teamMember) => {
     setTeamMemberToEdit(teamMember); 
-    console.log(teamMemberToEdit)
     setSelectedImage(teamMember.image)
 
     setIsEditDialogOpen(true);  
@@ -341,8 +341,6 @@ const SettingsAndTeams = () => {
         </Box>
       </Paper>
 
-
-     
       <Dialog
       open={isEditDialogOpen}
       onClose={() => setIsEditDialogOpen(false)}
@@ -541,7 +539,7 @@ const SettingsAndTeams = () => {
           )}
         </Formik>
       </DialogContent>
-    </Dialog>
+      </Dialog>
     </Box>
 
   );
