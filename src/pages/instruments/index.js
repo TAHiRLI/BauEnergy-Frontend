@@ -39,7 +39,7 @@ import { jwtDecode } from "jwt-decode";
 import { instrumentTagService } from "../../APIs/Services/instrumentTag.service";
 import AddIcon from "@mui/icons-material/Add";
 import { DataGrid } from "@mui/x-data-grid";
-import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import CloseIcon from "@mui/icons-material/Close";
 
 const VisuallyHiddenInput = styled("input")({
   display: "none",
@@ -116,8 +116,8 @@ export const Instruments = () => {
         headerName: "Available",
         width: 150,
         renderCell: (params) => {
-          const count = params.row.count ?? 0; // Use 0 if undefined
-          const usedCount = params.row.usedInstrumentsCount ?? 0; // Use 0 if undefined
+          const count = params.row.count ?? 0; 
+          const usedCount = params.row.usedInstrumentsCount ?? 0; 
           return `${count - usedCount}/${count}`;
         },
       },
@@ -186,6 +186,7 @@ export const Instruments = () => {
   const [instrument, setInstrument] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [triggerSearch, setTriggerSearch] = useState(false);
 
   const handleInstrumentInfoSelect = async (id) => {
     try {
@@ -258,13 +259,20 @@ export const Instruments = () => {
   }, [page]);
 
   const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
+    const value = event.target.value;
+    setSearchTerm(value);
+  
+    // If the input is empty, fetch all instruments
+    if (value.trim() === "") {
+      setPage(1); // Reset to the first page
+      fetchInstrumentsByName(true); // Fetch all instruments
+    }
   };
-
+  
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
-      setPage(1);
-      fetchInstrumentsByName(true);
+      setPage(1); // Reset to the first page
+      fetchInstrumentsByName(true); // Trigger search by term
     }
   };
 
@@ -760,26 +768,28 @@ export const Instruments = () => {
           <Box
             className="flex w-full"
             sx={{
-              flexDirection: { xs: "column", sm: "row" }, // Column for extra small screens, row for others
-              gap: 2, // Space between items
+              flexDirection: { xs: "column", sm: "row" }, 
+              gap: 2, 
             }}
           >
-            <TextField
-              id="searchbtnax"
-              variant="outlined"
-              placeholder="Search Instruments..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              onKeyDown={handleKeyDown}
-              sx={{
-                minWidth: "190px",
-                width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                borderRadius: "30px",
-                "& .MuiOutlinedInput-root": { borderRadius: "30px" },
-                "& .MuiOutlinedInput-input": { padding: "10px 15px" },
-              }}
-            />
+
+          <TextField
+            id="searchbtnax"
+            variant="outlined"
+            placeholder="Search Instruments..."
+            value={searchTerm}
+            onChange={handleSearchChange} // Update to handle empty input
+            onKeyDown={handleKeyDown} // Still handle Enter for search
+            sx={{
+              minWidth: "190px",
+              width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },
+              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+              borderRadius: "30px",
+              "& .MuiOutlinedInput-root": { borderRadius: "30px" },
+              "& .MuiOutlinedInput-input": { padding: "10px 15px" },
+            }}
+          />
+
             {isAdmin && (
               <Button
                 variant="contained"

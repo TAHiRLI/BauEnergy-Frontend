@@ -79,7 +79,7 @@ const InstrumentDetails = () => {
 
   const handleAddDocumentOpenDialog = () => setOpenAddDocumentDialog(true);
   const handleAddDocumentCloseDialog = () => setOpenAddDocumentDialog(false);
-
+  const [triggerSearch, setTriggerSearch] = useState(true);
   const handleFileChange = (event) => {
     setSelectedFiles([...event.target.files]);
   };
@@ -115,7 +115,6 @@ const InstrumentDetails = () => {
 
     try {
         const response = await instrumentService.addDocument(instrument.id, selectedFiles); 
-        console.log('Response:', response);
 
         if (response.status !== 200) {
             throw new Error(response.data.message || 'Failed to upload documents.');
@@ -130,7 +129,6 @@ const InstrumentDetails = () => {
         Swal.fire('Error', error.response?.data?.message || 'Failed to upload documents.', 'error');
     }
 };
-
 
 const fetchInstrument = async () => {
   try {
@@ -149,9 +147,11 @@ const fetchInstrument = async () => {
   }, [id, refresh]);
 
   useEffect(() => {
-    if (!isFirstEffectComplete || !instrument) return;
 
+    if (!isFirstEffectComplete || !triggerSearch) return;
+    
     const fetchInstrumentsByName = async () => {
+      console.log("hellod")
         setLoading(true);
         try {
             const response = await instrumentService.getByExactName(
@@ -164,32 +164,34 @@ const fetchInstrument = async () => {
             const { instruments, totalPages } = response.data;
 
             setfilteredInstrument((prevInstruments) => {
-                // Clear the list if it's the first page or new search criteria
-                if (currentPage === 1 || projectSearch || statusSearch) {
-                    return instruments;
-                }
-                // Append only for subsequent pages
+              if (currentPage > 1) {
                 return [
-                    ...(Array.isArray(prevInstruments) ? prevInstruments : []),
-                    ...instruments,
+                  ...(Array.isArray(prevInstruments) ? prevInstruments : []),
+                  ...instruments,
                 ];
+              }
+              return instruments; 
             });
-
-            console.log(response);
             setTotalPages(totalPages);
         } catch (error) {
             console.error("Error fetching instrument details", error);
         } finally {
             setLoading(false);
+            setTriggerSearch(false); 
         }
     };
 
     fetchInstrumentsByName();
-}, [isFirstEffectComplete, instrument, currentPage, projectSearch, statusSearch]);
+}, [triggerSearch, currentPage, projectSearch, statusSearch, instrument]);
 
+const handleSearch = () => {
+    setTriggerSearch(true);
+    setCurrentPage(1);
+};
 
 const loadMoreInstruments = () => {
   if (currentPage < totalPages) {
+    setTriggerSearch(true);
       setCurrentPage(prevPage => prevPage + 1);
   }
 };
@@ -198,6 +200,10 @@ const instrumentStatusOptions = [
   { label: 'Available', value: 'Available' },
   { label: 'In Use', value: 'In_use' },
   { label: 'Under Maintenance', value: 'Under_maintenance' },
+  { label: 'In Delivery', value: 'In_delivery' },
+  { label: 'In Controlling', value: 'In_controlling' },
+  { label: 'Controlled', value: 'Controlled' },
+  { label: 'To Be Controlled', value: 'To_be_controlled' },
 ];
 
   
@@ -206,7 +212,6 @@ const instrumentStatusOptions = [
       try {
         const response = await instrumentHistoryService.getById(id);
         setHistory(response.data);
-        //console.log(response)
       } catch (error) {
         console.error('Error fetching instrument history:', error);
       }
@@ -217,9 +222,7 @@ const instrumentStatusOptions = [
     }
   }, [id, instrument]);
   
-  // function handleShowQR() {
-  //   setOpenQRDialog(true);
-  // };
+
   function handleShowQR(instrument) {
     setInstrument(instrument);
     setQrImage(instrument.qrImage);
@@ -399,7 +402,6 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
   const handleCloseHistoryDialog = () => setOpenHistoryDialog(false);
 
   const handleShowHistory = async (id) => {
-    console.log(id)
     try {
       const response = await instrumentHistoryService.getById(id); 
       setHistory(response.data);
@@ -413,7 +415,6 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
   const handleDeletePdf = async (pdfId) => {
     try {
       await instrumentService.removePdf(instrument.id, pdfId)
-      // Update state to remove deleted PDF from UI
       setExistingPdfs(existingPdfs.filter(pdf => pdf.id !== pdfId));
       handleCloseUpdateModal();
       Swal.fire('Success', 'Document deleted successfully!', 'success');
@@ -439,16 +440,13 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     if (result.isConfirmed) {
       try {
         const response = await instrumentService.remove(id);
-        // Show success message
         Swal.fire({
           icon: 'success',
           title: 'Instrument Deleted',
           text: response.data?.message || 'The instrument has been successfully deleted...',
         });
-        // Trigger refresh or update the UI
         setRefresh((prev) => !prev);
       } catch (err) {
-        // Show error message
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -463,11 +461,8 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
 const handleImageUpload = (event) => {
   const file = event.target.files[0];
   if (file) {
-    // Generate a temporary object URL for the preview
     const objectUrl = URL.createObjectURL(file);
-    setSelectedImage(objectUrl); // Set preview image as object URL
-    // Optionally, store the file itself for upload
-    //setUploadedFile(file);
+    setSelectedImage(objectUrl); 
   }
 };
 
@@ -572,16 +567,31 @@ const handleImageUpload = (event) => {
       {/* All Instruments */}
       <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
         <Box mt={3} mb={3} className='!flex !gap-2 sm:!flex-row !flex-col'>
-            <TextField
-                label="Search by Project"
-                value={projectSearch}
-                onChange={(e) => {
-                    setProjectSearch(e.target.value);
-                    setCurrentPage(1); // Reset pagination
-                    setfilteredInstrument([]); // Clear current results
-                }}
-                fullWidth
-            />
+        <TextField
+    label="Search by Project"
+    value={projectSearch}
+    onChange={(e) => {
+        const value = e.target.value;
+        setProjectSearch(value);
+
+        if (value.trim() === "") {
+            setCurrentPage(1); 
+            setProjectSearch(value); 
+            setTriggerSearch(false);
+            setTriggerSearch(true); 
+        }
+    }}
+    onKeyDown={(e) => {
+        if (e.key === "Enter" && projectSearch.trim() !== "") {
+            setCurrentPage(1); 
+            setfilteredInstrument([]); 
+            setTriggerSearch(true); 
+        }
+    }}
+    fullWidth
+/>
+
+
               <FormControl fullWidth>
                 <InputLabel>Search by Status</InputLabel>
                 <Select
@@ -591,6 +601,7 @@ const handleImageUpload = (event) => {
                     setStatusSearch(e.target.value);
                     setCurrentPage(1);  
                     setfilteredInstrument([]);  
+                    setTriggerSearch(true); 
                   }}
                 >
                   {instrumentStatusOptions.map((status) => (

@@ -61,6 +61,7 @@ const AddDocumentsDialog = ({ open, handleClose, handleDocumentUpload }) => {
         <Typography variant="h6">
           Upload Documents
           <IconButton
+            className="!text-[#1D34D8]"
             aria-label="close"
             onClick={handleClose}
             sx={{
@@ -125,8 +126,7 @@ const AddDocumentsDialog = ({ open, handleClose, handleDocumentUpload }) => {
           </Button>
           <Button
             variant="contained"
-            color="primary"
-            disabled={selectedFiles.length === 0}
+            className='!bg-[#1D34D8]'            
             onClick={handleUpload}
           >
             Upload
