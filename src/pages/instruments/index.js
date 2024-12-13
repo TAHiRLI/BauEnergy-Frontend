@@ -381,7 +381,7 @@ export const Instruments = () => {
 
   const handlePdfUpload = (event) => {
     const files = event.target.files;
-    console.log(files)
+    //(files)
     setUploadedFiles((prevFiles) => [...prevFiles, ...files]);
     setNewInstrument((prevInstrument) => ({
       ...prevInstrument,
@@ -432,7 +432,7 @@ export const Instruments = () => {
         formData.append("Tags", tag);
       });
 
-      files?.forEach((file) => {
+      newInstrument?.files?.forEach((file) => {
         formData.append("Files", file);
       });
   
@@ -778,8 +778,8 @@ export const Instruments = () => {
             variant="outlined"
             placeholder="Search Instruments..."
             value={searchTerm}
-            onChange={handleSearchChange} // Update to handle empty input
-            onKeyDown={handleKeyDown} // Still handle Enter for search
+            onChange={handleSearchChange} 
+            onKeyDown={handleKeyDown}
             sx={{
               minWidth: "190px",
               width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },

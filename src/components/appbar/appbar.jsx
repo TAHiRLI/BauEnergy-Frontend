@@ -605,7 +605,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                   InputProps={{
                     inputProps: { style: { cursor: 'pointer' } },
                   }}
-                  onClick={(e) => {
+                  onBlur={(e) => {
                     const inputElement = e.currentTarget.querySelector('input');
                     if (inputElement) {
                       inputElement.showPicker(); 
@@ -627,8 +627,6 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
           </Formik>
         </DialogContent>
       </Dialog>
-
-
 
       <Dialog
         open={openAdminCreateDialog}

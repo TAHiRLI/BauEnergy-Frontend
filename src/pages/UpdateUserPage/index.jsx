@@ -20,6 +20,8 @@ const UpdateUserPage = () => {
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
   const userEmail = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
   const cookies = new Cookies();
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
 
   const [userData, setUserData] = useState({
     name: "",
@@ -27,6 +29,7 @@ const UpdateUserPage = () => {
     email: "",
     phoneNumber: "",
     birthDate: "",
+    image: ""
   });
   const [loading, setLoading] = useState(false);
 
@@ -50,7 +53,7 @@ const UpdateUserPage = () => {
       setLoading(true);
       try {
         const response = await userSerivce.getByEmail(userEmail);
-  
+        console.log(response.data)
         const fullName = response.data.fullName?.trim() || "";
         const [firstName = "", ...lastNameParts] = fullName.split(" ");
         const lastName = lastNameParts.join(" ");
@@ -64,6 +67,7 @@ const UpdateUserPage = () => {
           email: response.data.email,
           phoneNumber: response.data.phoneNumber,
           birthDate: formattedBirthDate,
+          image: response.data.image
         });
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -80,18 +84,35 @@ const UpdateUserPage = () => {
     const { name, value } = e.target;
     setUserData((prevState) => ({ ...prevState, [name]: value }));
   };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file); 
+      setSelectedImage(imageUrl); 
+      setImageFile(file); 
+    }
+  };
+
   const handleSubmit = async (values, { setSubmitting }) => {
     setLoading(true);
+    console.log(imageFile); 
   
     const formData = new FormData();
     formData.append("Name", values.name);
     formData.append("LastName", values.lastName);
     formData.append("Email", values.email);
     formData.append("PhoneNumber", values.phoneNumber);
-    formData.append("BirthDate", new Date(values.birthDate).toISOString().split("T")[0]);
+    formData.append(
+      "BirthDate",
+      new Date(values.birthDate).toISOString().split("T")[0]
+    );
+  
+    if (imageFile) {
+      formData.append("Image", imageFile); // Append the actual file
+    }
   
     try {
-      // Confirmation dialog before submission
       const result = await Swal.fire({
         title: "Are you sure?",
         text: "Do you want to update your information?",
@@ -108,7 +129,6 @@ const UpdateUserPage = () => {
         return;
       }
   
-      // Proceed with the submission if confirmed
       const response = await userSerivce.edit(userEmail, formData);
   
       if (response.data.token) {
@@ -116,16 +136,17 @@ const UpdateUserPage = () => {
         const newToken = response.data.token;
         cookies.set("user", { token: newToken }, { path: "/" });
   
-        // Success dialog after update
-
-        Swal.fire('Success', 'Your information has been updated successfully.', 'success').then(() => {
+        Swal.fire(
+          "Success",
+          "Your information has been updated successfully.",
+          "success"
+        ).then(() => {
           window.location.reload();
         });
       }
     } catch (error) {
       console.error("Error updating user:", error);
   
-      // Error dialog
       await Swal.fire({
         title: "Error!",
         text: "Failed to update your information. Please try again later.",
@@ -137,10 +158,8 @@ const UpdateUserPage = () => {
       setLoading(false);
     }
   };
+  console.log(userData)
   
-  
-
-
   return (
     <Box
     className="!mt-6 "
@@ -192,6 +211,52 @@ const UpdateUserPage = () => {
           >
             {({ errors, touched }) => (
               <Form>
+                              {/* Profile Image Section */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    marginBottom: 3,
+                  }}
+                >
+                  {/* Display Profile Image */}
+                  <img
+                    src={
+                      selectedImage || 
+                      (userData.image
+                        ? `${process.env.REACT_APP_DOCUMENT_URL}/assets/images/teammembers/${userData.image}`
+                        : `${process.env.REACT_APP_DOCUMENT_URL}/assets/images/teammembers/defaultUser.png`)
+                    }
+                    alt="Profile"
+                    style={{
+                      width: 150,
+                      height: 150,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      marginBottom: 10,
+                    }}
+                  />
+                  {/* Upload New Image */}
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    sx={{
+                      textTransform: "none",
+                      padding: "6px 20px",
+                      color: "#1D34D8",
+                      borderColor: "#1D34D8",
+                    }}
+                  >
+                    Upload New Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={handleImageUpload}
+                    />
+                  </Button>
+                </Box>
                 <Field
                   as={TextField}
                   label="First Name"
@@ -245,7 +310,7 @@ const UpdateUserPage = () => {
                   type="date"
                   fullWidth
                   margin="dense"
-                  onChange={(e) => {
+                  onBlur={(e) => {
                     handleChange(e); 
                   }}
                   error={touched.birthDate && !!errors.birthDate}

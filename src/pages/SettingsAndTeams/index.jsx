@@ -405,7 +405,7 @@ const SettingsAndTeams = () => {
                 <img
                 src={
                   selectedImage?.startsWith("blob:") 
-                    ? selectedImage // If it's a blob URL, use it directly
+                    ? selectedImage 
                     : `${process.env.REACT_APP_DOCUMENT_URL}/assets/images/teammembers/${selectedImage || "defaultUser.png"}`
                 }
                             alt="Profile"
@@ -437,7 +437,6 @@ const SettingsAndTeams = () => {
                 />
               </Box>
 
-              {/* Other Form Fields */}
               <Field
                 as={TextField}
                 name="name"

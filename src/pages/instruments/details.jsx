@@ -105,7 +105,7 @@ const InstrumentDetails = () => {
   };
 
   const handleDocumentUpload = async (selectedFiles) => {
-    if (selectedFiles.length === 0) {
+    if (selectedFiles?.length === 0) {
         Swal.fire('Error', 'Please select at least one file.', 'error');
         return;
     }
@@ -151,7 +151,6 @@ const fetchInstrument = async () => {
     if (!isFirstEffectComplete || !triggerSearch) return;
     
     const fetchInstrumentsByName = async () => {
-      console.log("hellod")
         setLoading(true);
         try {
             const response = await instrumentService.getByExactName(
@@ -414,12 +413,25 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
   
   const handleDeletePdf = async (pdfId) => {
     try {
-      await instrumentService.removePdf(instrument.id, pdfId)
-      setExistingPdfs(existingPdfs.filter(pdf => pdf.id !== pdfId));
-      handleCloseUpdateModal();
-      Swal.fire('Success', 'Document deleted successfully!', 'success');
-      setRefresh(!refresh); 
-
+      // Show confirmation dialog
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#1D34D8',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!',
+      });
+  
+      if (result.isConfirmed) {
+        // Proceed with deletion
+        await instrumentService.removePdf(instrument.id, pdfId);
+        setExistingPdfs(existingPdfs.filter(pdf => pdf.id !== pdfId));
+        handleCloseUpdateModal();
+        Swal.fire('Success', 'Document deleted successfully!', 'success');
+        setRefresh(!refresh); 
+      }
     } catch (error) {
       console.error("Failed to delete PDF:", error);
     }
@@ -532,7 +544,7 @@ const handleImageUpload = (event) => {
         <Grid container spacing={2}>
           {instrument.documents?.length > 0 ? (
             instrument.documents.map((doc, index) => (
-              <Grid item xs={6} sm={3} key={index}>
+              <Grid item xs={12} sm={6} key={index}>
                 <Box display="flex" alignItems="center" sx={{ padding: 1 }}>
                   {doc.fileType === 'pdf' ? (
                     <PictureAsPdfIcon sx={{ fontSize: 50, color: '#D32F2F' }} />
@@ -553,6 +565,12 @@ const handleImageUpload = (event) => {
                   >
                     {formatFileName(doc.fileName)}
                   </Typography>
+                  <IconButton
+                          color="error"
+                          onClick={() => handleDeletePdf(doc.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
                 </Box>
               </Grid>
             ))
@@ -903,7 +921,7 @@ const handleImageUpload = (event) => {
               {/* Display uploaded PDF files */}
               <Box mt={2}>
 
-                    {uploadedFiles.length > 0 ? (
+                    {uploadedFiles?.length > 0 ? (
 
                       <Grid container spacing={1}>
                         {uploadedFiles.map((file, index) => (
@@ -921,7 +939,7 @@ const handleImageUpload = (event) => {
               </Box>
 
               {/* PDF Display and Delete */}
-              {instrument.documents.length > 0 && (
+              {instrument.documents?.length > 0 && (
 
                 <Box mt={2}>
                   <Typography variant="h6">PDFs:</Typography>
