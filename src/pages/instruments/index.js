@@ -40,6 +40,8 @@ import { instrumentTagService } from "../../APIs/Services/instrumentTag.service"
 import AddIcon from "@mui/icons-material/Add";
 import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from '@mui/icons-material/Delete';
+import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 
 const VisuallyHiddenInput = styled("input")({
   display: "none",
@@ -241,15 +243,15 @@ export const Instruments = () => {
   const fetchInstrumentsByName = async (newSearch = false) => {
     setLoading(true);
     try {
-      const res = await instrumentService.getAllByName(searchTerm);
+      const res = await instrumentService.getAllByName(newSearch ? searchTerm : ""); 
       setInstrumentsByName(res);
-      //console.log(res)
     } catch (err) {
       console.error("Error fetching instruments:", err);
     } finally {
       setLoading(false);
     }
   };
+  
   useEffect(() => {
     fetchInstrumentsByName();
   }, []);
@@ -258,23 +260,30 @@ export const Instruments = () => {
     fetchInstruments(page === 1);
   }, [page]);
 
+
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchTerm(value);
-  
-    // If the input is empty, fetch all instruments
+
     if (value.trim() === "") {
       setPage(1); // Reset to the first page
       fetchInstrumentsByName(true); // Fetch all instruments
     }
   };
-  
+
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
       setPage(1); // Reset to the first page
       fetchInstrumentsByName(true); // Trigger search by term
     }
   };
+
+  const handleClearSearch = () => {
+    setSearchTerm(""); // Clear the search term
+    setPage(1); // Reset to the first page
+    fetchInstrumentsByName(true); // Fetch all instruments
+  };
+
 
   const loadMore = () => {
     setPage((prevPage) => prevPage + 1);
@@ -388,6 +397,14 @@ export const Instruments = () => {
       files: [...prevInstrument.files, ...files],
     }));
   };
+  const handleDeleteFile = (indexToRemove) => {
+    setUploadedFiles((prevFiles) => prevFiles.filter((_, index) => index !== indexToRemove));
+    setNewInstrument((prevInstrument) => ({
+      ...prevInstrument,
+      files: prevInstrument.files.filter((_, index) => index !== indexToRemove),
+    }));
+  };
+  
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -528,229 +545,232 @@ export const Instruments = () => {
             Add Instrument
           </Button>
         )}
-      {/* Add Instrument Modal */}
-      <Dialog
-        open={openModal}
-        onClose={handleCloseModal}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          style: {
-            borderRadius: 20,
-            //height: "500px",
-            backgroundColor: "#fcfcfc",
-          },
-        }}
-      >
-        <DialogTitle>
-          Add New Instrument
-          <IconButton
-            className="!text-blue-700"
-            aria-label="close"
-            onClick={handleCloseModal}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CancelOutlinedIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-        <Box
-  sx={{
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    marginBottom: 2,
-  }}
->
-  {/* Display the selected image */}
-  <img
-  src={imagePreviews ?? "/toolimage.png"} 
-  alt="Instrument Preview"
-  style={{
-    width: 250,
-    height: 200,
-    borderRadius: "10%",
-    objectFit: "cover",
-    marginBottom: 0,
-    marginTop: "20px",
-  }}
-  />
-
-  {/* Upload button */}
-  <Button
-    variant="text"
-    className="!text-[#1D34D8]"
-    onClick={() => document.getElementById("profile-image-input").click()}
-  >
-    Upload Image
-  </Button>
-  <input
-    id="profile-image-input"
-    type="file"
-    accept="image/*"
-    style={{ display: "none" }}
-    onChange={handleImageUpload}
-  />
-  {/* Show error message */}
-  {imageError  && (
-    <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-      {imageError}
-    </Typography>
-  )}
-</Box>
-
-
-          <TextField
-            autoFocus
-            margin="dense"
-            name="name"
-            label="Instrument Name"
-            type="text"
-            fullWidth
-            value={newInstrument.name}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            name="description"
-            label="Description"
-            type="text"
-            fullWidth
-            value={newInstrument.description}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            name="shortDesc"
-            label="Short Description"
-            type="text"
-            fullWidth
-            value={newInstrument.shortDesc}
-            onChange={handleInputChange}
-          />
-
-          {/* Instrument Type */}
-          <TextField
-            margin="dense"
-            name="instrumentType"
-            label="Instrument Type"
-            type="text"
-            fullWidth
-            value={newInstrument.instrumentType || ""}
-            onChange={handleInputChange}
-          />
-
-          {/* Price Input */}
-          <TextField
-            margin="dense"
-            name="price"
-            label="Price"
-            type="number"
-            fullWidth
-            value={newInstrument.price || ""}
-            onChange={handleInputChange}
-            inputProps={{ min: 0, step: "0.01" }}
-            error={!!error}
-            helperText={error}
-          />
-
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Tags</InputLabel>
-            <Select
-              multiple
-              label="Tags"
-              value={newInstrument.tags}
-              onChange={handleTagChange}
-              renderValue={(selected) => selected.join(", ")}
+        {/* Add Instrument Modal */}
+        <Dialog
+          open={openModal}
+          onClose={handleCloseModal}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            style: {
+              borderRadius: 20,
+              //height: "500px",
+              backgroundColor: "#fcfcfc",
+            },
+          }}
+        >
+          <DialogTitle>
+            Add New Instrument
+            <IconButton
+              className="!text-blue-700"
+              aria-label="close"
+              onClick={handleCloseModal}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
             >
-              {availableTags.map((tag) => (
-                <MenuItem key={tag.id} value={tag.title}>
-                  <Checkbox checked={newInstrument.tags.includes(tag.title)} />
-                  <ListItemText primary={tag.title} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              <CancelOutlinedIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+          <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      marginBottom: 2,
+    }}
+  >
+    {/* Display the selected image */}
+    <img
+    src={imagePreviews ?? "/toolimage.png"} 
+    alt="Instrument Preview"
+    style={{
+      width: 250,
+      height: 200,
+      borderRadius: "10%",
+      objectFit: "cover",
+      marginBottom: 0,
+      marginTop: "20px",
+    }}
+    />
 
-          <FormControl fullWidth margin="dense" variant="outlined">
-            <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
-            <OutlinedInput
-              id="add-new-tag"
+    {/* Upload button */}
+    <Button
+      variant="text"
+      className="!text-[#1D34D8]"
+      onClick={() => document.getElementById("profile-image-input").click()}
+    >
+      Upload Image
+    </Button>
+    <input
+      id="profile-image-input"
+      type="file"
+      accept="image/*"
+      style={{ display: "none" }}
+      onChange={handleImageUpload}
+    />
+    {/* Show error message */}
+    {imageError  && (
+      <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
+        {imageError}
+      </Typography>
+    )}
+  </Box>
+
+
+            <TextField
+              autoFocus
+              margin="dense"
+              name="name"
+              label="Instrument Name"
               type="text"
-              onChange={(e) => setTagInput(e.target.value)}
-              value={tagInput}
-              label="Add new tag (optional)"
-              placeholder="Type a new tag"
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton onClick={handleAddNewTag} edge="end">
-                    <AddIcon />
-                  </IconButton>
-                </InputAdornment>
-              }
+              fullWidth
+              value={newInstrument.name}
+              onChange={handleInputChange}
             />
-          </FormControl>
+            <TextField
+              margin="dense"
+              name="description"
+              label="Description"
+              type="text"
+              fullWidth
+              value={newInstrument.description}
+              onChange={handleInputChange}
+            />
+            <TextField
+              margin="dense"
+              name="shortDesc"
+              label="Short Description"
+              type="text"
+              fullWidth
+              value={newInstrument.shortDesc}
+              onChange={handleInputChange}
+            />
 
-          <TextField
-            label="Number of Instruments to Add"
-            name="count"
-            type="number"
-            fullWidth
-            value={newInstrument.count}
-            onChange={handleInputChange}
-            margin="normal"
-            inputProps={{ min: 1 }}
-          />
+            {/* Instrument Type */}
+            <TextField
+              margin="dense"
+              name="instrumentType"
+              label="Instrument Type"
+              type="text"
+              fullWidth
+              value={newInstrument.instrumentType || ""}
+              onChange={handleInputChange}
+            />
 
-          {/* PDF Upload */}
-          <StyledBox>
-            <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
-              Upload files
-              <VisuallyHiddenInput type="file" onChange={handlePdfUpload} multiple accept="" />
-            </Button>
-          </StyledBox>
+            {/* Price Input */}
+            <TextField
+              margin="dense"
+              name="price"
+              label="Price"
+              type="number"
+              fullWidth
+              value={newInstrument.price || ""}
+              onChange={handleInputChange}
+              inputProps={{ min: 0, step: "0.01" }}
+              error={!!error}
+              helperText={error}
+            />
 
-          {/* Display uploaded PDF files */}
-          <Box mt={2}>
-            {uploadedFiles.length > 0 ? (
-              <Grid container spacing={1}>
-                {uploadedFiles.map((file, index) => (
-                  <Grid item xs={12} key={index} display="flex" alignItems="center">
-                    <PictureAsPdfIcon color="error" />
-                    <Typography variant="body2" ml={1}>
-                      {file.name}
-                    </Typography>
-                  </Grid>
+            <FormControl fullWidth margin="dense">
+              <InputLabel>Tags</InputLabel>
+              <Select
+                multiple
+                label="Tags"
+                value={newInstrument.tags}
+                onChange={handleTagChange}
+                renderValue={(selected) => selected.join(", ")}
+              >
+                {availableTags.map((tag) => (
+                  <MenuItem key={tag.id} value={tag.title}>
+                    <Checkbox checked={newInstrument.tags.includes(tag.title)} />
+                    <ListItemText primary={tag.title} />
+                  </MenuItem>
                 ))}
-              </Grid>
-            ) : (
-              <Typography variant="body2" color="textSecondary">
-                No files uploaded
-              </Typography>
-            )}
-          </Box>
-        </DialogContent>
-        <DialogActions className="!px-10">
-          <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">
-            Cancel
-          </Button>
-          {/* <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button> */}
-          <Button
-            type="submit"
-            onClick={handleAddInstrument}
-            variant="contained"
-            className="!bg-[#1D34D8]"
-            disabled={isSubmitting} 
-          >
-            {isSubmitting ? "Submitting..." : "Submit"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth margin="dense" variant="outlined">
+              <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
+              <OutlinedInput
+                id="add-new-tag"
+                type="text"
+                onChange={(e) => setTagInput(e.target.value)}
+                value={tagInput}
+                label="Add new tag (optional)"
+                placeholder="Type a new tag"
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleAddNewTag} edge="end">
+                      <AddIcon />
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+
+            <TextField
+              label="Number of Instruments to Add"
+              name="count"
+              type="number"
+              fullWidth
+              value={newInstrument.count}
+              onChange={handleInputChange}
+              margin="normal"
+              inputProps={{ min: 1 }}
+            />
+
+            {/* PDF Upload */}
+            <StyledBox>
+              <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
+                Upload files
+                <VisuallyHiddenInput type="file" onChange={handlePdfUpload} multiple accept="" />
+              </Button>
+            </StyledBox>
+
+            {/* Display uploaded PDF files */}
+            <Box mt={2}>
+          {uploadedFiles.length > 0 ? (
+            <Grid container spacing={1}>
+              {uploadedFiles.map((file, index) => (
+                <Grid item xs={12} key={index} display="flex" alignItems="center">
+                  <PictureAsPdfIcon color="error" />
+                  <Typography variant="body2" ml={1} flexGrow={1}>
+                    {file.name}
+                  </Typography>
+                  <IconButton color="error" onClick={() => handleDeleteFile(index)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Typography variant="body2" color="textSecondary">
+              No files uploaded
+            </Typography>
+          )}
+        </Box>
+          </DialogContent>
+          <DialogActions className="!px-10">
+            <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">
+              Cancel
+            </Button>
+            {/* <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button> */}
+            <Button
+              type="submit"
+              onClick={handleAddInstrument}
+              variant="contained"
+              className="!bg-[#1D34D8]"
+              disabled={isSubmitting} 
+            >
+              {isSubmitting ? "Submitting..." : "Submit"}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     );
   }
@@ -773,22 +793,32 @@ export const Instruments = () => {
             }}
           >
 
-          <TextField
-            id="searchbtnax"
-            variant="outlined"
-            placeholder="Search Instruments..."
-            value={searchTerm}
-            onChange={handleSearchChange} 
-            onKeyDown={handleKeyDown}
-            sx={{
-              minWidth: "190px",
-              width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },
-              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-              borderRadius: "30px",
-              "& .MuiOutlinedInput-root": { borderRadius: "30px" },
-              "& .MuiOutlinedInput-input": { padding: "10px 15px" },
-            }}
-          />
+<TextField
+  id="searchbtnax"
+  variant="outlined"
+  placeholder="Search Instruments..."
+  value={searchTerm}
+  onChange={handleSearchChange}
+  onKeyDown={handleKeyDown}
+  InputProps={{
+    endAdornment: searchTerm && (
+      <InputAdornment position="end">
+        <IconButton onClick={handleClearSearch}>
+          <CloseIcon />
+        </IconButton>
+      </InputAdornment>
+    ),
+  }}
+  sx={{
+    minWidth: "190px",
+    width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },
+    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+    borderRadius: "30px",
+    "& .MuiOutlinedInput-root": { borderRadius: "30px" },
+    "& .MuiOutlinedInput-input": { padding: "10px 15px" },
+  }}
+/>
+
 
             {isAdmin && (
               <Button
@@ -903,8 +933,8 @@ export const Instruments = () => {
                 className='max-w-[80vw]'
                 rows={rowss}
                 columns={columns}
-                initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-                pageSizeOptions={[5, 10, 20]}
+                initialState={{ pagination: { paginationModel: { pageSize: 50 } } }}
+                pageSizeOptions={[50, 100, 200]}
                 sx={{
                     border: 0,
                     minWidth: 200,
@@ -1205,23 +1235,26 @@ export const Instruments = () => {
 
           {/* Display uploaded PDF files */}
           <Box mt={2}>
-            {uploadedFiles.length > 0 ? (
-              <Grid container spacing={1}>
-                {uploadedFiles.map((file, index) => (
-                  <Grid item xs={12} key={index} display="flex" alignItems="center">
-                    <PictureAsPdfIcon color="error" />
-                    <Typography variant="body2" ml={1}>
-                      {file.name}
-                    </Typography>
-                  </Grid>
-                ))}
+        {uploadedFiles.length > 0 ? (
+          <Grid container spacing={1}>
+            {uploadedFiles.map((file, index) => (
+              <Grid item xs={12} key={index} display="flex" alignItems="center">
+                <PictureAsPdfIcon color="error" />
+                <Typography variant="body2" ml={1} flexGrow={1}>
+                  {file.name}
+                </Typography>
+                <IconButton color="error" onClick={() => handleDeleteFile(index)}>
+                  <DeleteIcon />
+                </IconButton>
               </Grid>
-            ) : (
-              <Typography variant="body2" color="textSecondary">
-                No files uploaded
-              </Typography>
-            )}
-          </Box>
+            ))}
+          </Grid>
+        ) : (
+          <Typography variant="body2" color="textSecondary">
+            No files uploaded
+          </Typography>
+        )}
+      </Box>
         </DialogContent>
         <DialogActions className="!px-10">
           <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">

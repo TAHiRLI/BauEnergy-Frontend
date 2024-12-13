@@ -584,51 +584,51 @@ const handleImageUpload = (event) => {
 
       {/* All Instruments */}
       <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
-        <Box mt={3} mb={3} className='!flex !gap-2 sm:!flex-row !flex-col'>
+              <Box mt={3} mb={3} className='!flex !gap-2 sm:!flex-row !flex-col'>
         <TextField
-    label="Search by Project"
-    value={projectSearch}
-    onChange={(e) => {
-        const value = e.target.value;
-        setProjectSearch(value);
+          label="Search by Project"
+          value={projectSearch}
+          onChange={(e) => {
+              const value = e.target.value;
+              setProjectSearch(value);
 
-        if (value.trim() === "") {
-            setCurrentPage(1); 
-            setProjectSearch(value); 
-            setTriggerSearch(false);
-            setTriggerSearch(true); 
-        }
-    }}
-    onKeyDown={(e) => {
-        if (e.key === "Enter" && projectSearch.trim() !== "") {
-            setCurrentPage(1); 
-            setfilteredInstrument([]); 
-            setTriggerSearch(true); 
-        }
-    }}
-    fullWidth
-/>
+              if (value.trim() === "") {
+                  setCurrentPage(1); 
+                  setProjectSearch(value); 
+                  setTriggerSearch(false);
+                  setTriggerSearch(true); 
+              }
+          }}
+          onKeyDown={(e) => {
+              if (e.key === "Enter" && projectSearch.trim() !== "") {
+                  setCurrentPage(1); 
+                  setfilteredInstrument([]); 
+                  setTriggerSearch(true); 
+              }
+          }}
+          fullWidth
+        />
 
 
-              <FormControl fullWidth>
-                <InputLabel>Search by Status</InputLabel>
-                <Select
-                  label="Search by Status"
-                  value={statusSearch || ''}
-                  onChange={(e) => {
-                    setStatusSearch(e.target.value);
-                    setCurrentPage(1);  
-                    setfilteredInstrument([]);  
-                    setTriggerSearch(true); 
-                  }}
-                >
-                  {instrumentStatusOptions.map((status) => (
-                    <MenuItem key={status.value} value={status.value}>
-                      {status.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+          <FormControl fullWidth>
+            <InputLabel>Search by Status</InputLabel>
+            <Select
+              label="Search by Status"
+              value={statusSearch || ''}
+              onChange={(e) => {
+                setStatusSearch(e.target.value);
+                setCurrentPage(1);  
+                setfilteredInstrument([]);  
+                setTriggerSearch(true); 
+              }}
+            >
+              {instrumentStatusOptions.map((status) => (
+                <MenuItem key={status.value} value={status.value}>
+                  {status.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
 
         <div>
@@ -641,10 +641,10 @@ const handleImageUpload = (event) => {
             >
               <div className="flex gap-5 xl:gap-10 items-center">
                 <Typography sx={{ flexShrink: 0, fontWeight: 'bold' }}>
-                  {instrument.name}
+                  ({instrument.id}) {instrument.name}
                 </Typography>
 
-                <Typography sx={{ color: 'text.secondary' }} className="sm:w-[220px] hidden sm:block">
+                <Typography sx={{ color: 'text.secondary' }} className="sm:w-[240px] hidden sm:block">
                   Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
                 </Typography>
                 <Typography sx={{ color: 'text.secondary' }}>
@@ -947,7 +947,7 @@ const handleImageUpload = (event) => {
                     {instrument.documents.map((pdf, index) => (
                       <Grid item xs={12} key={index} display="flex" alignItems="center">
                         <PictureAsPdfIcon color="error" />
-                        <Typography variant="body2" ml={1}>
+                        <Typography variant="body2" ml={1} flexGrow={1}>
                           {formatFileName(pdf.fileName)}
                         </Typography>
                         <IconButton

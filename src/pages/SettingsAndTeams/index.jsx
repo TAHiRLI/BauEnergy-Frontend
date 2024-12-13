@@ -311,8 +311,8 @@ const SettingsAndTeams = () => {
             className="!max-w-[80vw]"
             rows={teamMembers}
             columns={columns}
-            initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-            pageSizeOptions={[5, 10, 20]}
+            initialState={{ pagination: { paginationModel: { pageSize: 50 } } }}
+            pageSizeOptions={[50, 100, 200]}
             sx={{
               border: 0,
               minWidth: 200,

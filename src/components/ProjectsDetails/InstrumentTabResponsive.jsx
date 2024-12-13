@@ -330,18 +330,17 @@ const InstrumentTabResponsive = ({ project }) => {
       </div>
 
       {filteredInstruments && filteredInstruments.map((instrument) => {
-        const mainImage = instrument.images?.find(img => img.isMain);
+        console.log(instrument)
         return (
           <Grid item xs={12} sm={6} md={4} key={instrument.id}>
             <Card sx={{ maxWidth: { xs: '100%', sm: 345 }, borderRadius: 2, boxShadow: 4, overflow: 'hidden',p:2 }}>
                 <CardActionArea sx={{ position: 'relative' }} 
                 //onClick={() => handleShowQR(instrument)}
                 >
-                    {mainImage && (
                     <Box
                         component="img"
                         loading='lazy'
-                        src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${mainImage.image}`}
+                        src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${instrument.image}`}
                         alt={instrument.name}
                         sx={{
                         width: '100%',
@@ -350,7 +349,6 @@ const InstrumentTabResponsive = ({ project }) => {
                         borderRadius: 2
                         }}
                     />
-                    )}
                 </CardActionArea>
 
                 {/* Card Content */}
@@ -363,7 +361,7 @@ const InstrumentTabResponsive = ({ project }) => {
                         textAlign: 'center'
                     }}>
                     <Typography variant="h6" fontWeight="bold" color='black'>
-                        {instrument.name}
+                        ({instrument.id}) {instrument.name}
                     </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>

@@ -357,7 +357,7 @@ export default function InstrumentTab({ project }) {
                 style={{ width: 50, height: 50, marginRight: 10 }}
               />
             )}
-            <Typography>{params.row.name}</Typography>
+          <Typography>({params.row.id}) {params.row.name}</Typography>
           </Box>
         );
       },
