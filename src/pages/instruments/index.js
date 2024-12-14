@@ -67,7 +67,7 @@ export const Instruments = () => {
   const [qrImage, setQrImage] = useState(null);
   const [qrInstrumentName, setQrInstrumentName] = useState(null);
   const [imagePreviews, setImagePreviews] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [availableTags, setAvailableTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
@@ -188,7 +188,6 @@ export const Instruments = () => {
   const [instrument, setInstrument] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const [triggerSearch, setTriggerSearch] = useState(false);
 
   const handleInstrumentInfoSelect = async (id) => {
     try {
@@ -254,7 +253,7 @@ export const Instruments = () => {
   
   useEffect(() => {
     fetchInstrumentsByName();
-  }, []);
+  }, [], searchTerm);
 
   useEffect(() => {
     fetchInstruments(page === 1);
@@ -264,24 +263,27 @@ export const Instruments = () => {
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchTerm(value);
-
+    console.log(value)
     if (value.trim() === "") {
-      setPage(1); // Reset to the first page
-      fetchInstrumentsByName(true); // Fetch all instruments
+      
+      setSearchTerm(value);
+
+      setPage(1); 
+      fetchInstrumentsByName(false); 
     }
   };
 
   const handleKeyDown = (event) => {
     if (event.key === "Enter") {
-      setPage(1); // Reset to the first page
-      fetchInstrumentsByName(true); // Trigger search by term
+      setPage(1);
+      fetchInstrumentsByName(true);
     }
   };
 
   const handleClearSearch = () => {
-    setSearchTerm(""); // Clear the search term
-    setPage(1); // Reset to the first page
-    fetchInstrumentsByName(true); // Fetch all instruments
+    setSearchTerm("");
+    setPage(1);
+    fetchInstrumentsByName(false); 
   };
 
 

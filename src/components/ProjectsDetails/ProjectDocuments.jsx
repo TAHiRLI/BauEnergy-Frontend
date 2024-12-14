@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { instrumentDocumentsService } from '../../APIs/Services/instrumetnDocuments.service';
+import { projectDocumentsService } from '../../APIs/Services/projectDocuments.service';
 import {
   Box, Grid, IconButton, Typography, Button, Dialog, DialogTitle,
   DialogContent, DialogActions
@@ -29,7 +29,7 @@ export default function ProjectDocuments({ project }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await instrumentDocumentsService.getAll(projectId);
+      const response = await projectDocumentsService.getAll(projectId);
       setDocuments(response.data);
     } catch (err) {
       setError('Failed to load documents');
@@ -67,7 +67,7 @@ export default function ProjectDocuments({ project }) {
   
     if (confirmDelete.isConfirmed) {
       try {
-        await instrumentDocumentsService.remove(documentId);
+        await projectDocumentsService.remove(documentId);
         setDocuments((prevDocuments) => prevDocuments.filter((doc) => doc.id !== documentId));
   
         Swal.fire({
@@ -139,7 +139,7 @@ export default function ProjectDocuments({ project }) {
     const formData = new FormData();
     formData.append("Files", values.Files);
     try {
-      const response = await instrumentDocumentsService.add(project.id, formData);
+      const response = await projectDocumentsService.add(project.id, formData);
       setDocuments((prevDocuments) => [...prevDocuments, response.data]);
       await fetchProjectDocuments(project.id);
       resetForm();

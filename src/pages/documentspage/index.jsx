@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Grid, IconButton, Typography, Button, CircularProgress
+  Box, Grid, IconButton, Typography, CircularProgress
 } from '@mui/material';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import DescriptionIcon from '@mui/icons-material/Description';
-import { instrumentDocumentsService } from '../../APIs/Services/instrumetnDocuments.service';
+import { projectDocumentsService } from '../../APIs/Services/projectDocuments.service';
+import { instrumentDocumentsService } from '../../APIs/Services/instrumentDocument.service';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 
@@ -21,8 +22,8 @@ export const Documents = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await instrumentDocumentsService.getAllDeleted();
-      setDocuments(response.data);
+      const response = await projectDocumentsService.getAllDeleted();
+      setDocuments((prevDocuments) => [...prevDocuments, ...response.data]);
     } catch (err) {
       console.log(err);
     } finally {
@@ -30,9 +31,27 @@ export const Documents = () => {
     }
   };
 
+  useEffect(() => {
+    fetchAllInstrumentDocuments();
+  }, []);
+
+  const fetchAllInstrumentDocuments = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await instrumentDocumentsService.getAllDeleted();
+      setDocuments((prevDocuments) => [...prevDocuments, ...response.data]);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const handleDelete = async (documentId) => {
     try {
-      await instrumentDocumentsService.hardDelete(documentId);
+      await projectDocumentsService.hardDelete(documentId);
       setDocuments((prevDocuments) => prevDocuments.filter((doc) => doc.id !== documentId));
     } catch (err) {
       console.error("Failed to delete document:", err);
@@ -48,7 +67,7 @@ export const Documents = () => {
   return (
     <Box mt={2} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
       <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8', mb: 2 }}>
-        Project Documents
+        Documents
       </Typography>
 
       {loading ? (

@@ -9,7 +9,7 @@ class InstrumentDocumentsService extends HttpClient {
     
 
     async getAll(id) {
-        return await this.get(`ProjectDocument/${id}`, {
+        return await this.get(`InstrumentDocument/${id}`, {
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }
@@ -17,14 +17,14 @@ class InstrumentDocumentsService extends HttpClient {
     }
 
     async getAllDeleted() {
-        return await this.get(`ProjectDocument/Deleted`, {
+        return await this.get(`InstrumentDocument/Deleted`, {
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }
         });
     }
     async getById(id) {
-        return await this.get(`ProjectDocument/${id}`, {
+        return await this.get(`InstrumentDocument/${id}`, {
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }
@@ -32,7 +32,7 @@ class InstrumentDocumentsService extends HttpClient {
     }
 
     async add(projectId, body) {
-        return await this.post(`ProjectDocument?projectId=${projectId}`, body, {
+        return await this.post(`InstrumentDocument?projectId=${projectId}`, body, {
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }
@@ -40,7 +40,7 @@ class InstrumentDocumentsService extends HttpClient {
     }
 
     async remove(id) {
-        return await this.delete('ProjectDocument/SoftDelete',id,{
+        return await this.delete('InstrumentDocument/SoftDelete',id,{
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }
@@ -48,7 +48,7 @@ class InstrumentDocumentsService extends HttpClient {
     }
 
     async hardDelete(id) {
-        return await this.delete('ProjectDocument/HardDelete',id,{
+        return await this.delete('InstrumentDocument/HardDelete',id,{
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }
