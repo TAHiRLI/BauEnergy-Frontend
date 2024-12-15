@@ -36,7 +36,23 @@
         "Phonenumber": "Phone Number",
         "Role": "Role",
         "JoinedDate": "Joined date",
-        "Actions": "Actions"
+        "Actions": "Actions",
+        "InstrumentsCount" : "Instruments Count",
+        "InstrumentName" : "Instrument Name",
+        "DateAdded" : "Date Added",
+        "Type": "Type",
+        "Status": "Status",
+        "ProjectTimeline": "Project Timeline",
+        "Start Date": "Start Date",
+        "End Date": "End Date",
+        "TeamMembers": "Team Members",
+        "InstrumentsUsed": "Instruments Used",
+        "Membersinvolvedinthisproject": "Members involved in this project",
+        "Instrumentsusedintheproject": "Instruments used in the project",
+        "Nodocumentsintrashbin.": "No documents in trash bin.",
+        "Documents": "Documents",
+        "Available": "Available",
+        "Description": "Description"
         
     }
 }

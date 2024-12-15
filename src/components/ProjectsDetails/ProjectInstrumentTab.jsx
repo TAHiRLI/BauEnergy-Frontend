@@ -31,6 +31,7 @@ import InstrumentStatusModal from "../common/actionsBtn/InstrumentUpdateButton";
 import EditIcon from "@mui/icons-material/Edit";
 import { teamMemberService } from "../../APIs/Services/teammember.service";
 import AddInstrumentWithQr from "../addInstrumentWithQr/addInstrumentWithQr";
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function InstrumentTab({ project }) {
   const { state, dispatch } = useProjects();
@@ -205,7 +206,7 @@ export default function InstrumentTab({ project }) {
     handleSearch();
   }, [searchType, searchDate, searchStatus]);
 
-  const statuses = ["In use", "Under maintenance"];
+  const statuses = ["In use", "Under maintenance", "In controlling", "Controlled", "To be controlled"];
   const handleStatusChange = (event) => {
     const {
       target: { value },
@@ -223,24 +224,29 @@ export default function InstrumentTab({ project }) {
     }
   };
 
+  const fetchInstruments = async () => {
+    dispatch({ type: ProjectsActions.start });
+    try {
+      const response = await projectService.getById(project.id);
+      console.log(response)
+      setAllInstruments(response.data.instruments);
+      setFilteredInstruments(response.data.instruments);
+      //console.log(response.data.instruments)
+      dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
+    } catch (error) {
+      console.error("Error fetching instruments:", error);
+      dispatch({ type: ProjectsActions.failure, payload: error });
+    }
+  };
   useEffect(() => {
-    const fetchInstruments = async () => {
-      dispatch({ type: ProjectsActions.start });
-      try {
-        const response = await projectService.getById(project.id);
-        console.log(response)
-        setAllInstruments(response.data.instruments);
-        setFilteredInstruments(response.data.instruments);
-        //console.log(response.data.instruments)
-        dispatch({ type: ProjectsActions.success, payload: response.data.instruments });
-      } catch (error) {
-        console.error("Error fetching instruments:", error);
-        dispatch({ type: ProjectsActions.failure, payload: error });
-      }
-    };
 
     fetchInstruments();
   }, [dispatch, project.id, refresh]);
+
+  const handleClearStatus = () => {
+    setSearchStatus(""); // Clear the selected status
+    fetchInstruments(); 
+  };
 
   useEffect(() => {
     if (openDialog) {
@@ -357,7 +363,7 @@ export default function InstrumentTab({ project }) {
                 style={{ width: 50, height: 50, marginRight: 10 }}
               />
             )}
-          <Typography>({params.row.id}) {params.row.name}</Typography>
+          <Typography>(ID_{params.row.id}) {params.row.name}</Typography>
           </Box>
         );
       },
@@ -451,17 +457,54 @@ export default function InstrumentTab({ project }) {
             className="rounded-3xl w-full sm:w-[200px]"
           />
 
-          {/* Status Input */}
-          <FormControl variant="outlined" className="w-full sm:w-[200px]">
-            <InputLabel>Status</InputLabel>
-            <Select label="Status" value={searchStatus} onChange={handleStatusChange} className="rounded-3xl">
-              {statuses.map((status) => (
-                <MenuItem key={status} value={status}>
-                  {status}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+<FormControl
+  variant="outlined"
+  className="w-full sm:w-[200px]"
+  sx={{
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    position: "relative",
+  }}
+>
+  <InputLabel>Status</InputLabel>
+  <Select
+    label="Status"
+    value={searchStatus}
+    onChange={handleStatusChange}
+    className="rounded-3xl"
+    sx={{
+      width: "220px", // Static width for the Select box
+      paddingRight: "20px", // Leave space for the icon
+    }}
+  >
+    {statuses.map((status) => (
+      <MenuItem key={status} value={status}>
+        {status}
+      </MenuItem>
+    ))}
+  </Select>
+
+  {searchStatus && (
+    <IconButton
+      onClick={handleClearStatus}
+      sx={{
+        position: "absolute",
+        right: "18px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        padding: 0.5,
+        color: "grey.600",
+        "&:hover": { color: "grey.800" },
+      }}
+    >
+      <CloseIcon />
+    </IconButton>
+  )}
+</FormControl>
+
+
+
         </div>
 
         <Button

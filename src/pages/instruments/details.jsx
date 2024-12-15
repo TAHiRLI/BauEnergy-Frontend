@@ -141,8 +141,8 @@ const fetchInstrument = async () => {
     setLoading(false);
   }
 };
-  useEffect(() => {
 
+  useEffect(() => {
     fetchInstrument();
   }, [id, refresh]);
 
@@ -183,10 +183,6 @@ const fetchInstrument = async () => {
     fetchInstrumentsByName();
 }, [triggerSearch, currentPage, projectSearch, statusSearch, instrument]);
 
-const handleSearch = () => {
-    setTriggerSearch(true);
-    setCurrentPage(1);
-};
 
 const loadMoreInstruments = () => {
   if (currentPage < totalPages) {
@@ -595,7 +591,6 @@ const handleImageUpload = (event) => {
               if (value.trim() === "") {
                   setCurrentPage(1); 
                   setProjectSearch(value); 
-                  setTriggerSearch(false);
                   setTriggerSearch(true); 
               }
           }}
@@ -639,15 +634,15 @@ const handleImageUpload = (event) => {
               sx={{ backgroundColor: '#f9f9f9', borderRadius: 3, p: 2, boxShadow: 1 }}
               className="!flex !gap-5 justify-between items-center"
             >
-              <div className="flex gap-5 xl:gap-10 items-center">
+              <div className="flex gap-1 sm:gap-5 xl:gap-10 items-center flex-col sm:flex-row">
                 <Typography sx={{ flexShrink: 0, fontWeight: 'bold' }}>
-                  ({instrument.id}) {instrument.name}
+                  (ID_{instrument.id}) {instrument.name}
                 </Typography>
 
                 <Typography sx={{ color: 'text.secondary' }} className="sm:w-[240px] hidden sm:block">
                   Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
                 </Typography>
-                <Typography sx={{ color: 'text.secondary' }}>
+                <Typography sx={{ color: 'text.secondary' }} className='!text-[14px]'>
                   Project: {instrument.projectName || 'Not assigned'}
                 </Typography>
               </div>
@@ -1026,46 +1021,56 @@ const handleImageUpload = (event) => {
                     </Button>
                   </div>
 
-                    <Box
-                          display="flex"
-                          flexDirection="column"
-                          alignItems="center"
-                          justifyContent="center"
-                          p={2}
-                          mt={2}
-                          border={1}
-                          borderColor="grey.300"
-                          borderRadius="12px"
-                      >
-                          <Typography
-                              variant="h6"
-                              align="center"
-                              gutterBottom
-                              style={{ fontWeight: 'bold' }}
-                          >
-                              {instrument.name}
-                          </Typography>
+                  <Box
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    p={2}
+                    mt={2}
+                    border={1}
+                    borderColor="grey.300"
+                    borderRadius="12px"
+                  >
+                    {/* <Typography
+                      variant="h6"
+                      align="center"
+                      gutterBottom
+                      style={{ fontWeight: "bold" }}
+                    >
+                      (ID_{instrument.id}) {instrument.name}
+                    </Typography> */}
 
-                          <Typography
-                              variant="body2"
-                              color="textSecondary"
-                              align="center"
-                              gutterBottom
-                          >
-                              Scan QR to get more information about instrument's history
-                          </Typography>
+                    <div className="flex justify-flex items-center gap-6">
+                      <div className="flex flex-col items-center">
+                        <Typography
+                          variant="body1"
+                          style={{
+                            fontWeight: "bold",
+                            textAlign: "center",
+                            marginBottom: "5px",
+                          }}
+                        >
+                          (ID_{instrument.id}) {instrument.name}
+                        </Typography>
+                        <img
+                          className="border-[30px] border-gray-200 rounded-xl"
+                          src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
+                          alt="QR Code"
+                          style={{
+                            width: "200px",
+                            height: "200px",
+                            margin: "10px 0",
+                          }}
+                        />
+                      </div>
+                      <div className="flex flex-col items-center text-2xl font-bold italic">
+                        <p>Scan me</p>
+                        <p>BauEnergy</p>
+                      </div>
+                    </div>
+                  </Box>
 
-                          <img
-                          className='border-[30px] border-gray-200 rounded-xl'
-                              src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
-                              alt="QR Code"
-                              style={{
-                                  width: '200px',
-                                  height: '200px',
-                                  margin: '10px 0',
-                              }}
-                          />
-                    </Box>
                 </DialogContent>
       </Dialog>
 

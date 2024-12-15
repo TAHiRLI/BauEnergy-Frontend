@@ -62,10 +62,11 @@ export default function ProjectOverviewTab({ project }) {
               alignItems: 'center',
               backgroundColor: '#f0f4f8',
               borderRadius: '16px',
+              marginBottom: "30px"
             }}
           >
             {/* Team Members Count */}
-            <Box textAlign="center">
+            <Box textAlign="center" > 
               <PeopleIcon sx={{ fontSize: 50, color: '#1D34D8' }} />
               <Typography variant="h6" fontWeight="bold" mt={2}>
                 Team Members

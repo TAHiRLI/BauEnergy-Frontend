@@ -361,7 +361,7 @@ const InstrumentTabResponsive = ({ project }) => {
                         textAlign: 'center'
                     }}>
                     <Typography variant="h6" fontWeight="bold" color='black'>
-                        ({instrument.id}) {instrument.name}
+                        (ID_{instrument.id}) {instrument.name}
                     </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 1 }}>
