@@ -1123,54 +1123,54 @@ const handleImageUpload = (event) => {
                     </div>
                   </Box> */}
 
-<Box
-    display="flex"
-    flexDirection="column"
-    alignItems="center"
-    justifyContent="center"
-    p={2}
-    mt={2}
-    border={1}
-    borderColor="grey.300"
-    borderRadius="12px"
-  >
-    <Typography
-      variant="h6"
-      align="center"
-      gutterBottom
-      style={{ fontWeight: "bold" }}
-    >
-      (ID_{instrument.id}) {instrument.name}
-    </Typography>
+                  <Box
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                      p={2}
+                      mt={2}
+                      border={1}
+                      borderColor="grey.300"
+                      borderRadius="12px"
+                    >
+                      <Typography
+                        variant="h6"
+                        align="center"
+                        gutterBottom
+                        style={{ fontWeight: "bold" }}
+                      >
+                        (ID_{instrument.id}) {instrument.name}
+                      </Typography>
 
-    <div
-      id="qr-wrapper"
-      className="flex justify-center items-center gap-6"
-      style={{ background: "white", padding: "10px", borderRadius: "12px" }}
-    >
-      {/* QR Code with Text */}
-      <img
-        src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
-        alt="QR Code"
-        style={{
-          width: "200px",
-          height: "200px",
-        }}
-      />
-      <div className="flex flex-col items-center text-xl font-bold italic">
-        <p>Scan me</p>
-        <p>BauEnergy</p>
-      </div>
-    </div>
+                      <div
+                        id="qr-wrapper"
+                        className="flex justify-center flex-col sm:flex-row items-center gap-6"
+                        style={{ background: "white", padding: "10px", borderRadius: "12px" }}
+                      >
+                        {/* QR Code with Text */}
+                        <img
+                          src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
+                          alt="QR Code"
+                          style={{
+                            width: "200px",
+                            height: "200px",
+                          }}
+                        />
+                        <div className="flex flex-col items-center text-xl font-bold italic">
+                          <p>Scan me</p>
+                          <p>BauEnergy</p>
+                        </div>
+                      </div>
 
-    {/* Download Button */}
-    <button
-      onClick={downloadQRCodeWithText}
-      className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
-    >
-      Download QR Code with Name
-    </button>
-  </Box>
+                      {/* Download Button */}
+                      <button
+                        onClick={downloadQRCodeWithText}
+                        className="bg-[#1D34D8] text-white px-4 py-2 rounded-3xl mt-4"
+                      >
+                        Download QR Code
+                      </button>
+                    </Box>
 
                 </DialogContent>
       </Dialog>
