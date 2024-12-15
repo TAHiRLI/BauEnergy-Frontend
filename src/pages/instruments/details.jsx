@@ -22,6 +22,7 @@ import StatusButton from '../../components/common/statusBtn';
 import HistoryIcon from '@mui/icons-material/History'; 
 import AddDocumentsDialog from  '../../components/Dialogs/AddDocument'
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import html2canvas from "html2canvas";
 
 
 const validationSchema = Yup.object().shape({
@@ -84,6 +85,17 @@ const InstrumentDetails = () => {
     setSelectedFiles([...event.target.files]);
   };
 
+  const qrWrapper = document.getElementById("qr-wrapper");
+  if (qrWrapper) {
+    const canvas =  html2canvas(qrWrapper);
+    const image = canvas.toDataURL("image/png");
+
+    // Create a download link
+    const link = document.createElement("a");
+    link.href = image;
+    link.download = `instrument_${instrument.name || instrument.id}.png`;
+    link.click();
+  }
 
   const cookies = new Cookies();
   let user = cookies.get('user'); 
@@ -281,6 +293,49 @@ const instrumentStatusOptions = [
         return 'gray';
     }
   };
+
+  const downloadQRCodeWithText = async () => {
+    // Create a canvas
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+  
+    // Create an image object
+    const img = new Image();
+    img.crossOrigin = "anonymous"; // Allow cross-origin
+    img.src = `${process.env.REACT_APP_DOCUMENT_URL}${qrImage}`;
+  
+    img.onload = () => {
+      // Set canvas size
+      canvas.width = 300;
+      canvas.height = 350;
+  
+      // Set background color (optional, for better visibility of text)
+      context.fillStyle = "black"; // Background color
+      context.fillRect(0, 0, canvas.width, canvas.height);
+  
+      // Add custom text above the QR code
+      context.fillStyle = "white"; // Set text color to white
+      context.font = "20px Arial";
+      context.textAlign = "center";
+      context.fillText(`ID: ${instrument.id}`, canvas.width / 2, 30);
+      context.fillText(`${instrument.name}`, canvas.width / 2, 60);
+  
+      // Draw the QR code on the canvas
+      context.drawImage(img, 50, 100, 200, 200);
+  
+      // Convert canvas to image and trigger download
+      const dataURL = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = dataURL;
+      link.download = `instrument_${instrument.name || instrument.id}.png`;
+      link.click();
+    };
+  
+    img.onerror = () => {
+      console.error("Image failed to load. Check the URL or CORS settings.");
+    };
+  };
+  
   
 
   const formatDate = (date) => {
@@ -1021,7 +1076,7 @@ const handleImageUpload = (event) => {
                     </Button>
                   </div>
 
-                  <Box
+                  {/* <Box
                     display="flex"
                     flexDirection="column"
                     alignItems="center"
@@ -1032,14 +1087,6 @@ const handleImageUpload = (event) => {
                     borderColor="grey.300"
                     borderRadius="12px"
                   >
-                    {/* <Typography
-                      variant="h6"
-                      align="center"
-                      gutterBottom
-                      style={{ fontWeight: "bold" }}
-                    >
-                      (ID_{instrument.id}) {instrument.name}
-                    </Typography> */}
 
                     <div className="flex justify-flex items-center gap-6">
                       <div className="flex flex-col items-center">
@@ -1069,7 +1116,56 @@ const handleImageUpload = (event) => {
                         <p>BauEnergy</p>
                       </div>
                     </div>
-                  </Box>
+                  </Box> */}
+
+<Box
+    display="flex"
+    flexDirection="column"
+    alignItems="center"
+    justifyContent="center"
+    p={2}
+    mt={2}
+    border={1}
+    borderColor="grey.300"
+    borderRadius="12px"
+  >
+    <Typography
+      variant="h6"
+      align="center"
+      gutterBottom
+      style={{ fontWeight: "bold" }}
+    >
+      (ID_{instrument.id}) {instrument.name}
+    </Typography>
+
+    <div
+      id="qr-wrapper"
+      className="flex justify-center items-center gap-6"
+      style={{ background: "white", padding: "10px", borderRadius: "12px" }}
+    >
+      {/* QR Code with Text */}
+      <img
+        src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
+        alt="QR Code"
+        style={{
+          width: "200px",
+          height: "200px",
+        }}
+      />
+      <div className="flex flex-col items-center text-xl font-bold italic">
+        <p>Scan me</p>
+        <p>BauEnergy</p>
+      </div>
+    </div>
+
+    {/* Download Button */}
+    <button
+      onClick={downloadQRCodeWithText}
+      className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+    >
+      Download QR Code with Name
+    </button>
+  </Box>
 
                 </DialogContent>
       </Dialog>

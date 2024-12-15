@@ -23,6 +23,7 @@
     "docxtemplater": "^3.53.0",
     "file-saver": "^2.0.5",
     "formik": "^2.4.6",
+    "html2canvas": "^1.4.1",
     "html5-qrcode": "^2.3.8",
     "i18next": "^23.15.1",
     "jwt-decode": "^4.0.0",
