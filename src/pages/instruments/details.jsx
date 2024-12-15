@@ -88,11 +88,11 @@ const InstrumentDetails = () => {
   const qrWrapper = document.getElementById("qr-wrapper");
   if (qrWrapper) {
     const canvas =  html2canvas(qrWrapper);
-    const image = canvas.toDataURL("image/png");
+    //const image = canvas?.toDataURL("image/png");
 
     // Create a download link
     const link = document.createElement("a");
-    link.href = image;
+    //link.href = image;
     link.download = `instrument_${instrument.name || instrument.id}.png`;
     link.click();
   }
@@ -295,9 +295,14 @@ const instrumentStatusOptions = [
   };
 
   const downloadQRCodeWithText = async () => {
-    // Create a canvas
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
+    // Create a unique canvas instance
+    const myCanvas = document.createElement("canvas");
+    const context = myCanvas.getContext("2d");
+  
+    if (!context) {
+      console.error("Failed to get 2D context");
+      return;
+    }
   
     // Create an image object
     const img = new Image();
@@ -306,25 +311,25 @@ const instrumentStatusOptions = [
   
     img.onload = () => {
       // Set canvas size
-      canvas.width = 300;
-      canvas.height = 350;
+      myCanvas.width = 300;
+      myCanvas.height = 350;
   
-      // Set background color (optional, for better visibility of text)
-      context.fillStyle = "black"; // Background color
-      context.fillRect(0, 0, canvas.width, canvas.height);
+      // Set background color (optional for better text visibility)
+      context.fillStyle = "gray";
+      context.fillRect(0, 0, myCanvas.width, myCanvas.height);
   
-      // Add custom text above the QR code
-      context.fillStyle = "white"; // Set text color to white
+      // Add text above the QR code
+      context.fillStyle = "white";
       context.font = "20px Arial";
       context.textAlign = "center";
-      context.fillText(`ID: ${instrument.id}`, canvas.width / 2, 30);
-      context.fillText(`${instrument.name}`, canvas.width / 2, 60);
+      context.fillText(`ID: ${instrument.id}`, myCanvas.width / 2, 30);
+      context.fillText(`${instrument.name}`, myCanvas.width / 2, 60);
   
-      // Draw the QR code on the canvas
+      // Draw the QR code
       context.drawImage(img, 50, 100, 200, 200);
   
       // Convert canvas to image and trigger download
-      const dataURL = canvas.toDataURL("image/png");
+      const dataURL = myCanvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.href = dataURL;
       link.download = `instrument_${instrument.name || instrument.id}.png`;
