@@ -311,22 +311,42 @@ const instrumentStatusOptions = [
   
     img.onload = () => {
       // Set canvas size
-      myCanvas.width = 300;
-      myCanvas.height = 350;
+      const canvasWidth = 450; // Total canvas width
+      const canvasHeight = 350; // Total canvas height
+      const qrWidth = 200; // QR code width
+      const qrHeight = 200; // QR code height
+      myCanvas.width = canvasWidth;
+      myCanvas.height = canvasHeight;
   
-      // Set background color (optional for better text visibility)
-      context.fillStyle = "gray";
-      context.fillRect(0, 0, myCanvas.width, myCanvas.height);
-  
-      // Add text above the QR code
+      // Set background color
       context.fillStyle = "white";
-      context.font = "20px Arial";
+      context.fillRect(0, 0, canvasWidth, canvasHeight);
+  
+      // Add "ID" and instrument name above the QR code
+      context.fillStyle = "black";
+      context.font = "bold 22px Arial";
       context.textAlign = "center";
-      context.fillText(`ID: ${instrument.id}`, myCanvas.width / 2, 30);
-      context.fillText(`${instrument.name}`, myCanvas.width / 2, 60);
+      context.fillText(`ID_${instrument.id}`, canvasWidth / 3, 55);
+      //context.fillText(`${instrument.name}`, canvasWidth / 4, 60);
+  
+      // Calculate QR code position to center it vertically
+      const qrX = (canvasWidth / 4 - qrWidth / 2) + 30; // Center QR code horizontally on the left
+      const qrY = (canvasHeight - qrHeight) / 2; // Center QR code vertically
   
       // Draw the QR code
-      context.drawImage(img, 50, 100, 200, 200);
+      context.drawImage(img, qrX, qrY, qrWidth, qrHeight);
+  
+      // Add "Scan me" and "BauEnergy" to the right of the QR code
+      context.font = "italic bold 26px Arial";
+      context.textAlign = "left";
+      const textX = qrX + qrWidth + 50; // Position to the right of the QR code
+      const textY = qrY + qrHeight / 3; // Centered with the QR code
+  
+      // Add "Scan me" text
+      context.fillText("Scan me", textX+10, textY+5);
+  
+      // Add "BauEnergy" below "Scan me"
+      context.fillText("BauEnergy", textX- 10, textY + 50);
   
       // Convert canvas to image and trigger download
       const dataURL = myCanvas.toDataURL("image/png");
@@ -340,6 +360,8 @@ const instrumentStatusOptions = [
       console.error("Image failed to load. Check the URL or CORS settings.");
     };
   };
+  
+  
   
   
 
