@@ -158,39 +158,39 @@ const fetchInstrument = async () => {
     fetchInstrument();
   }, [id, refresh]);
 
+  const fetchInstrumentsByName = async () => {
+      //setLoading(true);
+      try {
+          const response = await instrumentService.getByExactName(
+              projectSearch,
+              statusSearch,
+              instrument.name,
+              currentPage
+          );
+
+          const { instruments, totalPages } = response.data;
+
+          setfilteredInstrument((prevInstruments) => {
+            if (currentPage > 1) {
+              return [
+                ...(Array.isArray(prevInstruments) ? prevInstruments : []),
+                ...instruments,
+              ];
+            }
+            return instruments; 
+          });
+          setTotalPages(totalPages);
+      } catch (error) {
+          console.error("Error fetching instrument details", error);
+      } finally {
+          setLoading(false);
+          setTriggerSearch(false); 
+      }
+  };
   useEffect(() => {
 
     if (!isFirstEffectComplete || !triggerSearch) return;
     
-    const fetchInstrumentsByName = async () => {
-        //setLoading(true);
-        try {
-            const response = await instrumentService.getByExactName(
-                projectSearch,
-                statusSearch,
-                instrument.name,
-                currentPage
-            );
-
-            const { instruments, totalPages } = response.data;
-
-            setfilteredInstrument((prevInstruments) => {
-              if (currentPage > 1) {
-                return [
-                  ...(Array.isArray(prevInstruments) ? prevInstruments : []),
-                  ...instruments,
-                ];
-              }
-              return instruments; 
-            });
-            setTotalPages(totalPages);
-        } catch (error) {
-            console.error("Error fetching instrument details", error);
-        } finally {
-            setLoading(false);
-            setTriggerSearch(false); 
-        }
-    };
 
     fetchInstrumentsByName();
 }, [triggerSearch, currentPage, projectSearch, statusSearch, instrument]);
@@ -534,6 +534,8 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
           text: response.data?.message || 'The instrument has been successfully deleted...',
         });
         setRefresh((prev) => !prev);
+        fetchInstrumentsByName();
+
       } catch (err) {
         Swal.fire({
           icon: 'error',
