@@ -58,9 +58,9 @@ export default function TeamMember({ project }) {
    image: Yup.mixed().nullable(),
   });
   const RoleEnum = {
-    CompanyOwner: 0,
+    Company_Owner: 0,
     User: 1,
-    ProjectManager: 2,
+    Project_Manager: 2,
   };
 
   const handleAddExistingTeamMember = async () => {
