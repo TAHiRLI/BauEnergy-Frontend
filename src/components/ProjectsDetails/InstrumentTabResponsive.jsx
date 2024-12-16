@@ -11,6 +11,7 @@ import { instrumentService } from '../../APIs/Services/instrument.service';
 import { teamMemberService } from '../../APIs/Services/teammember.service';
 import AddInstrumentWithQr from '../addInstrumentWithQr/addInstrumentWithQr';
 import FormHelperText from '@mui/material/FormHelperText';
+import StatusButton from "../common/statusBtn";
 
 const InstrumentTabResponsive = ({ project }) => {
   const { state, dispatch } = useProjects();
@@ -444,14 +445,16 @@ const InstrumentTabResponsive = ({ project }) => {
       })}
 
       {/* Instrument History Dialog */}
-      <Dialog open={openHistoryDialog} onClose={handleCloseHistoryDialog}
+      <Dialog
+        open={openHistoryDialog}
+        onClose={handleCloseHistoryDialog}
         fullWidth
         maxWidth="sm"
         PaperProps={{
           style: {
             borderRadius: 20,
             height: "500px",
-            backgroundColor: "#fcfcfc"  
+            backgroundColor: "#fcfcfc",
           },
         }}
       >
@@ -476,54 +479,61 @@ const InstrumentTabResponsive = ({ project }) => {
           sx={{
             display: "flex",
             flexDirection: "column",
-            justifyContent: history && history.length > 0 ? "flex-start" : "center",
-            alignItems: history && history.length > 0 ? "flex-start" : "center",
+            justifyContent: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
+            alignItems: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
             overflowY: "auto",
-            overflowX: "hidden",  
-            maxHeight: "calc(100% - 64px)",  
-            paddingRight: "8px" 
+            overflowX: "hidden",
+            maxHeight: "calc(100% - 64px)",
+            paddingRight: "8px",
           }}
         >
-          {history && history.length > 0 ? (
+          {instrumentHistory && instrumentHistory.length > 0 ? (
             <>
-              <Box display="flex" gap={2} mb={2} >
+              <Box display="flex" gap={2} mb={2}>
                 {instrument?.images?.slice(0, 3).map((img, index) => (
                   <img
                     key={index}
                     src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${img.image}`}
                     alt="Instrument"
                     style={{
-                      flexGrow: 1, 
-                      width: '32%', 
+                      flexGrow: 1,
+                      width: "32%",
                       height: 100,
                       borderRadius: 8,
-                      objectFit: 'cover' 
+                      objectFit: "cover",
                     }}
                   />
                 ))}
-              </Box> 
+              </Box>
               <Box mb={2} p={2} sx={{ borderRadius: 3 }} className="block sm:!hidden !w-full !p-0">
-              <Typography variant="h6" className=" block sm:!hidden">
-                Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+                <Typography variant="h6" className=" block sm:!hidden">
+                  Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+                </Typography>
+              </Box>
+              <Typography variant="h6" dividers>
+                Details
               </Typography>
-            </Box>
-
-              <Typography variant="h6" dividers>Details</Typography>
-              <div className='border-b border-slate-300 w-full my-2'></div>
-              {history.map((entry, index) => (
+              <div className="border-b border-slate-300 w-full my-2"></div>
+              {instrumentHistory.map((entry, index) => (
                 <Box key={index} mb={2} width="100%">
                   <div className="flex justify-between items-center">
-                    <Typography variant="subtitle1" className='!font-medium'>{entry.title}</Typography>
+                    <Typography variant="subtitle1" className="!font-medium">
+                      {entry.title}
+                    </Typography>
                     <Typography variant="subtitle2" color="textSecondary">
                       {formatDate(entry.eventDate)}
                     </Typography>
                   </div>
-                  <Typography variant="body2" className='!text-gray-500 !ml-1'>{entry.description}</Typography>
+                  <Typography variant="body2" className="!text-gray-500 !ml-1">
+                    {entry.description}
+                  </Typography>
                 </Box>
               ))}
             </>
           ) : (
-            <Typography variant="body2" className='text-gray-500'>Nothing here yet...</Typography>
+            <Typography variant="body2" className="text-gray-500">
+              Nothing here yet...
+            </Typography>
           )}
         </DialogContent>
       </Dialog>

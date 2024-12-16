@@ -1258,7 +1258,7 @@ const handleImageUpload = (event) => {
               <Typography variant="h6" className=" block sm:!hidden">
                 Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
               </Typography>
-            </Box>
+              </Box>
 
               <Typography variant="h6" dividers>Details</Typography>
               <div className='border-b border-slate-300 w-full my-2'></div>
