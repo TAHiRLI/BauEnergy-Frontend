@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, FormHelperText, Paper, Grid, CardActionArea, CardContent, Card, Divider, CardActions } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle, MenuItem, Select, FormControl, InputLabel, IconButton, Typography, Grid, CardActionArea, CardContent, Card, Divider, CardActions } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit'; 
 import { Add as AddIcon, Share as ShareIcon } from '@mui/icons-material';
@@ -8,31 +8,8 @@ import Swal from 'sweetalert2';
 import { useProjects, ProjectsActions } from '../../context/projectContext';
 import { projectService } from '../../APIs/Services/project.service';
 import { teamMemberService } from '../../APIs/Services/teammember.service'; 
-import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { TextField } from '@mui/material';
-import axios from 'axios';
-import Cookies from "universal-cookie";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { styled } from '@mui/material/styles';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-
-const VisuallyHiddenInput = styled('input')({
-  display: 'none',
-});
-
-const StyledBox = styled(Box)(({ theme }) => ({
-  border: '1px solid',
-  borderColor: theme.palette.grey[400],
-  padding: theme.spacing(1),
-  marginTop: theme.spacing(1),
-  borderRadius: theme.shape.borderRadius,
-  '&:hover': {
-      borderColor: theme.palette.common.black,
-  },
-}));
-
-const cookies = new Cookies();
 
 export default function TeamMember({ project }) {
   const { state, dispatch } = useProjects();
@@ -126,7 +103,7 @@ export default function TeamMember({ project }) {
       console.error("Error adding team member:", error);
       Swal.fire("Error", error.message, "error");
     } finally {
-      setLoading(false); // Re-enable button
+      setLoading(false); 
     }
   };
   

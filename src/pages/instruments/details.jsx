@@ -163,7 +163,7 @@ const fetchInstrument = async () => {
     if (!isFirstEffectComplete || !triggerSearch) return;
     
     const fetchInstrumentsByName = async () => {
-        setLoading(true);
+        //setLoading(true);
         try {
             const response = await instrumentService.getByExactName(
                 projectSearch,
@@ -361,9 +361,7 @@ const instrumentStatusOptions = [
     };
   };
   
-  
-  
-  
+
 
   const formatDate = (date) => {
     if (!date) {
@@ -677,7 +675,7 @@ const handleImageUpload = (event) => {
               }
           }}
           onKeyDown={(e) => {
-              if (e.key === "Enter" && projectSearch.trim() !== "") {
+              if ( e.key === "Enter" && projectSearch.trim() !== "") {
                   setCurrentPage(1); 
                   setfilteredInstrument([]); 
                   setTriggerSearch(true); 

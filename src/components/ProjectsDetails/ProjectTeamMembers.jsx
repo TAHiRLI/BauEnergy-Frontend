@@ -99,7 +99,7 @@ const handleAddExistingTeamMember = async () => {
     console.error("Error adding team member:", error);
     Swal.fire("Error", error.message, "error");
   } finally {
-    setLoading(false); // Re-enable button
+    setLoading(false); 
   }
 };
 
