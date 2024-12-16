@@ -726,7 +726,7 @@ export default function InstrumentTab({ project }) {
       </Dialog>
 
       {/* Instrument History Dialog */}
-      <Dialog
+      {/* <Dialog
         open={openHistoryDialog}
         onClose={handleCloseHistoryDialog}
         fullWidth
@@ -810,6 +810,89 @@ export default function InstrumentTab({ project }) {
             <Typography variant="body2" className="text-gray-500">
               Nothing here yet...
             </Typography>
+          )}
+        </DialogContent>
+      </Dialog> */}
+            <Dialog open={openHistoryDialog} onClose={handleCloseHistoryDialog}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          style: {
+            borderRadius: 20,
+            height: "500px",
+            backgroundColor: "#fcfcfc"  
+          },
+        }}
+      >
+        <DialogTitle>
+          Instrument History
+          <IconButton
+            className="!text-blue-700"
+            aria-label="close"
+            onClick={handleCloseHistoryDialog}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+            }}
+          >
+            <CancelOutlinedIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent
+          className="!border !border-gray-300 rounded-xl !p-2 !m-6 !mt-0 bg-white"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: history && history.length > 0 ? "flex-start" : "center",
+            alignItems: history && history.length > 0 ? "flex-start" : "center",
+            overflowY: "auto",
+            overflowX: "hidden",  
+            maxHeight: "calc(100% - 64px)",  
+            paddingRight: "8px" 
+          }}
+        >
+          {history && history.length > 0 ? (
+            <>
+              <Box display="flex" gap={2} mb={2} >
+                {instrument?.images?.slice(0, 3).map((img, index) => (
+                  <img
+                    key={index}
+                    src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${img.image}`}
+                    alt="Instrument"
+                    style={{
+                      flexGrow: 1, 
+                      width: '32%', 
+                      height: 100,
+                      borderRadius: 8,
+                      objectFit: 'cover' 
+                    }}
+                  />
+                ))}
+              </Box> 
+              <Box mb={2} p={2} sx={{ borderRadius: 3 }} className="block sm:!hidden !w-full !p-0">
+              <Typography variant="h6" className=" block sm:!hidden">
+                Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+              </Typography>
+            </Box>
+
+              <Typography variant="h6" dividers>Details</Typography>
+              <div className='border-b border-slate-300 w-full my-2'></div>
+              {history.map((entry, index) => (
+                <Box key={index} mb={2} width="100%">
+                  <div className="flex justify-between items-center">
+                    <Typography variant="subtitle1" className='!font-medium'>{entry.title}</Typography>
+                    <Typography variant="subtitle2" color="textSecondary">
+                      {formatDate(entry.eventDate)}
+                    </Typography>
+                  </div>
+                  <Typography variant="body2" className='!text-gray-500 !ml-1'>{entry.description}</Typography>
+                </Box>
+              ))}
+            </>
+          ) : (
+            <Typography variant="body2" className='text-gray-500'>Nothing here yet...</Typography>
           )}
         </DialogContent>
       </Dialog>
