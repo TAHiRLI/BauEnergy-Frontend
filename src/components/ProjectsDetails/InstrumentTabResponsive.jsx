@@ -257,6 +257,27 @@ const InstrumentTabResponsive = ({ project }) => {
         return 'Invalid date'; 
       }
     };
+
+    const getStatusColor = (status) => {
+      switch (status) {
+        case 'Available':
+          return 'green';
+        case 'In_use':
+          return 'blue';
+        case 'Under_maintenance':
+          return 'red';
+        case 'In_delivery':
+          return 'orange';
+        case 'In_controlling':
+          return 'purple';
+        case 'Controlled':
+          return 'teal';
+        case 'To_be_controlled':
+          return 'darkgoldenrod';
+        default:
+          return 'gray';
+      }
+    };
   const renderStatus = (status) => {
     let chipProps = {};
     switch (status) {
