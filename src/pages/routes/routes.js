@@ -9,7 +9,7 @@ export const ROUTES = {
   INSTRUMENTS: "/instruments",
   ADD_INSTRUMENTS: "/addinstrument",
   EDIT_INSTRUMENTS: "/instrument/:id",
-  INSTRUMENTS_DETAILS: "/instruments/details/:id",
+  INSTRUMENTS_DETAILS: "/instruments/details/:id/qr?",
   AVIABLEINSTRUMENTS: "/aviableInstruments",
 
   // Projects

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Grid, Button, CircularProgress, ListItemText, TextField, FormControl, InputLabel, Checkbox, OutlinedInput, InputAdornment } from '@mui/material';
 import { Dialog, DialogTitle, DialogContent, IconButton, DialogActions, Select, MenuItem } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { instrumentHistoryService } from '../../APIs/Services/instrumentHistory.service';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -90,12 +90,24 @@ const InstrumentDetails = () => {
     const canvas =  html2canvas(qrWrapper);
     //const image = canvas?.toDataURL("image/png");
 
-    // Create a download link
     const link = document.createElement("a");
     //link.href = image;
     link.download = `instrument_${instrument.name || instrument.id}.png`;
     link.click();
   }
+
+  const location = useLocation(); // Extract query string from URL
+  const [highlightedId, setHighlightedId] = useState(null);
+  const [showQrHighlight, setShowQrHighlight] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      setHighlightedId(parseInt(id)); // Highlight this ID
+    }
+    // Check if '/qr' is in the URL path
+    const hasQr = location.pathname.includes("/qr");
+    setShowQrHighlight(hasQr);
+  }, [id, location]);
 
   const cookies = new Cookies();
   let user = cookies.get('user'); 
@@ -596,7 +608,7 @@ const handleImageUpload = (event) => {
               </button> */}
               <button
                 onClick={handleOpenUpdateModal}
-                className="bg-blue-600 text-white font-semibold rounded-3xl px-6 py-2 transition hover:bg-blue-500"
+                className="bg-[#1D34D8] text-white font-semibold rounded-3xl px-6 py-2 transition hover:shadow-lg"
               >
                 Edit Instrument
               </button>
@@ -705,7 +717,7 @@ const handleImageUpload = (event) => {
           </FormControl>
         </Box>
 
-        <div>
+        {/* <div>
           {filteredInstrument?.map((instrument, index) => (
             <Box
               key={instrument.id}
@@ -772,7 +784,6 @@ const handleImageUpload = (event) => {
             </Box>
           ))}
 
-          {/* Load More Button */}
           {currentPage < totalPages && (
             <Box mt={3} textAlign="center">
               <Button
@@ -792,7 +803,122 @@ const handleImageUpload = (event) => {
               </Button>
             </Box>
           )}
-        </div>
+        </div> */}
+
+<div>
+      {filteredInstrument?.map((instrument) => (
+        <Box
+          key={instrument.id}
+          mb={3}
+          sx={{
+            backgroundColor: instrument.id === highlightedId && showQrHighlight
+            ? "#C8D1FA" // Highlight yellow if 'qr' is true
+            : "#f9f9f9",
+            borderRadius: 3,
+            p: 2,
+            boxShadow: 1,
+          }}
+          className="!flex !gap-5 justify-between items-center"
+        >
+          <div className="flex gap-1 sm:gap-5 xl:gap-10 items-center flex-col sm:flex-row">
+            {/* Instrument Name */}
+            <Typography
+              sx={{
+                flexShrink: 0,
+                fontWeight: "bold",
+                
+              }}
+            >
+              (ID_{instrument.id}) {instrument.name}
+            </Typography>
+
+            {/* Status */}
+            <Typography
+              sx={{ color: "text.secondary" }}
+              className="sm:w-[240px] hidden sm:block"
+            >
+              Status:{" "}
+              <StatusButton
+                text={instrument.status.split("_").join(" ")}
+                color={getStatusColor(instrument.status)}
+              />
+            </Typography>
+
+            {/* Project */}
+            <Typography sx={{ color: "text.secondary" }} className="!text-[14px]">
+              Project: {instrument.projectName || "Not assigned"}
+            </Typography>
+          </div>
+
+          {/* Action Buttons */}
+          <Box className="!flex gap-2 sm:gap-4 sm:mr-8">
+            <IconButton
+              onClick={() => handleShowQR(instrument)}
+              sx={{
+                color: "gray",
+                backgroundColor: "#f0f0f0",
+                borderRadius: "8px",
+                padding: "5px",
+                "&:hover": {
+                  backgroundColor: "#e0e0e0",
+                },
+              }}
+            >
+              <QrCodeScannerIcon />
+            </IconButton>
+
+            <IconButton
+              onClick={() => handleDelete(instrument.id)}
+              sx={{
+                color: "#d333",
+                backgroundColor: "#f5f5f5",
+                borderRadius: "20%",
+                padding: "5px",
+                border: "1px solid #e0e0e0",
+                "&:hover": { backgroundColor: "#e0e0e0" },
+              }}
+            >
+              <DeleteIcon sx={{ color: "#d33" }} />
+            </IconButton>
+
+            <IconButton
+              onClick={() => handleShowHistory(instrument.id)}
+              color="primary"
+              sx={{
+                backgroundColor: "#f5f5f5",
+                borderRadius: "20%",
+                padding: "5px",
+                border: "1px solid #e0e0e0",
+                "&:hover": { backgroundColor: "#e0e0e0" },
+              }}
+            >
+              <HistoryIcon sx={{ color: "#424242" }} />
+            </IconButton>
+          </Box>
+        </Box>
+      ))}
+
+      {/* Load More Button */}
+      {currentPage < totalPages && (
+        <Box mt={3} textAlign="center">
+          <Button
+            className="!rounded-3xl"
+            variant="contained"
+            onClick={loadMoreInstruments}
+            disabled={loading}
+            sx={{
+              backgroundColor: loading ? "#e0e0e0" : "#1D34D8",
+              color: "#ffffff",
+              "&:hover": {
+                backgroundColor: loading ? "#e0e0e0" : "#164cb8",
+              },
+            }}
+          >
+            {loading ? "Loading..." : "Load More"}
+          </Button>
+        </Box>
+      )}
+    </div>
       </Box>
 
       {/* Edit Instrument Modal */}

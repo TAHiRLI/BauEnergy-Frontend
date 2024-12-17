@@ -15,8 +15,6 @@ import SettingsAndTeams from "../SettingsAndTeams";
 import TutorialPage from "../Tutorial/Tutorial";
 import UpdateUserPage from "../UpdateUserPage";
 
-
-
 export const router = createBrowserRouter([
   {
       path: ROUTES.BASE,
