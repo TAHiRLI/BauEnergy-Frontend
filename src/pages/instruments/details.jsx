@@ -295,74 +295,71 @@ const instrumentStatusOptions = [
   };
 
   const downloadQRCodeWithText = async () => {
-    // Create a unique canvas instance
-    const myCanvas = document.createElement("canvas");
-    const context = myCanvas.getContext("2d");
-  
-    if (!context) {
-      console.error("Failed to get 2D context");
-      return;
-    }
-  
-    // Create an image object
-    const img = new Image();
-    img.crossOrigin = "anonymous"; // Allow cross-origin
-    img.src = `${process.env.REACT_APP_DOCUMENT_URL}${qrImage}`;
-  
-    img.onload = () => {
-      // Set canvas size
-      const canvasWidth = 450; // Total canvas width
-      const canvasHeight = 350; // Total canvas height
-      const qrWidth = 200; // QR code width
-      const qrHeight = 200; // QR code height
-      myCanvas.width = canvasWidth;
-      myCanvas.height = canvasHeight;
-  
-      // Set background color
-      context.fillStyle = "white";
-      context.fillRect(0, 0, canvasWidth, canvasHeight);
-  
-      // Add "ID" and instrument name above the QR code
-      context.fillStyle = "black";
-      context.font = "bold 22px Arial";
-      context.textAlign = "center";
-      context.fillText(`ID_${instrument.id}`, canvasWidth / 3, 55);
-      //context.fillText(`${instrument.name}`, canvasWidth / 4, 60);
-  
-      // Calculate QR code position to center it vertically
-      const qrX = (canvasWidth / 4 - qrWidth / 2) + 30; // Center QR code horizontally on the left
-      const qrY = (canvasHeight - qrHeight) / 2; // Center QR code vertically
-  
-      // Draw the QR code
-      context.drawImage(img, qrX, qrY, qrWidth, qrHeight);
-  
-      // Add "Scan me" and "BauEnergy" to the right of the QR code
-      context.font = "italic bold 26px Arial";
-      context.textAlign = "left";
-      const textX = qrX + qrWidth + 50; // Position to the right of the QR code
-      const textY = qrY + qrHeight / 3; // Centered with the QR code
-  
-      // Add "Scan me" text
-      context.fillText("Scan me", textX+10, textY+5);
-  
-      // Add "BauEnergy" below "Scan me"
-      context.fillText("BauEnergy", textX- 10, textY + 50);
-  
-      // Convert canvas to image and trigger download
-      const dataURL = myCanvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = dataURL;
-      link.download = `instrument_${instrument.name || instrument.id}.png`;
-      link.click();
-    };
-  
-    img.onerror = () => {
-      console.error("Image failed to load. Check the URL or CORS settings.");
-    };
+  // Create a unique canvas instance
+  const myCanvas = document.createElement("canvas");
+  const context = myCanvas.getContext("2d");
+
+  if (!context) {
+    console.error("Failed to get 2D context");
+    return;
+  }
+
+  // Create an image object
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // Allow cross-origin
+  img.src = `${process.env.REACT_APP_DOCUMENT_URL}${qrImage}`;
+
+  img.onload = () => {
+    const canvasWidth = 450; // Total canvas width
+    const canvasHeight = 350; // Total canvas height
+    const qrWidth = 200; // QR code width
+    const qrHeight = 200; // QR code height
+    myCanvas.width = canvasWidth;
+    myCanvas.height = canvasHeight;
+
+    context.fillStyle = "white";
+    context.fillRect(0, 0, canvasWidth, canvasHeight);
+
+    context.fillStyle = "black";
+    context.font = "bold 22px Arial";
+    context.textAlign = "center";
+    context.fillText(`ID_${instrument.id}`, canvasWidth / 3, 55);
+
+    const qrX = (canvasWidth / 4 - qrWidth / 2) + 30; 
+    const qrY = (canvasHeight - qrHeight) / 2; 
+
+    context.drawImage(img, qrX, qrY, qrWidth, qrHeight);
+
+    context.fillStyle = "black";
+    context.font = "italic bold 26px Arial";
+    context.textAlign = "left";
+    const textX = qrX + qrWidth + 50; 
+    const textY = qrY + qrHeight / 3; 
+    context.fillText("Scan me", textX + 10, textY + 5);
+
+    const bauText = "Bau";
+    const energyText = "Energy";
+
+    context.font = "italic bold 26px Arial";
+    context.fillText(bauText, textX - 10, textY + 50);
+
+    const bauWidth = context.measureText(bauText).width; 
+    context.font = "italic 26px Arial";
+    context.fillText(energyText, textX - 10 + bauWidth, textY + 50);
+
+    const dataURL = myCanvas.toDataURL("image/png");
+    const link = document.createElement("a");
+    link.href = dataURL;
+    link.download = `instrument_${instrument.name || instrument.id}.png`;
+    link.click();
   };
+
+  img.onerror = () => {
+    console.error("Image failed to load. Check the URL or CORS settings.");
+  };
+};
+
   
-
-
   const formatDate = (date) => {
     if (!date) {
       return 'N/A'; 
