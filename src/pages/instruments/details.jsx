@@ -820,7 +820,7 @@ const handleImageUpload = (event) => {
           }}
           className="!flex !gap-5 justify-between items-center"
         >
-          <div className="flex gap-1 sm:gap-5 xl:gap-10 items-center flex-col sm:flex-row">
+          <div className="flex gap-1 sm:gap-5 xl:gap-10 sm:items-center flex-col sm:flex-row">
             {/* Instrument Name */}
             <Typography
               sx={{
