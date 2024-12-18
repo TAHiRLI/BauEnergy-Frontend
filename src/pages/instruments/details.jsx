@@ -23,7 +23,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import AddDocumentsDialog from  '../../components/Dialogs/AddDocument'
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import html2canvas from "html2canvas";
-
+import { useSearchParams } from "react-router-dom"; 
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Instrument name is required'),
@@ -99,25 +99,36 @@ const InstrumentDetails = () => {
   const location = useLocation();
   const [highlightedId, setHighlightedId] = useState(null);
   const [showQrHighlight, setShowQrHighlight] = useState(false);
-  const scrollRef = useRef(null);
+  const scrollRefs  = useRef(null);
+  //
+  const [searchParams] = useSearchParams();
+  const targetItem = searchParams.get("scrollTo"); // e.g., ?scrollTo=45
+  const hasQr = location.pathname.includes("/qr");
 
-  useEffect(() => {
-    const hasQr = location.pathname.includes("/qr"); // Check if "/qr" is in the path
-    const idFromPath = location.pathname.split("/")[3]; // Extract the ID from the URL (assuming /instruments/details/:id/qr)
-  
-    setShowQrHighlight(hasQr); // Update the 'qr' highlight state
-    setHighlightedId(idFromPath ? parseInt(idFromPath, 10) : null); // Update the highlighted ID state
-  
-    // console.log("URL:", location.pathname); // Debug the full path
-    // console.log("Has QR:", showQrHighlight); // Debug if '/qr' exists
-    // console.log("Highlighted ID:", idFromPath); // Debug the extracted ID
-  }, [location]);
+useEffect(() => {
+  const idFromPath = location.pathname.split("/")[3];
 
-  useEffect(() => {
-    if (scrollRef.current && showQrHighlight) {
-      scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  setShowQrHighlight(hasQr);
+  setHighlightedId(idFromPath ? parseInt(idFromPath, 10) : null);
+}, [location]);
+
+// useEffect(() => {
+//   // Scroll to the highlighted instrument when the highlightedId is set
+//   if (highlightedId && scrollRefs.current[highlightedId]) {
+//     scrollRefs.current[highlightedId].scrollIntoView({
+//       behavior: "smooth",
+//       block: "center",
+//     });
+//   }
+// }, [highlightedId]);
+useEffect(() => {
+  if (highlightedId && hasQr) {
+    const element = document.getElementById(`instrument-${highlightedId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  }, [showQrHighlight]);
+  }
+}, [highlightedId, filteredInstrument, hasQr]);
 
   const cookies = new Cookies();
   let user = cookies.get('user'); 
@@ -818,12 +829,12 @@ const handleImageUpload = (event) => {
         <div>
           {filteredInstrument?.map((instrument) => (
             <div
+            id={`instrument-${instrument.id}`}
               key={instrument.id}
-              ref={instrument.id === highlightedId && showQrHighlight ? scrollRef : null}
               className={`mb-3 rounded-lg p-4 shadow ${
                 instrument.id === highlightedId && showQrHighlight
-                  ? 'animate-highlight'
-                  : 'bg-[#f9f9f9]'
+                  ? "animate-highlight"
+                  : "bg-[#f9f9f9]"
               } flex gap-5 justify-between items-center bg-[#f9f9f9]`}
             >
               <div className="flex gap-1 sm:gap-5 xl:gap-10 sm:items-center flex-col sm:flex-row">
