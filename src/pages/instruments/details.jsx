@@ -102,25 +102,18 @@ const InstrumentDetails = () => {
   const scrollRefs  = useRef(null);
   //
   const [searchParams] = useSearchParams();
-  const targetItem = searchParams.get("scrollTo"); // e.g., ?scrollTo=45
   const hasQr = location.pathname.includes("/qr");
+  const [firstInstrument, setFirstInstrument] = useState(null)
 
 useEffect(() => {
   const idFromPath = location.pathname.split("/")[3];
 
   setShowQrHighlight(hasQr);
-  setHighlightedId(idFromPath ? parseInt(idFromPath, 10) : null);
+  if(hasQr){
+    setHighlightedId(idFromPath ? parseInt(idFromPath, 10) : null);
+  }
 }, [location]);
 
-// useEffect(() => {
-//   // Scroll to the highlighted instrument when the highlightedId is set
-//   if (highlightedId && scrollRefs.current[highlightedId]) {
-//     scrollRefs.current[highlightedId].scrollIntoView({
-//       behavior: "smooth",
-//       block: "center",
-//     });
-//   }
-// }, [highlightedId]);
 useEffect(() => {
   if (highlightedId && hasQr) {
     const element = document.getElementById(`instrument-${highlightedId}`);
@@ -179,6 +172,9 @@ const fetchInstrument = async () => {
   try {
     const response = await instrumentService.getById(id);
     setInstrument(response.data);
+    if(hasQr){
+      setFirstInstrument(response.data)
+    }
     setIsFirstEffectComplete(true);
   } catch (error) {
     setError('Error fetching instrument details');
@@ -235,6 +231,7 @@ const loadMoreInstruments = () => {
       setCurrentPage(prevPage => prevPage + 1);
   }
 };
+
 
 const instrumentStatusOptions = [
   { label: 'Available', value: 'Available' },
@@ -391,7 +388,6 @@ const instrumentStatusOptions = [
     console.error("Image failed to load. Check the URL or CORS settings.");
   };
 };
-
   
   const formatDate = (date) => {
     if (!date) {
@@ -577,14 +573,13 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     }
   };
   
-
-const handleImageUpload = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    const objectUrl = URL.createObjectURL(file);
-    setSelectedImage(objectUrl); 
-  }
-};
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const objectUrl = URL.createObjectURL(file);
+      setSelectedImage(objectUrl); 
+    }
+  };
 
   
   return (
@@ -827,113 +822,201 @@ const handleImageUpload = (event) => {
         </div> */}
 
         <div>
-          {filteredInstrument?.map((instrument) => (
-            <div
-            id={`instrument-${instrument.id}`}
-              key={instrument.id}
-              className={`mb-3 rounded-lg p-4 shadow ${
-                instrument.id === highlightedId && showQrHighlight
-                  ? "animate-highlight"
-                  : "bg-[#f9f9f9]"
-              } flex gap-5 justify-between items-center bg-[#f9f9f9]`}
-            >
-              <div className="flex gap-1 sm:gap-5 xl:gap-10 sm:items-center flex-col sm:flex-row">
-                {/* Instrument Name */}
-                <Typography
-                  sx={{
-                    flexShrink: 0,
-                    fontWeight: "bold",
-                  }}
-                >
-                  (ID_{instrument.id}) {instrument.name}
-                </Typography>
+            {/* Show highlighted instrument first, if available */}
+            {firstInstrument && (
+              <div
+                id={`instrument-${firstInstrument.id}`}
+                className={`mb-3 rounded-lg p-4 shadow animate-highlight flex gap-5 justify-between items-center bg-[#f9f9f9]`}
+              >
+                <div className="flex gap-1 sm:gap-5 xl:gap-10 sm:items-center flex-col sm:flex-row">
+                  {/* Instrument Name */}
+                  <Typography
+                    sx={{
+                      flexShrink: 0,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    (ID_{firstInstrument.id}) {firstInstrument.name}
+                  </Typography>
 
-                {/* Status */}
-                <Typography
-                  sx={{ color: "text.secondary" }}
-                  className="sm:w-[240px] hidden sm:block"
-                >
-                  Status:{" "}
-                  <StatusButton
-                    text={instrument.status.split("_").join(" ")}
-                    color={getStatusColor(instrument.status)}
-                  />
-                </Typography>
+                  {/* Status */}
+                  <Typography
+                    sx={{ color: "text.secondary" }}
+                    className="sm:w-[240px] hidden sm:block"
+                  >
+                    Status:{" "}
+                    <StatusButton
+                      text={firstInstrument.status
+                        .split("_")
+                        .join(" ")}
+                      color={getStatusColor(firstInstrument.status)}
+                    />
+                  </Typography>
 
-                {/* Project */}
-                <Typography sx={{ color: "text.secondary" }} className="!text-[14px]">
-                  Project: {instrument.projectName || "Not assigned"}
-                </Typography>
+                  {/* Project */}
+                  <Typography sx={{ color: "text.secondary" }} className="!text-[14px]">
+                    Project: {firstInstrument.projectName || "Not assigned"}
+                  </Typography>
+                </div>
+
+                {/* Action Buttons */}
+                <Box className="!flex gap-2 sm:gap-4 sm:mr-8">
+                  <IconButton
+                    onClick={() => handleShowQR(firstInstrument)}
+                    sx={{
+                      color: "gray",
+                      backgroundColor: "#f0f0f0",
+                      borderRadius: "8px",
+                      padding: "5px",
+                      "&:hover": {
+                        backgroundColor: "#e0e0e0",
+                      },
+                    }}
+                  >
+                    <QrCodeScannerIcon />
+                  </IconButton>
+
+                  <IconButton
+                    onClick={() => handleDelete(firstInstrument.id)}
+                    sx={{
+                      color: "#d333",
+                      backgroundColor: "#f5f5f5",
+                      borderRadius: "20%",
+                      padding: "5px",
+                      border: "1px solid #e0e0e0",
+                      "&:hover": { backgroundColor: "#e0e0e0" },
+                    }}
+                  >
+                    <DeleteIcon sx={{ color: "#d33" }} />
+                  </IconButton>
+
+                  <IconButton
+                    onClick={() => handleShowHistory(firstInstrument.id)}
+                    color="primary"
+                    sx={{
+                      backgroundColor: "#f5f5f5",
+                      borderRadius: "20%",
+                      padding: "5px",
+                      border: "1px solid #e0e0e0",
+                      "&:hover": { backgroundColor: "#e0e0e0" },
+                    }}
+                  >
+                    <HistoryIcon sx={{ color: "#424242" }} />
+                  </IconButton>
+                </Box>
               </div>
+            )}
 
-              {/* Action Buttons */}
-              <Box className="!flex gap-2 sm:gap-4 sm:mr-8">
-                <IconButton
-                  onClick={() => handleShowQR(instrument)}
+            {/* Map through other instruments */}
+            {filteredInstrument
+              ?.filter((inst) => inst.id !== highlightedId)
+              .map((instrument) => (
+                <div
+                  key={instrument.id}
+                  id={`instrument-${instrument.id}`}
+                  className={`mb-3 rounded-lg p-4 shadow ${
+                    instrument.id === highlightedId && showQrHighlight
+                      ? "animate-highlight"
+                      : "bg-[#f9f9f9]"
+                  } flex gap-5 justify-between items-center bg-[#f9f9f9]`}
+                >
+                  <div className="flex gap-1 sm:gap-5 xl:gap-10 sm:items-center flex-col sm:flex-row">
+                    {/* Instrument Name */}
+                    <Typography
+                      sx={{
+                        flexShrink: 0,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      (ID_{instrument.id}) {instrument.name}
+                    </Typography>
+
+                    {/* Status */}
+                    <Typography
+                      sx={{ color: "text.secondary" }}
+                      className="sm:w-[240px] hidden sm:block"
+                    >
+                      Status:{" "}
+                      <StatusButton
+                        text={instrument.status.split("_").join(" ")}
+                        color={getStatusColor(instrument.status)}
+                      />
+                    </Typography>
+
+                    {/* Project */}
+                    <Typography sx={{ color: "text.secondary" }} className="!text-[14px]">
+                      Project: {instrument.projectName || "Not assigned"}
+                    </Typography>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <Box className="!flex gap-2 sm:gap-4 sm:mr-8">
+                    <IconButton
+                      onClick={() => handleShowQR(instrument)}
+                      sx={{
+                        color: "gray",
+                        backgroundColor: "#f0f0f0",
+                        borderRadius: "8px",
+                        padding: "5px",
+                        "&:hover": {
+                          backgroundColor: "#e0e0e0",
+                        },
+                      }}
+                    >
+                      <QrCodeScannerIcon />
+                    </IconButton>
+
+                    <IconButton
+                      onClick={() => handleDelete(instrument.id)}
+                      sx={{
+                        color: "#d333",
+                        backgroundColor: "#f5f5f5",
+                        borderRadius: "20%",
+                        padding: "5px",
+                        border: "1px solid #e0e0e0",
+                        "&:hover": { backgroundColor: "#e0e0e0" },
+                      }}
+                    >
+                      <DeleteIcon sx={{ color: "#d33" }} />
+                    </IconButton>
+
+                    <IconButton
+                      onClick={() => handleShowHistory(instrument.id)}
+                      color="primary"
+                      sx={{
+                        backgroundColor: "#f5f5f5",
+                        borderRadius: "20%",
+                        padding: "5px",
+                        border: "1px solid #e0e0e0",
+                        "&:hover": { backgroundColor: "#e0e0e0" },
+                      }}
+                    >
+                      <HistoryIcon sx={{ color: "#424242" }} />
+                    </IconButton>
+                  </Box>
+                </div>
+              ))}
+
+            {/* Load More Button */}
+            {currentPage < totalPages && (
+              <Box mt={3} textAlign="center">
+                <Button
+                  className="!rounded-3xl"
+                  variant="contained"
+                  onClick={loadMoreInstruments}
+                  disabled={loading}
                   sx={{
-                    color: "gray",
-                    backgroundColor: "#f0f0f0",
-                    borderRadius: "8px",
-                    padding: "5px",
+                    backgroundColor: loading ? "#e0e0e0" : "#1D34D8",
+                    color: "#ffffff",
                     "&:hover": {
-                      backgroundColor: "#e0e0e0",
+                      backgroundColor: loading ? "#e0e0e0" : "#164cb8",
                     },
                   }}
                 >
-                  <QrCodeScannerIcon />
-                </IconButton>
-
-                <IconButton
-                  onClick={() => handleDelete(instrument.id)}
-                  sx={{
-                    color: "#d333",
-                    backgroundColor: "#f5f5f5",
-                    borderRadius: "20%",
-                    padding: "5px",
-                    border: "1px solid #e0e0e0",
-                    "&:hover": { backgroundColor: "#e0e0e0" },
-                  }}
-                >
-                  <DeleteIcon sx={{ color: "#d33" }} />
-                </IconButton>
-
-                <IconButton
-                  onClick={() => handleShowHistory(instrument.id)}
-                  color="primary"
-                  sx={{
-                    backgroundColor: "#f5f5f5",
-                    borderRadius: "20%",
-                    padding: "5px",
-                    border: "1px solid #e0e0e0",
-                    "&:hover": { backgroundColor: "#e0e0e0" },
-                  }}
-                >
-                  <HistoryIcon sx={{ color: "#424242" }} />
-                </IconButton>
+                  {loading ? "Loading..." : "Load More"}
+                </Button>
               </Box>
-            </div>
-          ))}
-
-          {/* Load More Button */}
-          {currentPage < totalPages && (
-            <Box mt={3} textAlign="center">
-              <Button
-                className="!rounded-3xl"
-                variant="contained"
-                onClick={loadMoreInstruments}
-                disabled={loading}
-                sx={{
-                  backgroundColor: loading ? "#e0e0e0" : "#1D34D8",
-                  color: "#ffffff",
-                  "&:hover": {
-                    backgroundColor: loading ? "#e0e0e0" : "#164cb8",
-                  },
-                }}
-              >
-                {loading ? "Loading..." : "Load More"}
-              </Button>
-            </Box>
-          )}
+            )}
         </div>
       </Box>
 
