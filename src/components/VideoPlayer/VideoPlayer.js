@@ -1,11 +1,12 @@
-import React, { useRef, useState, useEffect } from "react";
-import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import PauseCircleIcon from "@mui/icons-material/PauseCircle";
-import { IconButton } from "@mui/material";
-import Replay10Icon from "@mui/icons-material/Replay10";
+import { FastForward, SkipNext } from "@mui/icons-material";
+import React, { useEffect, useRef, useState } from "react";
+
 import FastRewindIcon from "@mui/icons-material/FastRewind";
 import FirstPageIcon from "@mui/icons-material/FirstPage";
-import { FastForward, SkipNext } from "@mui/icons-material";
+import { IconButton } from "@mui/material";
+import PauseCircleIcon from "@mui/icons-material/PauseCircle";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import Replay10Icon from "@mui/icons-material/Replay10";
 
 const VideoPlayer = ({ onVideoEnd }) => {
   const videoRef = useRef(null);
@@ -105,7 +106,7 @@ const VideoPlayer = ({ onVideoEnd }) => {
     <div style={{ textAlign: "center" }} className="relative group mt-3">
       <video
         ref={videoRef}
-        src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/videos/tutorial.mp4`}
+        src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/videos/demo2.mp4`}
         onEnded={handleVideoEnd}
         onTimeUpdate={handleTimeUpdate}
         onPlay={() => setIsPlaying(true)}

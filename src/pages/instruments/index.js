@@ -1,47 +1,50 @@
-import React, { useEffect, useMemo, useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Typography,
-  IconButton,
   Box,
-  Grid,
-  CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Button,
   Checkbox,
-  ListItemText,
-  OutlinedInput,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  Grid,
+  IconButton,
   InputAdornment,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  OutlinedInput,
   Paper,
+  Select,
+  TextField,
+  Typography,
   useMediaQuery,
 } from "@mui/material";
-import ShareIcon from "@mui/icons-material/Share";
-import { instrumentService } from "../../APIs/Services/instrument.service";
-import { useInstruments, InstrumentActions } from "../../context/instrumentContext";
-import { useErrorModal } from "../../hooks/useErrorModal";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import Swal from "sweetalert2";
-import InfoIcon from "@mui/icons-material/Info";
-import { useNavigate } from "react-router-dom";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { styled } from "@mui/material/styles";
-import { useLocation } from "react-router-dom";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import Cookies from "universal-cookie";
-import { jwtDecode } from "jwt-decode";
-import { instrumentTagService } from "../../APIs/Services/instrumentTag.service";
+import { InstrumentActions, useInstruments } from "../../context/instrumentContext";
+import React, { useEffect, useMemo, useState } from "react";
+
 import AddIcon from "@mui/icons-material/Add";
-import { DataGrid } from "@mui/x-data-grid";
+import AddInstrumentWithQr from "../../components/addInstrumentWithQr/addInstrumentWithQr";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from '@mui/icons-material/Delete';
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import Cookies from "universal-cookie";
+import { DataGrid } from "@mui/x-data-grid";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { DocumentScanner } from "@mui/icons-material";
+import InfoIcon from "@mui/icons-material/Info";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import ShareIcon from "@mui/icons-material/Share";
+import Swal from "sweetalert2";
+import { instrumentService } from "../../APIs/Services/instrument.service";
+import { instrumentTagService } from "../../APIs/Services/instrumentTag.service";
+import { jwtDecode } from "jwt-decode";
+import { styled } from "@mui/material/styles";
+import { useErrorModal } from "../../hooks/useErrorModal";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const VisuallyHiddenInput = styled("input")({
   display: "none",
@@ -63,6 +66,7 @@ export const Instruments = () => {
   const { state, dispatch } = useInstruments();
   const showError = useErrorModal();
   const [openModal, setOpenModal] = useState(false);
+  const [openScanner, setOpenScanner] = useState(false);
   const [openQRDialog, setOpenQRDialog] = useState(false);
   const [qrImage, setQrImage] = useState(null);
   const [qrInstrumentName, setQrInstrumentName] = useState(null);
@@ -82,12 +86,12 @@ export const Instruments = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [selectedImage, setSelectedImage] = useState( "/toolimage.png" || null);
+  const [selectedImage, setSelectedImage] = useState("/toolimage.png" || null);
   const [imageError, setImageError] = useState(null);
 
-  const handleInstrumentClick = ( id) => {
+  const handleInstrumentClick = (id) => {
     navigate(`/instruments/details/${id}`);
-};
+  };
   const columns = useMemo(() => {
     return [
       {
@@ -118,8 +122,8 @@ export const Instruments = () => {
         headerName: "Available",
         width: 150,
         renderCell: (params) => {
-          const count = params.row.count ?? 0; 
-          const usedCount = params.row.usedInstrumentsCount ?? 0; 
+          const count = params.row.count ?? 0;
+          const usedCount = params.row.usedInstrumentsCount ?? 0;
           return `${count - usedCount}/${count}`;
         },
       },
@@ -166,7 +170,7 @@ export const Instruments = () => {
   }, []);
 
   const handleViewChange = (mode) => {
-    setViewMode(mode); 
+    setViewMode(mode);
   };
 
   const isSmallScreen = useMediaQuery("(max-width:800px)");
@@ -201,7 +205,6 @@ export const Instruments = () => {
   const location = useLocation();
   // const searchInputRef = useRef(null);
   //console.log(location)
-
 
   const cookies = new Cookies();
   let user = cookies.get("user");
@@ -242,7 +245,7 @@ export const Instruments = () => {
   const fetchInstrumentsByName = async (newSearch = false) => {
     setLoading(true);
     try {
-      const res = await instrumentService.getAllByName(newSearch ? searchTerm : ""); 
+      const res = await instrumentService.getAllByName(newSearch ? searchTerm : "");
       setInstrumentsByName(res);
     } catch (err) {
       console.error("Error fetching instruments:", err);
@@ -250,26 +253,28 @@ export const Instruments = () => {
       setLoading(false);
     }
   };
-  
-  useEffect(() => {
-    fetchInstrumentsByName();
-  }, [], searchTerm);
+
+  useEffect(
+    () => {
+      fetchInstrumentsByName();
+    },
+    [],
+    searchTerm
+  );
 
   useEffect(() => {
     fetchInstruments(page === 1);
   }, [page]);
 
-
   const handleSearchChange = (event) => {
     const value = event.target.value;
     setSearchTerm(value);
-    console.log(value)
+    console.log(value);
     if (value.trim() === "") {
-      
       setSearchTerm(value);
 
-      setPage(1); 
-      fetchInstrumentsByName(false); 
+      setPage(1);
+      fetchInstrumentsByName(false);
     }
   };
 
@@ -283,9 +288,8 @@ export const Instruments = () => {
   const handleClearSearch = () => {
     setSearchTerm("");
     setPage(1);
-    fetchInstrumentsByName(false); 
+    fetchInstrumentsByName(false);
   };
-
 
   const loadMore = () => {
     setPage((prevPage) => prevPage + 1);
@@ -361,7 +365,7 @@ export const Instruments = () => {
     //console.log(value)
     if (value === "+" || value === "-") {
       setError('Invalid input: Price cannot be just "+" or "-"');
-      setNewInstrument((prev) => ({ ...prev, [name]: "" })); 
+      setNewInstrument((prev) => ({ ...prev, [name]: "" }));
     } else {
       setNewInstrument((prevState) => ({
         ...prevState,
@@ -406,37 +410,33 @@ export const Instruments = () => {
       files: prevInstrument.files.filter((_, index) => index !== indexToRemove),
     }));
   };
-  
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file); 
+      const imageUrl = URL.createObjectURL(file);
       setImagePreviews(imageUrl);
-      setSelectedImage(file); 
+      setSelectedImage(file);
     }
   };
-  
-  
 
   const renderImage = () => {
     if (selectedImage.startsWith("blob:")) {
-      return selectedImage; 
+      return selectedImage;
     }
-    return selectedImage; 
+    return selectedImage;
   };
-  
 
   const handleAddInstrument = async () => {
     if (!selectedImage || selectedImage === "/toolimage.png") {
       setImageError("Please upload an image before submitting.");
       return;
     }
-    setImageError(null); 
-  
+    setImageError(null);
+
     try {
-      setIsSubmitting(true); 
-  
+      setIsSubmitting(true);
+
       const { name, description, shortDesc, instrumentType, count, price, tags, files } = newInstrument;
       const formData = new FormData();
       formData.append("Name", name);
@@ -445,8 +445,8 @@ export const Instruments = () => {
       formData.append("InstrumentType", instrumentType);
       formData.append("Count", count);
       formData.append("Price", price);
-      formData.append("Image", selectedImage); 
-  
+      formData.append("Image", selectedImage);
+
       tags?.forEach((tag) => {
         formData.append("Tags", tag);
       });
@@ -454,12 +454,12 @@ export const Instruments = () => {
       newInstrument?.files?.forEach((file) => {
         formData.append("Files", file);
       });
-  
+
       await instrumentService.add(formData);
       forceUpdate((x) => !x);
       handleCloseModal();
       fetchInstrumentsByName();
-  
+
       Swal.fire({
         icon: "success",
         title: "Success",
@@ -478,7 +478,6 @@ export const Instruments = () => {
       setIsSubmitting(false);
     }
   };
-  
 
   const handleShare = () => {
     const shareData = {
@@ -499,11 +498,11 @@ export const Instruments = () => {
     }
   };
 
-  function handleShowQR  (qrImage, instrumentName) {
+  function handleShowQR(qrImage, instrumentName) {
     setQrImage(qrImage);
     setQrInstrumentName(instrumentName);
     setOpenQRDialog(true);
-  };
+  }
   const handleCloseQRDialog = () => setOpenQRDialog(false);
 
   const rows = instruments.map((instrument) => ({
@@ -578,51 +577,50 @@ export const Instruments = () => {
             </IconButton>
           </DialogTitle>
           <DialogContent>
-          <Box
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      marginBottom: 2,
-    }}
-  >
-    {/* Display the selected image */}
-    <img
-    src={imagePreviews ?? "/toolimage.png"} 
-    alt="Instrument Preview"
-    style={{
-      width: 250,
-      height: 200,
-      borderRadius: "10%",
-      objectFit: "cover",
-      marginBottom: 0,
-      marginTop: "20px",
-    }}
-    />
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                marginBottom: 2,
+              }}
+            >
+              {/* Display the selected image */}
+              <img
+                src={imagePreviews ?? "/toolimage.png"}
+                alt="Instrument Preview"
+                style={{
+                  width: 250,
+                  height: 200,
+                  borderRadius: "10%",
+                  objectFit: "cover",
+                  marginBottom: 0,
+                  marginTop: "20px",
+                }}
+              />
 
-    {/* Upload button */}
-    <Button
-      variant="text"
-      className="!text-[#1D34D8]"
-      onClick={() => document.getElementById("profile-image-input").click()}
-    >
-      Upload Image
-    </Button>
-    <input
-      id="profile-image-input"
-      type="file"
-      accept="image/*"
-      style={{ display: "none" }}
-      onChange={handleImageUpload}
-    />
-    {/* Show error message */}
-    {imageError  && (
-      <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-        {imageError}
-      </Typography>
-    )}
-  </Box>
-
+              {/* Upload button */}
+              <Button
+                variant="text"
+                className="!text-[#1D34D8]"
+                onClick={() => document.getElementById("profile-image-input").click()}
+              >
+                Upload Image
+              </Button>
+              <input
+                id="profile-image-input"
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleImageUpload}
+              />
+              {/* Show error message */}
+              {imageError && (
+                <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
+                  {imageError}
+                </Typography>
+              )}
+            </Box>
 
             <TextField
               autoFocus
@@ -736,26 +734,26 @@ export const Instruments = () => {
 
             {/* Display uploaded PDF files */}
             <Box mt={2}>
-          {uploadedFiles.length > 0 ? (
-            <Grid container spacing={1}>
-              {uploadedFiles.map((file, index) => (
-                <Grid item xs={12} key={index} display="flex" alignItems="center">
-                  <PictureAsPdfIcon color="error" />
-                  <Typography variant="body2" ml={1} flexGrow={1}>
-                    {file.name}
-                  </Typography>
-                  <IconButton color="error" onClick={() => handleDeleteFile(index)}>
-                    <DeleteIcon />
-                  </IconButton>
+              {uploadedFiles.length > 0 ? (
+                <Grid container spacing={1}>
+                  {uploadedFiles.map((file, index) => (
+                    <Grid item xs={12} key={index} display="flex" alignItems="center">
+                      <PictureAsPdfIcon color="error" />
+                      <Typography variant="body2" ml={1} flexGrow={1}>
+                        {file.name}
+                      </Typography>
+                      <IconButton color="error" onClick={() => handleDeleteFile(index)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
-            </Grid>
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              No files uploaded
-            </Typography>
-          )}
-        </Box>
+              ) : (
+                <Typography variant="body2" color="textSecondary">
+                  No files uploaded
+                </Typography>
+              )}
+            </Box>
           </DialogContent>
           <DialogActions className="!px-10">
             <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">
@@ -767,7 +765,7 @@ export const Instruments = () => {
               onClick={handleAddInstrument}
               variant="contained"
               className="!bg-[#1D34D8]"
-              disabled={isSubmitting} 
+              disabled={isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Submit"}
             </Button>
@@ -776,7 +774,6 @@ export const Instruments = () => {
       </Box>
     );
   }
-
 
   return (
     <Box m={{ xs: "0px", sm: "20px" }} mt={{ xs: "10px", sm: "20px" }}>
@@ -790,37 +787,47 @@ export const Instruments = () => {
           <Box
             className="flex w-full"
             sx={{
-              flexDirection: { xs: "column", sm: "row" }, 
-              gap: 2, 
+              flexDirection: { xs: "column", sm: "row" },
+              gap: 2,
             }}
           >
+            <TextField
+              id="searchbtnax"
+              variant="outlined"
+              placeholder="Search Instruments..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              onKeyDown={handleKeyDown}
+              InputProps={{
+                endAdornment: searchTerm && (
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleClearSearch}>
+                      <CloseIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                minWidth: "190px",
+                width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },
+                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                borderRadius: "30px",
+                "& .MuiOutlinedInput-root": { borderRadius: "30px" },
+                "& .MuiOutlinedInput-input": { padding: "10px 15px" },
+              }}
+            />
+            <IconButton onClick={() => setOpenScanner(x=> !x)}>
+              <DocumentScanner />
+            </IconButton>
 
-<TextField
-  id="searchbtnax"
-  variant="outlined"
-  placeholder="Search Instruments..."
-  value={searchTerm}
-  onChange={handleSearchChange}
-  onKeyDown={handleKeyDown}
-  InputProps={{
-    endAdornment: searchTerm && (
-      <InputAdornment position="end">
-        <IconButton onClick={handleClearSearch}>
-          <CloseIcon />
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-  sx={{
-    minWidth: "190px",
-    width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-    borderRadius: "30px",
-    "& .MuiOutlinedInput-root": { borderRadius: "30px" },
-    "& .MuiOutlinedInput-input": { padding: "10px 15px" },
-  }}
-/>
-
+            <Dialog 
+            open={openScanner}
+            onClose={() => setOpenScanner(false)}
+            >
+              <DialogContent>
+                <AddInstrumentWithQr showInitialLoad onComplete={(id)=> navigate(`/instruments/details/${id}/qr`)} />
+              </DialogContent>
+            </Dialog>
 
             {isAdmin && (
               <Button
@@ -912,60 +919,57 @@ export const Instruments = () => {
             </Grid>
           ))}
 
-                    {loading && <CircularProgress />}
-                </Grid>
-                
-            ) : (
-
-            <Paper
-            className='!mt-4 !sm:mt-0'
+          {loading && <CircularProgress />}
+        </Grid>
+      ) : (
+        <Paper
+          className="!mt-4 !sm:mt-0"
+          sx={{
+            width: "100%",
+            overflowX: "hidden",
+            maxWidth: "100vw",
+          }}
+        >
+          <Box
             sx={{
-                width: '100%',
-                overflowX: 'hidden',
-                maxWidth: '100vw',
+              width: "100%",
+              //overflowX: { xs: 'auto', sm: 'hidden' },
             }}
-            >
-            <Box
-                sx={{
-                width: '100%',
-                //overflowX: { xs: 'auto', sm: 'hidden' },
-                }}
-            >
-                <DataGrid
-                className='max-w-[80vw]'
-                rows={rowss}
-                columns={columns}
-                initialState={{ pagination: { paginationModel: { pageSize: 50 } } }}
-                pageSizeOptions={[50, 100, 200]}
-                sx={{
-                    border: 0,
-                    minWidth: 200,
-                    height: 'auto',
-                    '& .MuiDataGrid-root': {
-                    overflowX: 'auto',
-                    },
-                    '& .MuiDataGrid-cell': {
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    textAlign: 'center', 
-                    },
-                    '& .MuiDataGrid-columnHeader': {
-                    textAlign: 'center', 
-                    justifyContent: 'center', 
-                    },
-                    '& .MuiDataGrid-footerContainer':{
-                    justifyContent: 'flex-start'
-                    }
-                }}
-                getRowId={(row) => row.id}
-                />
-            </Box>
-            </Paper>
-
-            )}
+          >
+            <DataGrid
+              className="max-w-[80vw]"
+              rows={rowss}
+              columns={columns}
+              initialState={{ pagination: { paginationModel: { pageSize: 50 } } }}
+              pageSizeOptions={[50, 100, 200]}
+              sx={{
+                border: 0,
+                minWidth: 200,
+                height: "auto",
+                "& .MuiDataGrid-root": {
+                  overflowX: "auto",
+                },
+                "& .MuiDataGrid-cell": {
+                  display: "flex",
+                  alignItems: "center",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  textAlign: "center",
+                },
+                "& .MuiDataGrid-columnHeader": {
+                  textAlign: "center",
+                  justifyContent: "center",
+                },
+                "& .MuiDataGrid-footerContainer": {
+                  justifyContent: "flex-start",
+                },
+              }}
+              getRowId={(row) => row.id}
+            />
+          </Box>
+        </Paper>
+      )}
 
       {/* {!loading && hasMore && (
                 <div className='text-center mt-5 px-2'>
@@ -1079,51 +1083,50 @@ export const Instruments = () => {
           </IconButton>
         </DialogTitle>
         <DialogContent>
-        <Box
-  sx={{
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    marginBottom: 2,
-  }}
->
-  {/* Display the selected image */}
-  <img
-  src={imagePreviews ?? "/toolimage.png"} 
-  alt="Instrument Preview"
-  style={{
-    width: 250,
-    height: 200,
-    borderRadius: "10%",
-    objectFit: "cover",
-    marginBottom: 0,
-    marginTop: "20px",
-  }}
-  />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginBottom: 2,
+            }}
+          >
+            {/* Display the selected image */}
+            <img
+              src={imagePreviews ?? "/toolimage.png"}
+              alt="Instrument Preview"
+              style={{
+                width: 250,
+                height: 200,
+                borderRadius: "10%",
+                objectFit: "cover",
+                marginBottom: 0,
+                marginTop: "20px",
+              }}
+            />
 
-  {/* Upload button */}
-  <Button
-    variant="text"
-    className="!text-[#1D34D8]"
-    onClick={() => document.getElementById("profile-image-input").click()}
-  >
-    Upload Image
-  </Button>
-  <input
-    id="profile-image-input"
-    type="file"
-    accept="image/*"
-    style={{ display: "none" }}
-    onChange={handleImageUpload}
-  />
-  {/* Show error message */}
-  {imageError  && (
-    <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-      {imageError}
-    </Typography>
-  )}
-</Box>
-
+            {/* Upload button */}
+            <Button
+              variant="text"
+              className="!text-[#1D34D8]"
+              onClick={() => document.getElementById("profile-image-input").click()}
+            >
+              Upload Image
+            </Button>
+            <input
+              id="profile-image-input"
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImageUpload}
+            />
+            {/* Show error message */}
+            {imageError && (
+              <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
+                {imageError}
+              </Typography>
+            )}
+          </Box>
 
           <TextField
             autoFocus
@@ -1237,26 +1240,26 @@ export const Instruments = () => {
 
           {/* Display uploaded PDF files */}
           <Box mt={2}>
-        {uploadedFiles.length > 0 ? (
-          <Grid container spacing={1}>
-            {uploadedFiles.map((file, index) => (
-              <Grid item xs={12} key={index} display="flex" alignItems="center">
-                <PictureAsPdfIcon color="error" />
-                <Typography variant="body2" ml={1} flexGrow={1}>
-                  {file.name}
-                </Typography>
-                <IconButton color="error" onClick={() => handleDeleteFile(index)}>
-                  <DeleteIcon />
-                </IconButton>
+            {uploadedFiles.length > 0 ? (
+              <Grid container spacing={1}>
+                {uploadedFiles.map((file, index) => (
+                  <Grid item xs={12} key={index} display="flex" alignItems="center">
+                    <PictureAsPdfIcon color="error" />
+                    <Typography variant="body2" ml={1} flexGrow={1}>
+                      {file.name}
+                    </Typography>
+                    <IconButton color="error" onClick={() => handleDeleteFile(index)}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Typography variant="body2" color="textSecondary">
-            No files uploaded
-          </Typography>
-        )}
-      </Box>
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                No files uploaded
+              </Typography>
+            )}
+          </Box>
         </DialogContent>
         <DialogActions className="!px-10">
           <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">
@@ -1268,7 +1271,7 @@ export const Instruments = () => {
             onClick={handleAddInstrument}
             variant="contained"
             className="!bg-[#1D34D8]"
-            disabled={isSubmitting} 
+            disabled={isSubmitting}
           >
             {isSubmitting ? "Submitting..." : "Submit"}
           </Button>

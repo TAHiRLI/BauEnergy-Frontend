@@ -1,9 +1,9 @@
+import Cookies from "universal-cookie";
 import Docxtemplater from "docxtemplater";
+import { HttpClient } from "../HttpClients";
 import PizZip from "pizzip";
 import PizZipUtils from "pizzip/utils/index.js";
 import { saveAs } from "file-saver";
-import Cookies from "universal-cookie";
-import { HttpClient } from "../HttpClients";
 const cookies = new Cookies();
 
 class FileService extends HttpClient {
@@ -16,12 +16,12 @@ class FileService extends HttpClient {
   // Practice
   //==========================================
   async getCertificate(user, scorePercent) {
-    let fileName = "BauEnergyZertifikate.docx";
+    let fileName = "BauEnergyZertifikate2.docx";
     var options = {
       data: {
         ...user,
         birthDate: "Not stored yet",
-        date: formatDate(new Date()),
+        currentDate: formatDate(new Date()),
         scorePercent
       },
       outputName: "Certificate Of graduation",
