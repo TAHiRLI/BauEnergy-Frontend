@@ -111,7 +111,6 @@ const VideoPlayer = ({ onVideoEnd }) => {
         onTimeUpdate={handleTimeUpdate}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
-        preload={false}
         style={{ width: "100%" }}
       />
 
@@ -143,6 +142,7 @@ const VideoPlayer = ({ onVideoEnd }) => {
             min="0"
             max="100"
             value={progress}
+            onChange={()=>{}}
             style={{
               width: "100%",
               appearance: "none",

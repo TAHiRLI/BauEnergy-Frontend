@@ -1,5 +1,5 @@
-import { HttpClient } from "../HttpClients";
 import Cookies from "universal-cookie";
+import { HttpClient } from "../HttpClients";
 import axios from "axios";
 const cookies = new Cookies();
 
@@ -10,6 +10,13 @@ class UserService extends HttpClient {
 
   async CompletedTutorial() {
     return await axios.post(`${this.baseUrl}/Auth/CompletedTutorial`, null,{
+      headers: {
+        authorization: `Bearer ${cookies.get("user")?.token}`,
+      },
+    });
+  }
+  async CompletedTest() {
+    return await axios.post(`${this.baseUrl}/Auth/CompletedTest`, null,{
       headers: {
         authorization: `Bearer ${cookies.get("user")?.token}`,
       },

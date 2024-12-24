@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
 import * as yup from 'yup';
-import { Formik, Form, Field } from 'formik';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import Cookies from 'universal-cookie';
+
 import { AuthActions, useAuth } from '../../context/authContext';
-import { loginService } from '../../APIs/Services/login.service';
-import dayjs from 'dayjs';
+import { Field, Form, Formik } from 'formik';
+import React, { useState } from 'react';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import Cookies from 'universal-cookie';
 import { ROUTES } from '../routes/routes';
+import dayjs from 'dayjs';
+import { loginService } from '../../APIs/Services/login.service';
 
 const validationSchema = yup.object().shape({
   email: yup.string().email('Invalid email').required('Email is required'),
@@ -31,16 +33,18 @@ export const LoginPage = () => {
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
   const handleLogin = async (values, { setFieldError }) => {
-    dispatch({ type: AuthActions.start });
     try {
       let res = await loginService.login(values);
+      console.log("🚀 ~ handleLogin ~ res:", res)
       if (res.statusCode === 200) {
         const user = {
+          hasCompletedTest: res.hasCompletedTest,
           hasCompletedTutorial: res.hasCompletedTutorial,
           token: res.data.token,
           userId: res.data.userId,
           tokenType: 'Bearer',
           authState: res.userState,
+          expiration: res.data.expiration,
         };
 
         cookies.set('user', JSON.stringify(user), {

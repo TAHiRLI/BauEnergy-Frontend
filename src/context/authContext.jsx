@@ -1,5 +1,7 @@
 import { createContext, useContext, useReducer } from "react";
-import Cookies from "universal-cookie";
+
+import Cookies from 'universal-cookie';
+import dayjs from 'dayjs';
 
 const cookies = new Cookies();
 
@@ -10,17 +12,18 @@ const INITIAL_STATE = {
 };
 
 export const AuthActions = {
-  start: 'LOGIN_START',
-  success: 'LOGIN_SUCCESS',
-  failure: 'LOGIN_FAILURE',
-  logout: 'LOGOUT',
-  completedTutorial: 'completedTutorial'
+  start: "LOGIN_START",
+  success: "LOGIN_SUCCESS",
+  failure: "LOGIN_FAILURE",
+  logout: "LOGOUT",
+  completedTutorial: "completedTutorial",
+  hasCompletedTest: "HasCompletedTest",
 };
 
 export const Roles = {
-  admin: 'Company_Owner',
-  user: 'User', 
-  projectManager: 'Project_Manager',
+  admin: "Company_Owner",
+  user: "User",
+  projectManager: "Project_Manager",
 };
 
 export const AuthContext = createContext(INITIAL_STATE);
@@ -33,20 +36,52 @@ const AuthReducer = (state, action) => {
         loading: true,
         error: null,
       };
-    case AuthActions.success:
+    case AuthActions.success: {
+      console.log("🚀 ~ AuthReducer ~   action.payload:",   action.payload)
+      const user = {
+        hasCompletedTest: action.payload.hasCompletedTest,
+        hasCompletedTutorial: action.payload.hasCompletedTutorial,
+        token: action.payload.token,
+        userId: action.payload.userId,
+        tokenType: 'Bearer',
+        authState: action.payload.userState,
+      };
+
+    
+
       return {
-        user: action.payload,
+        user,
         loading: false,
         error: null,
       };
-      case AuthActions.completedTutorial:
-        return {
-          ...state,
-          user:{
-            ...state?.user,
-            hasCompletedTutorial: true
-          }
-        };
+    }
+    case AuthActions.completedTutorial: {
+      const updatedUser = {
+        ...state.user,
+        hasCompletedTutorial: true,
+      };
+
+     
+
+      return {
+        ...state,
+        user: updatedUser,
+      };
+    }
+    case AuthActions.hasCompletedTest: {
+      const updatedUser = {
+        ...state.user,
+        hasCompletedTutorial: true,
+        hasCompletedTest: true,
+      };
+
+      
+
+      return {
+        ...state,
+        user: updatedUser,
+      };
+    }
     case AuthActions.failure:
       return {
         user: null,
@@ -54,6 +89,7 @@ const AuthReducer = (state, action) => {
         error: action.payload,
       };
     case AuthActions.logout:
+      cookies.remove('user', { path: '/' });
       return {
         user: null,
         loading: false,
