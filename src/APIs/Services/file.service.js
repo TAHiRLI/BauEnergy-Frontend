@@ -15,12 +15,13 @@ class FileService extends HttpClient {
   //==========================================
   // Practice
   //==========================================
-  async getCertificate(user, scorePercent) {
+  async getCertificate(fulname, birthDate, scorePercent) {
     let fileName = "BauEnergyZertifikate2.docx";
     var options = {
       data: {
-        ...user,
-        birthDate: "Not stored yet",
+        name: fulname,
+        lastName: "", 
+        birthDate: formatDate(birthDate),
         currentDate: formatDate(new Date()),
         scorePercent
       },
@@ -30,6 +31,7 @@ class FileService extends HttpClient {
   }
 }
 const formatDate = (date) => {
+  if(!date) return "";
   const d = new Date(date);
   const day = String(d.getDate()).padStart(2, "0");
   const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are 0-based

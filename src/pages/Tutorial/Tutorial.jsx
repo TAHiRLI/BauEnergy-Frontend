@@ -41,7 +41,7 @@ const TutorialPage = () => {
         console.log("🚀 ~ cookies.set ~ user.expiration:", user.expiration)
       
       
-      await fileService.getCertificate(user?.authState?.teamMember, scorePercentage);
+      await fileService.getCertificate(user?.authState?.fullName, scorePercentage);
     } catch (error) {
       console.log("🚀 ~ handleCertificateGet ~ error:", error);
     }
