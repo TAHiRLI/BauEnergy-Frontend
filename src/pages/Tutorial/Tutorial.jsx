@@ -39,9 +39,8 @@ const TutorialPage = () => {
         path: '/',
       });
         console.log("🚀 ~ cookies.set ~ user.expiration:", user.expiration)
+      await fileService.getCertificate(user?.authState?.fullName, user?.authState?.birthDate, scorePercentage);
       
-      
-      await fileService.getCertificate(user?.authState?.fullName, scorePercentage);
     } catch (error) {
       console.log("🚀 ~ handleCertificateGet ~ error:", error);
     }
