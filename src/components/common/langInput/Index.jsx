@@ -1,6 +1,6 @@
 import { IconButton, Menu, MenuItem } from '@mui/material';
 import React from 'react';
-import de from "../../../assets/images/de.jpg";
+import de from "../../../assets/images/de.png";
 import en from "../../../assets/images/en.png";
 import { useTranslation } from 'react-i18next';
 

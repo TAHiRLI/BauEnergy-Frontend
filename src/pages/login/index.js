@@ -10,8 +10,6 @@ import Cookies from 'universal-cookie';
 import { ROUTES } from '../routes/routes';
 import dayjs from 'dayjs';
 import { loginService } from '../../APIs/Services/login.service';
-import dayjs from 'dayjs';
-import { ROUTES } from '../routes/routes';
 import { useTranslation } from "react-i18next";
 
 const validationSchema = yup.object().shape({

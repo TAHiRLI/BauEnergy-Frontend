@@ -352,21 +352,21 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
             <NotificationsIcon />
           </Badge>
         </IconButton>
-        <p>Notifications</p>
+        <p>{t("Notifications")}</p>
       </MenuItem>
       <MenuItem onClick={() => setOpenDialog(true)}>
         <IconButton size="large" aria-label="create new project" color="inherit" 
         >
             <AddIcon />
         </IconButton>
-        <p>Create Project</p>
+        <p>{t("CreateProject")}</p>
       </MenuItem>
       <MenuItem onClick={handleAdminCreateOpenDialog}>
         <IconButton size="large" aria-label="create new project" color="inherit" 
         >
             <PersonAddIcon />
         </IconButton>
-        <p>Create User</p>
+        <p>{t("CreateUser")}</p>
       </MenuItem>
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
@@ -378,7 +378,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
         >
           <AccountCircle />
         </IconButton>
-        <p>Profile</p>
+        <p>{t("PopUp:Profile")}</p>
       </MenuItem>
     </Menu>
   );
@@ -399,7 +399,6 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
           <Box sx={{ display: { xs: 'none', md: 'flex' } }} className='!flex !justify-center !items-center'>
           <div className='flex justify-center items-center gap-5 p-2 pr-6'>
             
-            <LangInput />
 
             
             <IconButton
@@ -482,6 +481,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
               )
             )}
 
+        <LangInput />
 
           </div>
           </Box>

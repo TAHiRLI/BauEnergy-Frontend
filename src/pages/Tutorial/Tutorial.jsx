@@ -8,11 +8,9 @@ import dayjs from 'dayjs';
 import { fileService } from "../../APIs/Services/file.service";
 import { useAuth } from "../../context/authContext";
 import { userSerivce } from "../../APIs/Services/user.service";
+import { useTranslation } from "react-i18next";
 
 const cookies = new Cookies();
-
-import { AuthActions } from "../../context/authContext";
-import { useTranslation } from "react-i18next";
 
 const TutorialPage = () => {
   const { t, i18n } = useTranslation();

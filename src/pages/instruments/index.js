@@ -603,14 +603,13 @@ export const Instruments = () => {
                   marginTop: "20px",
                 }}
               />
-
               {/* Upload button */}
               <Button
                 variant="text"
                 className="!text-[#1D34D8]"
                 onClick={() => document.getElementById("profile-image-input").click()}
               >
-                Upload Image
+                {t("PopUp:UploadImage")}
               </Button>
               <input
                 id="profile-image-input"
@@ -620,34 +619,12 @@ export const Instruments = () => {
                 onChange={handleImageUpload}
               />
               {/* Show error message */}
-              {imageError && (
+              {imageError  && (
                 <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
                   {imageError}
                 </Typography>
               )}
             </Box>
-    {/* Upload button */}
-    <Button
-      variant="text"
-      className="!text-[#1D34D8]"
-      onClick={() => document.getElementById("profile-image-input").click()}
-    >
-      {t("PopUp:UploadImage")}
-    </Button>
-    <input
-      id="profile-image-input"
-      type="file"
-      accept="image/*"
-      style={{ display: "none" }}
-      onChange={handleImageUpload}
-    />
-    {/* Show error message */}
-    {imageError  && (
-      <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-        {imageError}
-      </Typography>
-    )}
-  </Box>
 
 
             <TextField
@@ -778,30 +755,10 @@ export const Instruments = () => {
                 </Grid>
               ) : (
                 <Typography variant="body2" color="textSecondary">
-                  No files uploaded
+                  {t("PopUp:Nofilesuploaded")}
                 </Typography>
               )}
             </Box>
-          {uploadedFiles.length > 0 ? (
-            <Grid container spacing={1}>
-              {uploadedFiles.map((file, index) => (
-                <Grid item xs={12} key={index} display="flex" alignItems="center">
-                  <PictureAsPdfIcon color="error" />
-                  <Typography variant="body2" ml={1} flexGrow={1}>
-                    {file.name}
-                  </Typography>
-                  <IconButton color="error" onClick={() => handleDeleteFile(index)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </Grid>
-              ))}
-            </Grid>
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              {t("PopUp:Nofilesuploaded")}
-            </Typography>
-          )}
-        </Box>
           </DialogContent>
           <DialogActions className="!px-10">
             <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">
@@ -839,43 +796,6 @@ export const Instruments = () => {
               gap: 2,
             }}
           >
-            <TextField
-              id="searchbtnax"
-              variant="outlined"
-              placeholder="Search Instruments..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              onKeyDown={handleKeyDown}
-              InputProps={{
-                endAdornment: searchTerm && (
-                  <InputAdornment position="end">
-                    <IconButton onClick={handleClearSearch}>
-                      <CloseIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                minWidth: "190px",
-                width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },
-                boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-                borderRadius: "30px",
-                "& .MuiOutlinedInput-root": { borderRadius: "30px" },
-                "& .MuiOutlinedInput-input": { padding: "10px 15px" },
-              }}
-            />
-            <IconButton onClick={() => setOpenScanner(x=> !x)}>
-              <DocumentScanner />
-            </IconButton>
-
-            <Dialog 
-            open={openScanner}
-            onClose={() => setOpenScanner(false)}
-            >
-              <DialogContent>
-                <AddInstrumentWithQr showInitialLoad onComplete={(id)=> navigate(`/instruments/details/${id}/qr`)} />
-              </DialogContent>
-            </Dialog>
 
           <TextField
             id="searchbtnax"
@@ -1130,56 +1050,6 @@ export const Instruments = () => {
 
       {/* Add Instrument Modal */}
       <Dialog
-        open={openModal}
-        onClose={handleCloseModal}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          style: {
-            borderRadius: 20,
-            //height: "500px",
-            backgroundColor: "#fcfcfc",
-          },
-        }}
-      >
-        <DialogTitle>
-          Add New Instrument
-          <IconButton
-            className="!text-blue-700"
-            aria-label="close"
-            onClick={handleCloseModal}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CancelOutlinedIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              marginBottom: 2,
-            }}
-          >
-            {/* Display the selected image */}
-            <img
-              src={imagePreviews ?? "/toolimage.png"}
-              alt="Instrument Preview"
-              style={{
-                width: 250,
-                height: 200,
-                borderRadius: "10%",
-                objectFit: "cover",
-                marginBottom: 0,
-                marginTop: "20px",
-              }}
-            />
           open={openModal}
           onClose={handleCloseModal}
           fullWidth
@@ -1209,72 +1079,49 @@ export const Instruments = () => {
             </IconButton>
           </DialogTitle>
           <DialogContent>
-          <Box
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      marginBottom: 2,
-    }}
-  >
-    {/* Display the selected image */}
-    <img
-    src={imagePreviews ?? "/toolimage.png"} 
-    alt="Instrument Preview"
-    style={{
-      width: 250,
-      height: 200,
-      borderRadius: "10%",
-      objectFit: "cover",
-      marginBottom: 0,
-      marginTop: "20px",
-    }}
-    />
-
-            {/* Upload button */}
-            <Button
-              variant="text"
-              className="!text-[#1D34D8]"
-              onClick={() => document.getElementById("profile-image-input").click()}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                marginBottom: 2,
+              }}
             >
-              Upload Image
-            </Button>
-            <input
-              id="profile-image-input"
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleImageUpload}
-            />
-            {/* Show error message */}
-            {imageError && (
-              <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-                {imageError}
-              </Typography>
-            )}
-          </Box>
-    {/* Upload button */}
-    <Button
-      variant="text"
-      className="!text-[#1D34D8]"
-      onClick={() => document.getElementById("profile-image-input").click()}
-    >
-      {t("PopUp:UploadImage")}
-    </Button>
-    <input
-      id="profile-image-input"
-      type="file"
-      accept="image/*"
-      style={{ display: "none" }}
-      onChange={handleImageUpload}
-    />
-    {/* Show error message */}
-    {imageError  && (
-      <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-        {imageError}
-      </Typography>
-    )}
-  </Box>
+              {/* Display the selected image */}
+              <img
+                src={imagePreviews ?? "/toolimage.png"}
+                alt="Instrument Preview"
+                style={{
+                  width: 250,
+                  height: 200,
+                  borderRadius: "10%",
+                  objectFit: "cover",
+                  marginBottom: 0,
+                  marginTop: "20px",
+                }}
+              />
+              {/* Upload button */}
+              <Button
+                variant="text"
+                className="!text-[#1D34D8]"
+                onClick={() => document.getElementById("profile-image-input").click()}
+              >
+                {t("PopUp:UploadImage")}
+              </Button>
+              <input
+                id="profile-image-input"
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleImageUpload}
+              />
+              {/* Show error message */}
+              {imageError  && (
+                <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
+                  {imageError}
+                </Typography>
+              )}
+            </Box>
 
 
             <TextField
@@ -1387,66 +1234,28 @@ export const Instruments = () => {
               </Button>
             </StyledBox>
 
-          {/* Display uploaded PDF files */}
-          <Box mt={2}>
-            {uploadedFiles.length > 0 ? (
-              <Grid container spacing={1}>
-                {uploadedFiles.map((file, index) => (
-                  <Grid item xs={12} key={index} display="flex" alignItems="center">
-                    <PictureAsPdfIcon color="error" />
-                    <Typography variant="body2" ml={1} flexGrow={1}>
-                      {file.name}
-                    </Typography>
-                    <IconButton color="error" onClick={() => handleDeleteFile(index)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </Grid>
-                ))}
-              </Grid>
-            ) : (
-              <Typography variant="body2" color="textSecondary">
-                No files uploaded
-              </Typography>
-            )}
-          </Box>
-        </DialogContent>
-        <DialogActions className="!px-10">
-          <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">
-            Cancel
-          </Button>
-          {/* <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button> */}
-          <Button
-            type="submit"
-            onClick={handleAddInstrument}
-            variant="contained"
-            className="!bg-[#1D34D8]"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Submitting..." : "Submit"}
-          </Button>
-        </DialogActions>
             {/* Display uploaded PDF files */}
             <Box mt={2}>
-          {uploadedFiles.length > 0 ? (
-            <Grid container spacing={1}>
-              {uploadedFiles.map((file, index) => (
-                <Grid item xs={12} key={index} display="flex" alignItems="center">
-                  <PictureAsPdfIcon color="error" />
-                  <Typography variant="body2" ml={1} flexGrow={1}>
-                    {file.name}
-                  </Typography>
-                  <IconButton color="error" onClick={() => handleDeleteFile(index)}>
-                    <DeleteIcon />
-                  </IconButton>
+              {uploadedFiles.length > 0 ? (
+                <Grid container spacing={1}>
+                  {uploadedFiles.map((file, index) => (
+                    <Grid item xs={12} key={index} display="flex" alignItems="center">
+                      <PictureAsPdfIcon color="error" />
+                      <Typography variant="body2" ml={1} flexGrow={1}>
+                        {file.name}
+                      </Typography>
+                      <IconButton color="error" onClick={() => handleDeleteFile(index)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
-            </Grid>
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              {t("PopUp:Nofilesuploaded")}
-            </Typography>
-          )}
-        </Box>
+              ) : (
+                <Typography variant="body2" color="textSecondary">
+                  {t("PopUp:Nofilesuploaded")}
+                </Typography>
+              )}
+            </Box>
           </DialogContent>
           <DialogActions className="!px-10">
             <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">
@@ -1458,12 +1267,12 @@ export const Instruments = () => {
               onClick={handleAddInstrument}
               variant="contained"
               className="!bg-[#1D34D8]"
-              disabled={isSubmitting} 
+              disabled={isSubmitting}
             >
               {isSubmitting ? t("PopUp:Submitting") : t("PopUp:Submit")}
             </Button>
           </DialogActions>
-      </Dialog>
+        </Dialog>
     </Box>
   );
 };
