@@ -42,6 +42,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from '@mui/icons-material/Delete';
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import { useTranslation } from "react-i18next";
 
 const VisuallyHiddenInput = styled("input")({
   display: "none",
@@ -59,6 +60,8 @@ const StyledBox = styled(Box)(({ theme }) => ({
 }));
 
 export const Instruments = () => {
+  const { t } = useTranslation();
+
   const [isUpdated, forceUpdate] = useState(false);
   const { state, dispatch } = useInstruments();
   const showError = useErrorModal();
@@ -92,7 +95,7 @@ export const Instruments = () => {
     return [
       {
         field: "name",
-        headerName: "Instrument Name",
+        headerName: t("columns:InstrumentName"),
         width: 200,
         renderCell: (params) => {
           return (
@@ -115,7 +118,7 @@ export const Instruments = () => {
       },
       {
         field: "availability",
-        headerName: "Available",
+        headerName: t("columns:Available"),
         width: 150,
         renderCell: (params) => {
           const count = params.row.count ?? 0; 
@@ -123,10 +126,10 @@ export const Instruments = () => {
           return `${count - usedCount}/${count}`;
         },
       },
-      { field: "shortDesc", headerName: "Description", width: 200 },
+      { field: "shortDesc", headerName: t("columns:Description"), width: 200 },
       {
         field: "actions",
-        headerName: "Actions",
+        headerName: t("columns:Actions"),
         width: 170,
         sortable: false,
         renderCell: (params) => (
@@ -417,8 +420,6 @@ export const Instruments = () => {
     }
   };
   
-  
-
   const renderImage = () => {
     if (selectedImage.startsWith("blob:")) {
       return selectedImage; 
@@ -426,7 +427,6 @@ export const Instruments = () => {
     return selectedImage; 
   };
   
-
   const handleAddInstrument = async () => {
     if (!selectedImage || selectedImage === "/toolimage.png") {
       setImageError("Please upload an image before submitting.");
@@ -462,16 +462,16 @@ export const Instruments = () => {
   
       Swal.fire({
         icon: "success",
-        title: "Success",
-        text: "Instrument added successfully.",
+        title: t("messages:Success"),
+        text: t("messages:Instrument added successfully."),
         confirmButtonText: "OK",
       });
     } catch (err) {
       console.error("Error adding instrument:", err);
       Swal.fire({
         icon: "error",
-        title: "Error",
-        text: "An error occurred while adding the instrument. Please try again.",
+        title: t("messages:Success"),
+        text: t("messsages:An error occurred while adding the instrument. Please try again."),
         confirmButtonText: "OK",
       });
     } finally {
@@ -544,7 +544,7 @@ export const Instruments = () => {
             sx={{ width: "auto", textTransform: "none", padding: "10px 20px" }}
             onClick={handleOpenModal}
           >
-            Add Instrument
+            {t("AddInstrument")}
           </Button>
         )}
         {/* Add Instrument Modal */}
@@ -562,7 +562,7 @@ export const Instruments = () => {
           }}
         >
           <DialogTitle>
-            Add New Instrument
+          {t("PopUp:Add New Instrument")}
             <IconButton
               className="!text-blue-700"
               aria-label="close"
@@ -606,7 +606,7 @@ export const Instruments = () => {
       className="!text-[#1D34D8]"
       onClick={() => document.getElementById("profile-image-input").click()}
     >
-      Upload Image
+      {t("PopUp:UploadImage")}
     </Button>
     <input
       id="profile-image-input"
@@ -628,7 +628,7 @@ export const Instruments = () => {
               autoFocus
               margin="dense"
               name="name"
-              label="Instrument Name"
+              label={t("columns:InstrumentName")}
               type="text"
               fullWidth
               value={newInstrument.name}
@@ -637,7 +637,7 @@ export const Instruments = () => {
             <TextField
               margin="dense"
               name="description"
-              label="Description"
+              label={t("columns:Description")}
               type="text"
               fullWidth
               value={newInstrument.description}
@@ -646,7 +646,7 @@ export const Instruments = () => {
             <TextField
               margin="dense"
               name="shortDesc"
-              label="Short Description"
+              label={t("PopUp:ShortDescription")}
               type="text"
               fullWidth
               value={newInstrument.shortDesc}
@@ -657,7 +657,7 @@ export const Instruments = () => {
             <TextField
               margin="dense"
               name="instrumentType"
-              label="Instrument Type"
+              label={t("PopUp:InstrumentType")}
               type="text"
               fullWidth
               value={newInstrument.instrumentType || ""}
@@ -668,7 +668,7 @@ export const Instruments = () => {
             <TextField
               margin="dense"
               name="price"
-              label="Price"
+              label={t("PopUp:Price")}
               type="number"
               fullWidth
               value={newInstrument.price || ""}
@@ -679,7 +679,7 @@ export const Instruments = () => {
             />
 
             <FormControl fullWidth margin="dense">
-              <InputLabel>Tags</InputLabel>
+              <InputLabel>{t("PopUp:Tag")}</InputLabel>
               <Select
                 multiple
                 label="Tags"
@@ -697,7 +697,7 @@ export const Instruments = () => {
             </FormControl>
 
             <FormControl fullWidth margin="dense" variant="outlined">
-              <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
+              <InputLabel htmlFor="add-new-tag">{t("PopUp:Addnewtag")}</InputLabel>
               <OutlinedInput
                 id="add-new-tag"
                 type="text"
@@ -716,7 +716,7 @@ export const Instruments = () => {
             </FormControl>
 
             <TextField
-              label="Number of Instruments to Add"
+              label={t("PopUp:NumberofInstrumentstoAdd")}
               name="count"
               type="number"
               fullWidth
@@ -729,7 +729,7 @@ export const Instruments = () => {
             {/* PDF Upload */}
             <StyledBox>
               <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
-                Upload files
+              {t("PopUp:UploadFiles")}
                 <VisuallyHiddenInput type="file" onChange={handlePdfUpload} multiple accept="" />
               </Button>
             </StyledBox>
@@ -752,14 +752,14 @@ export const Instruments = () => {
             </Grid>
           ) : (
             <Typography variant="body2" color="textSecondary">
-              No files uploaded
+              {t("PopUp:Nofilesuploaded")}
             </Typography>
           )}
         </Box>
           </DialogContent>
           <DialogActions className="!px-10">
             <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">
-              Cancel
+            {t("PopUp:Cancel")}
             </Button>
             {/* <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button> */}
             <Button
@@ -769,7 +769,7 @@ export const Instruments = () => {
               className="!bg-[#1D34D8]"
               disabled={isSubmitting} 
             >
-              {isSubmitting ? "Submitting..." : "Submit"}
+              {isSubmitting ? t("PopUp:Submitting") : t("PopUp:Submit")}
             </Button>
           </DialogActions>
         </Dialog>
@@ -781,7 +781,7 @@ export const Instruments = () => {
   return (
     <Box m={{ xs: "0px", sm: "20px" }} mt={{ xs: "10px", sm: "20px" }}>
       <div className="flex flex-col sm:flex-row justify-between items-center">
-        <span className="text-2xl sm:text-3xl font-semibold mb-4 sm:mb-0">List of Instruments</span>
+        <span className="text-2xl sm:text-3xl font-semibold mb-4 sm:mb-0">{t("PopUp:ListofInstruments")}</span>
         <div
           className={`flex ${
             isExtraSmall ? "flex-col" : "flex-row"
@@ -795,31 +795,31 @@ export const Instruments = () => {
             }}
           >
 
-<TextField
-  id="searchbtnax"
-  variant="outlined"
-  placeholder="Search Instruments..."
-  value={searchTerm}
-  onChange={handleSearchChange}
-  onKeyDown={handleKeyDown}
-  InputProps={{
-    endAdornment: searchTerm && (
-      <InputAdornment position="end">
-        <IconButton onClick={handleClearSearch}>
-          <CloseIcon />
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-  sx={{
-    minWidth: "190px",
-    width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },
-    boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
-    borderRadius: "30px",
-    "& .MuiOutlinedInput-root": { borderRadius: "30px" },
-    "& .MuiOutlinedInput-input": { padding: "10px 15px" },
-  }}
-/>
+          <TextField
+            id="searchbtnax"
+            variant="outlined"
+            placeholder={t("columns:SearchInstruments")}
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onKeyDown={handleKeyDown}
+            InputProps={{
+              endAdornment: searchTerm && (
+                <InputAdornment position="end">
+                  <IconButton onClick={handleClearSearch}>
+                    <CloseIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+            sx={{
+              minWidth: "190px",
+              width: { xs: "100%", sm: isAdmin ? "100%" : "50%" },
+              boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+              borderRadius: "30px",
+              "& .MuiOutlinedInput-root": { borderRadius: "30px" },
+              "& .MuiOutlinedInput-input": { padding: "10px 15px" },
+            }}
+          />
 
 
             {isAdmin && (
@@ -832,7 +832,7 @@ export const Instruments = () => {
                 }}
                 onClick={handleOpenModal}
               >
-                Add Instrument
+                {t("AddInstrument")}
               </Button>
             )}
           </Box>
@@ -845,7 +845,7 @@ export const Instruments = () => {
               }`}
               onClick={() => handleViewChange("table")}
             >
-              <span>Table</span>
+              <span>{t("Table")}</span>
             </button>
             <button
               className={`flex items-center px-4 py-[6px] rounded-full ${
@@ -853,7 +853,7 @@ export const Instruments = () => {
               }`}
               onClick={() => handleViewChange("card")}
             >
-              <span>Card</span>
+              <span>{t("Card")}</span>
             </button>
           </div>
         </div>
@@ -876,7 +876,7 @@ export const Instruments = () => {
                   {row.name}
                 </Typography>
                 <div className="flex justify-between items-center">
-                  <div>Available instruments:</div>
+                  <div>{t("PopUp:Availableinstruments")}:</div>
                   <Typography className="!text-base !mt-1 !whitespace-nowrap !overflow-hidden !text-ellipsis">
                     {row.count - row.usedInstrumentCount}/{row.count}
                   </Typography>
@@ -899,13 +899,13 @@ export const Instruments = () => {
                     sx={{ marginRight: "10px", borderColor: "blue", color: "blue" }}
                     onClick={() => handleInstrumentInfoSelect(row.id)}
                   >
-                    Info
+                    {t("PopUp:info")}
                   </Button>
                   <Button
                     onClick={() => handleShowQR(row.qr, row.name)}
                     className="!underline !text-[#1D34D8] !rounded-xl"
                   >
-                    Scan QR code
+                    {t("PopUp:ScanQRCode")}
                   </Button>
                 </div>
               </Box>
@@ -983,11 +983,12 @@ export const Instruments = () => {
           style: {
             borderRadius: 20,
             //height: "500px",
+            width: "400px"
           },
         }}
       >
         <DialogTitle>
-          Qr Instrument
+        {t("PopUp:QrInstrument")}
           <IconButton
             className="!text-blue-700"
             aria-label="close"
@@ -1005,10 +1006,10 @@ export const Instruments = () => {
 
         <DialogContent>
           <div className="flex justify-between items-center">
-            <Typography variant="body1">Instrument details:</Typography>
+            <Typography variant="body1"> {t("PopUp:Instrument details")}:</Typography>
 
             <Button className="!text-blue-700" startIcon={<ShareIcon />} onClick={handleShare}>
-              Share
+            {t("PopUp:Share")}
             </Button>
           </div>
 
@@ -1030,7 +1031,7 @@ export const Instruments = () => {
               </Typography>
 
               <Typography variant="body2" color="textSecondary" align="center" gutterBottom>
-                Scan QR to get more information about instrument's history
+              {t("PopUp:Scan Qr to get more information")}
               </Typography>
 
               <img
@@ -1050,229 +1051,229 @@ export const Instruments = () => {
 
       {/* Add Instrument Modal */}
       <Dialog
-        open={openModal}
-        onClose={handleCloseModal}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          style: {
-            borderRadius: 20,
-            //height: "500px",
-            backgroundColor: "#fcfcfc",
-          },
-        }}
-      >
-        <DialogTitle>
-          Add New Instrument
-          <IconButton
-            className="!text-blue-700"
-            aria-label="close"
-            onClick={handleCloseModal}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CancelOutlinedIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-        <Box
-  sx={{
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    marginBottom: 2,
-  }}
->
-  {/* Display the selected image */}
-  <img
-  src={imagePreviews ?? "/toolimage.png"} 
-  alt="Instrument Preview"
-  style={{
-    width: 250,
-    height: 200,
-    borderRadius: "10%",
-    objectFit: "cover",
-    marginBottom: 0,
-    marginTop: "20px",
-  }}
-  />
-
-  {/* Upload button */}
-  <Button
-    variant="text"
-    className="!text-[#1D34D8]"
-    onClick={() => document.getElementById("profile-image-input").click()}
-  >
-    Upload Image
-  </Button>
-  <input
-    id="profile-image-input"
-    type="file"
-    accept="image/*"
-    style={{ display: "none" }}
-    onChange={handleImageUpload}
-  />
-  {/* Show error message */}
-  {imageError  && (
-    <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-      {imageError}
-    </Typography>
-  )}
-</Box>
-
-
-          <TextField
-            autoFocus
-            margin="dense"
-            name="name"
-            label="Instrument Name"
-            type="text"
-            fullWidth
-            value={newInstrument.name}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            name="description"
-            label="Description"
-            type="text"
-            fullWidth
-            value={newInstrument.description}
-            onChange={handleInputChange}
-          />
-          <TextField
-            margin="dense"
-            name="shortDesc"
-            label="Short Description"
-            type="text"
-            fullWidth
-            value={newInstrument.shortDesc}
-            onChange={handleInputChange}
-          />
-
-          {/* Instrument Type */}
-          <TextField
-            margin="dense"
-            name="instrumentType"
-            label="Instrument Type"
-            type="text"
-            fullWidth
-            value={newInstrument.instrumentType || ""}
-            onChange={handleInputChange}
-          />
-
-          {/* Price Input */}
-          <TextField
-            margin="dense"
-            name="price"
-            label="Price"
-            type="number"
-            fullWidth
-            value={newInstrument.price || ""}
-            onChange={handleInputChange}
-            inputProps={{ min: 0, step: "0.01" }}
-            error={!!error}
-            helperText={error}
-          />
-
-          <FormControl fullWidth margin="dense">
-            <InputLabel>Tags</InputLabel>
-            <Select
-              multiple
-              label="Tags"
-              value={newInstrument.tags}
-              onChange={handleTagChange}
-              renderValue={(selected) => selected.join(", ")}
+          open={openModal}
+          onClose={handleCloseModal}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            style: {
+              borderRadius: 20,
+              //height: "500px",
+              backgroundColor: "#fcfcfc",
+            },
+          }}
+        >
+          <DialogTitle>
+          {t("PopUp:Add New Instrument")}
+            <IconButton
+              className="!text-blue-700"
+              aria-label="close"
+              onClick={handleCloseModal}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
             >
-              {availableTags.map((tag) => (
-                <MenuItem key={tag.id} value={tag.title}>
-                  <Checkbox checked={newInstrument.tags.includes(tag.title)} />
-                  <ListItemText primary={tag.title} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              <CancelOutlinedIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+          <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      marginBottom: 2,
+    }}
+  >
+    {/* Display the selected image */}
+    <img
+    src={imagePreviews ?? "/toolimage.png"} 
+    alt="Instrument Preview"
+    style={{
+      width: 250,
+      height: 200,
+      borderRadius: "10%",
+      objectFit: "cover",
+      marginBottom: 0,
+      marginTop: "20px",
+    }}
+    />
 
-          <FormControl fullWidth margin="dense" variant="outlined">
-            <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
-            <OutlinedInput
-              id="add-new-tag"
+    {/* Upload button */}
+    <Button
+      variant="text"
+      className="!text-[#1D34D8]"
+      onClick={() => document.getElementById("profile-image-input").click()}
+    >
+      {t("PopUp:UploadImage")}
+    </Button>
+    <input
+      id="profile-image-input"
+      type="file"
+      accept="image/*"
+      style={{ display: "none" }}
+      onChange={handleImageUpload}
+    />
+    {/* Show error message */}
+    {imageError  && (
+      <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
+        {imageError}
+      </Typography>
+    )}
+  </Box>
+
+
+            <TextField
+              autoFocus
+              margin="dense"
+              name="name"
+              label={t("columns:InstrumentName")}
               type="text"
-              onChange={(e) => setTagInput(e.target.value)}
-              value={tagInput}
-              label="Add new tag (optional)"
-              placeholder="Type a new tag"
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton onClick={handleAddNewTag} edge="end">
-                    <AddIcon />
-                  </IconButton>
-                </InputAdornment>
-              }
+              fullWidth
+              value={newInstrument.name}
+              onChange={handleInputChange}
             />
-          </FormControl>
+            <TextField
+              margin="dense"
+              name="description"
+              label={t("columns:Description")}
+              type="text"
+              fullWidth
+              value={newInstrument.description}
+              onChange={handleInputChange}
+            />
+            <TextField
+              margin="dense"
+              name="shortDesc"
+              label={t("PopUp:ShortDescription")}
+              type="text"
+              fullWidth
+              value={newInstrument.shortDesc}
+              onChange={handleInputChange}
+            />
 
-          <TextField
-            label="Number of Instruments to Add"
-            name="count"
-            type="number"
-            fullWidth
-            value={newInstrument.count}
-            onChange={handleInputChange}
-            margin="normal"
-            inputProps={{ min: 1 }}
-          />
+            {/* Instrument Type */}
+            <TextField
+              margin="dense"
+              name="instrumentType"
+              label={t("PopUp:InstrumentType")}
+              type="text"
+              fullWidth
+              value={newInstrument.instrumentType || ""}
+              onChange={handleInputChange}
+            />
 
-          {/* PDF Upload */}
-          <StyledBox>
-            <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
-              Upload files
-              <VisuallyHiddenInput type="file" onChange={handlePdfUpload} multiple accept="" />
+            {/* Price Input */}
+            <TextField
+              margin="dense"
+              name="price"
+              label={t("PopUp:Price")}
+              type="number"
+              fullWidth
+              value={newInstrument.price || ""}
+              onChange={handleInputChange}
+              inputProps={{ min: 0, step: "0.01" }}
+              error={!!error}
+              helperText={error}
+            />
+
+            <FormControl fullWidth margin="dense">
+              <InputLabel>{t("PopUp:Tag")}</InputLabel>
+              <Select
+                multiple
+                label="Tags"
+                value={newInstrument.tags}
+                onChange={handleTagChange}
+                renderValue={(selected) => selected.join(", ")}
+              >
+                {availableTags.map((tag) => (
+                  <MenuItem key={tag.id} value={tag.title}>
+                    <Checkbox checked={newInstrument.tags.includes(tag.title)} />
+                    <ListItemText primary={tag.title} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth margin="dense" variant="outlined">
+              <InputLabel htmlFor="add-new-tag">{t("PopUp:Addnewtag")}</InputLabel>
+              <OutlinedInput
+                id="add-new-tag"
+                type="text"
+                onChange={(e) => setTagInput(e.target.value)}
+                value={tagInput}
+                label="Add new tag (optional)"
+                placeholder="Type a new tag"
+                endAdornment={
+                  <InputAdornment position="end">
+                    <IconButton onClick={handleAddNewTag} edge="end">
+                      <AddIcon />
+                    </IconButton>
+                  </InputAdornment>
+                }
+              />
+            </FormControl>
+
+            <TextField
+              label={t("PopUp:NumberofInstrumentstoAdd")}
+              name="count"
+              type="number"
+              fullWidth
+              value={newInstrument.count}
+              onChange={handleInputChange}
+              margin="normal"
+              inputProps={{ min: 1 }}
+            />
+
+            {/* PDF Upload */}
+            <StyledBox>
+              <Button component="label" variant="contained" startIcon={<CloudUploadIcon />}>
+              {t("PopUp:UploadFiles")}
+                <VisuallyHiddenInput type="file" onChange={handlePdfUpload} multiple accept="" />
+              </Button>
+            </StyledBox>
+
+            {/* Display uploaded PDF files */}
+            <Box mt={2}>
+          {uploadedFiles.length > 0 ? (
+            <Grid container spacing={1}>
+              {uploadedFiles.map((file, index) => (
+                <Grid item xs={12} key={index} display="flex" alignItems="center">
+                  <PictureAsPdfIcon color="error" />
+                  <Typography variant="body2" ml={1} flexGrow={1}>
+                    {file.name}
+                  </Typography>
+                  <IconButton color="error" onClick={() => handleDeleteFile(index)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Typography variant="body2" color="textSecondary">
+              {t("PopUp:Nofilesuploaded")}
+            </Typography>
+          )}
+        </Box>
+          </DialogContent>
+          <DialogActions className="!px-10">
+            <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">
+            {t("PopUp:Cancel")}
             </Button>
-          </StyledBox>
-
-          {/* Display uploaded PDF files */}
-          <Box mt={2}>
-        {uploadedFiles.length > 0 ? (
-          <Grid container spacing={1}>
-            {uploadedFiles.map((file, index) => (
-              <Grid item xs={12} key={index} display="flex" alignItems="center">
-                <PictureAsPdfIcon color="error" />
-                <Typography variant="body2" ml={1} flexGrow={1}>
-                  {file.name}
-                </Typography>
-                <IconButton color="error" onClick={() => handleDeleteFile(index)}>
-                  <DeleteIcon />
-                </IconButton>
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Typography variant="body2" color="textSecondary">
-            No files uploaded
-          </Typography>
-        )}
-      </Box>
-        </DialogContent>
-        <DialogActions className="!px-10">
-          <Button onClick={handleCloseModal} className="!text-[#1D34D8] ">
-            Cancel
-          </Button>
-          {/* <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button> */}
-          <Button
-            type="submit"
-            onClick={handleAddInstrument}
-            variant="contained"
-            className="!bg-[#1D34D8]"
-            disabled={isSubmitting} 
-          >
-            {isSubmitting ? "Submitting..." : "Submit"}
-          </Button>
-        </DialogActions>
+            {/* <Button type="submit" onClick={handleAddInstrument} variant="contained" className='!bg-[#1D34D8]'>Submit</Button> */}
+            <Button
+              type="submit"
+              onClick={handleAddInstrument}
+              variant="contained"
+              className="!bg-[#1D34D8]"
+              disabled={isSubmitting} 
+            >
+              {isSubmitting ? t("PopUp:Submitting") : t("PopUp:Submit")}
+            </Button>
+          </DialogActions>
       </Dialog>
     </Box>
   );

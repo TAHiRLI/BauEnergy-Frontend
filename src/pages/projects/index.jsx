@@ -24,16 +24,8 @@ import { Share as ShareIcon } from '@mui/icons-material';
 import Swal from 'sweetalert2';
 import { projectService } from '../../APIs/Services/project.service';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import { useTranslation } from "react-i18next";
 
-const validationSchema = Yup.object({
-  name: Yup.string().required('Project name is required'),
-  startDate: Yup.date().required('Start date is required'),
-  endDate: Yup.date().required('End date is required').min(
-    Yup.ref('startDate'),
-    'End date must be later than start date'
-  ),
-  address: Yup.string().required('Address is required'),
-});
 
 function CustomTabPanel(props) {
   const { children, value, index } = props;
@@ -59,9 +51,11 @@ function a11yProps(index) {
 }
 
 export default function BasicTabs() {
+  const { t } = useTranslation();
+  
   const location = useLocation();
   const navigate = useNavigate();
-  const [project, setProject] = useState(location.state?.project || "null13213132132");
+  const [project, setProject] = useState(location.state?.project || "null");
   const [value, setValue] = useState(0);
   const [openEditDialog, setOpenEditDialog] = useState(false);
 
@@ -105,6 +99,16 @@ export default function BasicTabs() {
     }
   };
 
+  const validationSchema = Yup.object({
+    name: Yup.string().required(t('messages:required')),
+    startDate: Yup.date().required(t('messages:startDateRequired')),
+    endDate: Yup.date()
+      .required(t('messages:endDateRequired'))
+      .min(Yup.ref('startDate'), t('messages:endDateMin')),
+    address: Yup.string().required(t('messages:addressRequired')),
+  });
+  
+
   const handleEditDialogOpen = () => {
     setOpenEditDialog(true);
   };
@@ -114,7 +118,6 @@ export default function BasicTabs() {
   };
 
   const handleFormSubmit = async (values) => {
-    console.log(values)
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('Name', values.name);
@@ -131,7 +134,7 @@ export default function BasicTabs() {
           title: 'Project edited',
           text: response.data?.message || 'The project was successfully updated.',
         });
-        setProject({ ...project, ...values }); // Update local state
+        setProject({ ...project, ...values });
       } else {
         Swal.fire({
           icon: 'error',
@@ -147,7 +150,7 @@ export default function BasicTabs() {
         text: error.response?.data?.message || 'An unexpected error occurred. Please try again later.',
       });
     } finally {
-      setOpenEditDialog(false); // Close the dialog
+      setOpenEditDialog(false); 
     }
   };
 
@@ -228,7 +231,7 @@ export default function BasicTabs() {
             }}
             onClick={handleShare}
           >
-            Share project link
+            {t("PopUp:Shareprojectlink")}
           </Button>
           <Button
             className="!rounded-2xl !bg-[#1D34D8] !text-white !px-4 mr-0 sm:mr-1"
@@ -238,8 +241,8 @@ export default function BasicTabs() {
             }}
             onClick={handleEditDialogOpen}
           >
-            Edit project
-          </Button>
+              {t("PopUp:EditProject")}
+            </Button>
         </div>
       </div>
       <div className="text-gray-500 text-lg mt-1">
@@ -255,10 +258,10 @@ export default function BasicTabs() {
           aria-label="basic tabs example"
           variant="scrollable"
         >
-          <Tab label="Overview" {...a11yProps(0)} />
-          <Tab label="Used Instruments" {...a11yProps(1)} />
-          <Tab label="Team members" {...a11yProps(2)} />
-          <Tab label="Documents" {...a11yProps(3)} />
+          <Tab label={t('PopUp:Overview')} {...a11yProps(0)} />
+          <Tab label={t('PopUp:UsedInstruments')} {...a11yProps(1)} />
+          <Tab label={t('TeamMembers')} {...a11yProps(2)} />
+          <Tab label={t('columns:Documents')} {...a11yProps(3)} />
         </Tabs>
       </Box>
 
@@ -285,7 +288,7 @@ export default function BasicTabs() {
       }}>
 
 
-        <DialogTitle>Edit Project
+        <DialogTitle>{t("PopUp:EditProject")}
           <IconButton
             className="!text-blue-700"
             aria-label="close"
@@ -317,7 +320,7 @@ export default function BasicTabs() {
                 <Field
                   as={TextField}
                   margin="dense"
-                  label="Project Name"
+                  label= {t("PopUp:ProjectName")}
                   type="text"
                   name="name"
                   fullWidth
@@ -331,7 +334,7 @@ export default function BasicTabs() {
                 <Field
                   as={TextField}
                   margin="dense"
-                  label="Description"
+                  label={t("columns:Description")}
                   type="text"
                   name="description"
                   fullWidth
@@ -345,7 +348,7 @@ export default function BasicTabs() {
                 <Field
                   as={TextField}
                   margin="dense"
-                  label="Address"
+                  label= {t("PopUp:Address")}
                   type="text"
                   name="address"
                   fullWidth
@@ -359,7 +362,7 @@ export default function BasicTabs() {
                 <Field
                   as={TextField}
                   margin="dense"
-                  label="Start Date"
+                  label={t("columns:Start Date")}
                   type="date"
                   name="startDate"
                   fullWidth
@@ -376,7 +379,7 @@ export default function BasicTabs() {
                 <Field
                   as={TextField}
                   margin="dense"
-                  label="End Date"
+                  label={t("columns:End Date")}
                   type="date"
                   name="endDate"
                   fullWidth
@@ -392,12 +395,12 @@ export default function BasicTabs() {
                 />
                 <DialogActions sx={{ display: 'flex', justifyContent: 'space-between', padding: '0px', paddingTop: '10px' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'flex-start', width: '100%' }}>
-                    <Button onClick={handleDelete} color="error"> Delete </Button>
+                    <Button onClick={handleDelete} color="error"> {t("PopUp:Delete")} </Button>
                   </Box>
 
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
-                    <Button variant="outlined" className='!text-[#1D34D8] !mr-2' onClick={handleEditDialogClose}> Cancel </Button>
-                    <Button type="submit" variant="contained" className='!bg-[#1D34D8]'> Edit </Button>
+                    <Button variant="outlined" className='!text-[#1D34D8] !mr-2' onClick={handleEditDialogClose}> {t("PopUp:Cancel")} </Button>
+                    <Button type="submit" variant="contained" className='!bg-[#1D34D8]'> {t("PopUp:Edit")} </Button>
                   </Box>
                 </DialogActions>
               </Form>

@@ -8,6 +8,7 @@ import { AuthActions, useAuth } from '../../context/authContext';
 import { loginService } from '../../APIs/Services/login.service';
 import dayjs from 'dayjs';
 import { ROUTES } from '../routes/routes';
+import { useTranslation } from "react-i18next";
 
 const validationSchema = yup.object().shape({
   email: yup.string().email('Invalid email').required('Email is required'),
@@ -19,6 +20,8 @@ const validationSchema = yup.object().shape({
 });
 
 export const LoginPage = () => {
+  const { t } = useTranslation();
+  
   const { dispatch } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -83,7 +86,7 @@ export const LoginPage = () => {
         <div className='mt-1 sm:mt-5'>
           <h2 className="text-3xl font-bold mb-4 text-gray-800">Welcome</h2>
           <p className="mb-8 text-gray-600">
-            You don't have an account? Please contact  
+            {t("login:YouDonthaveAccount")}
             <a 
               href="mailto:info@must-analytics.com" 
               className="text-blue-500 underline ml-1"
@@ -100,7 +103,7 @@ export const LoginPage = () => {
               <Form className="w-full">
                 {/* Email Field */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2"> {t("login:EmailAddress")}</label>
                   <Field
                     type="email"
                     name="email"
@@ -113,7 +116,7 @@ export const LoginPage = () => {
 
                 {/* Password Field */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("login:Password")}</label>
                   <div className="relative">
                     <Field
                       type={showPassword ? 'text' : 'password'}
@@ -143,7 +146,7 @@ export const LoginPage = () => {
                   className="w-full !bg-[#1D34D8] text-white py-3 rounded-3xl hover:bg-blue-800 transition duration-200 mt-7"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Logging in...' : 'Continue'}
+                  {isSubmitting ? 'Logging in...' : t("login:Continue")}
                 </button>
 
                 {renderReset && (
@@ -152,7 +155,7 @@ export const LoginPage = () => {
                   onClick={handlePasswordReset}
                   className="w-full bg-red-500 text-white p-2 rounded-3xl mt-4 hover:bg-red-600"
                 >
-                  Reset Password
+                  {t("ResetPassword")}
                 </button>
               )}
               </Form>

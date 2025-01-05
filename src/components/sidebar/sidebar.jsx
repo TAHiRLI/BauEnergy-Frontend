@@ -24,8 +24,11 @@ import { useAuth } from "../../context/authContext";
 import { notificationService } from "../../APIs/Services/notification.service";
 import { useMediaQuery } from "@mui/material";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import { useTranslation } from 'react-i18next';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
+  const { t } = useTranslation();
+
   const [openProjectsBtn, setOpenProjectsBtn] = useState(false);
   const [projects, setProjects] = useState([]);
   const { user } = useAuth();
@@ -146,7 +149,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
                         <Search className="text-black" />
                       </ListItemIcon>
-                      <ListItemText primary="Search" />
+                      <ListItemText primary= {t("Search")}/>
                   </ListItem>   
                 )}
 
@@ -158,7 +161,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
                       <NotificationIcon className="text-black" />
                     </ListItemIcon>
-                    <ListItemText primary="Notifications" />
+                    <ListItemText primary={t("Notifications")}/>
                   </ListItem>
                 </List>
 
@@ -171,7 +174,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
                         <SettingsOutlinedIcon className="text-black" />
                       </ListItemIcon>
-                      <ListItemText primary="Settings and Teams" />
+                      <ListItemText primary={t("SettingTeams")} />
                     </ListItem>
                   </List>
                 )}
@@ -189,7 +192,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     <ListItemIcon>
                       <Home className="text-black" />
                     </ListItemIcon>
-                    <ListItemText primary="Home" />
+                    <ListItemText primary={t("Home")} />
                   </ListItem>
 
                   <ListItem button component={Link} to={ROUTES.CERTIFICATE} className="!rounded-xl"
@@ -199,14 +202,14 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     <ListItemIcon>
                       <WorkspacePremiumIcon className="text-black" />
                     </ListItemIcon>
-                    <ListItemText primary={`Tutorial`} />
+                    <ListItemText primary={t("Tutorial")} />
                   </ListItem>
 
                   <ListItem button component={Link} onClick={handleProjectsClick} className="!rounded-xl">
                     <ListItemIcon>
                       <PollOutlinedIcon className="text-black" />
                     </ListItemIcon>
-                    <ListItemText primary="Projects" />
+                    <ListItemText primary={t("Projects")}/>
                     {openProjectsBtn ? <ExpandLess /> : <ExpandMore />}
                   </ListItem>
 
@@ -237,7 +240,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       <ListItemIcon>
                         <BuildOutlinedIcon className="text-black" />
                       </ListItemIcon>
-                      <ListItemText primary="Instruments" />
+                      <ListItemText primary={t("Instruments")} />
                     </ListItem>
                   )}   
 
@@ -249,7 +252,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       <ListItemIcon>
                         <DeleteOutlinedIcon className="text-black" />
                       </ListItemIcon>
-                      <ListItemText primary="Trash Bin" /> 
+                      <ListItemText primary={t("Trahsbin")} /> 
                     </ListItem>
                   )}   
 
@@ -257,7 +260,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     <ListItemIcon>
                       <LogoutOutlinedIcon className="text-black" />
                     </ListItemIcon>
-                    <ListItemText primary="Logout" />
+                    <ListItemText primary={t("Logout")} />
                   </ListItem>
                 </List>
 

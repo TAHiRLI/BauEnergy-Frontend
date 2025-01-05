@@ -5,7 +5,10 @@ import { useAuth } from "../../context/authContext";
 import { fileService } from "../../APIs/Services/file.service";
 import { userSerivce } from "../../APIs/Services/user.service";
 import { AuthActions } from "../../context/authContext";
+import { useTranslation } from "react-i18next";
+
 const TutorialPage = () => {
+  const { t, i18n } = useTranslation();
   const { user, dispatch } = useAuth();
 
   const [isEnded, setIsEnded] = useState(user.hasCompletedTutorial);
@@ -54,7 +57,7 @@ const TutorialPage = () => {
           cursor: isEnded ? "pointer" : "not-allowed",
         }}
       >
-        {showQuestions ? "Go Back" : "Take Test"}
+        {showQuestions ? t("PopUp:GoBack") : t("PopUp:TakeTest")}
       </button>
       }
       

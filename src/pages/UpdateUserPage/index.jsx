@@ -248,7 +248,7 @@ const UpdateUserPage = () => {
                       borderColor: "#1D34D8",
                     }}
                   >
-                    Upload New Image
+                    Edit Image
                     <input
                       type="file"
                       accept="image/*"
@@ -328,7 +328,7 @@ const UpdateUserPage = () => {
                     padding: "6px 20px",
                   }}
                 >
-                  Update
+                  Edit
                 </Button>
               </Form>
             )}

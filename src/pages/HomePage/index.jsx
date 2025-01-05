@@ -69,11 +69,11 @@
 // export default HomePage;
 
 
-
 import React, { useEffect, useState } from "react";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { instrumentTagService } from "../../APIs/Services/instrumentTag.service";
 import { useMediaQuery } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 function HomePage() {
   const [chartData, setChartData] = useState({ xLabels: [], seriesData: [] });
@@ -83,12 +83,14 @@ function HomePage() {
   const chartWidth = isMobile ? 350 : 608;
   const chartHeight = isMobile ? 250 : 400;
 
+  const { t, i18n } = useTranslation();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data } = await instrumentTagService.GetProjectsTagsInstruments();
         processChartData(data);
-        setIsDataLoaded(true); 
+        setIsDataLoaded(true);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -99,9 +101,9 @@ function HomePage() {
 
       const seriesData = [
         {
-          label: "Instruments Count", 
-          data: data.projects.map((project) => project.instruments.length), 
-          color: "#36A2EB", 
+          label: t("columns:InstrumentsCount"), 
+          data: data.projects.map((project) => project.instruments.length),
+          color: "#36A2EB",
         },
       ];
 
@@ -109,7 +111,7 @@ function HomePage() {
     };
 
     fetchData();
-  }, []);
+  }, [i18n.language]); 
 
   return (
     <div style={{ display: "flex", justifyContent: "center", padding: "10px" }}>
@@ -122,7 +124,7 @@ function HomePage() {
           xAxis={[{ data: chartData.xLabels, scaleType: "band" }]}
         />
       ) : (
-        <p>Loading chart...</p>
+        <p>{t("loading")}</p> 
       )}
     </div>
   );

@@ -12,6 +12,7 @@ import { Formik, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useDropzone } from 'react-dropzone';
 import Swal from 'sweetalert2';
+import { t } from 'i18next';
 
 export default function ProjectDocuments({ project }) {
   const [documents, setDocuments] = useState([]);
@@ -55,14 +56,14 @@ export default function ProjectDocuments({ project }) {
 
   const handleDelete = async (documentId) => {
     const confirmDelete = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You are about to delete this document. This action cannot be undone!",
+      title: t('PopUp:Areyousure?'),
+      text: t("messages:Youareabouttodeletethisdocument.Thisactioncannotundone!"),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#1D34D8',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: t('PopUp:Yes,deleteit'),
+      cancelButtonText: t('PopUp:Cancel'),
     });
   
     if (confirmDelete.isConfirmed) {
@@ -72,8 +73,8 @@ export default function ProjectDocuments({ project }) {
   
         Swal.fire({
           icon: 'success',
-          title: 'Deleted!',
-          text: 'The document has been successfully deleted.',
+          title: t('messages:Deleted'),
+          text: t('messages:Thedocumenthasbeensuccessfullydeleted.'),
           confirmButtonColor: '#1D34D8',
         });
       } catch (err) {
@@ -81,8 +82,8 @@ export default function ProjectDocuments({ project }) {
   
         Swal.fire({
           icon: 'error',
-          title: 'Failed to delete',
-          text: 'An error occurred while trying to delete the document. Please try again.',
+          title: t('messages:Failedtodelete'),
+          text: t('messages:An error occurred while trying to delete the document. Please try again.'),
           confirmButtonColor: '#d33',
         });
       }
@@ -185,10 +186,10 @@ export default function ProjectDocuments({ project }) {
     <Box mt={1} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
         <div className='flex sm:flex-row flex-col justify-between items-start sm:items-center'>
             <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8', mb: 2 }}>
-                Project documents
+                {t("PopUp:Projectdocuments")}
             </Typography>
             <Button variant="contained"  onClick={() => setOpen(true)} className="mt-4 !bg-[#1D34D8] !rounded-3xl "   sx={{ textTransform: 'none' }} >
-                Add Document
+                {t("PopUp:AddDocument")}
             </Button>
         </div>
 
@@ -215,7 +216,7 @@ export default function ProjectDocuments({ project }) {
           ))
         ) : (
           <Typography variant="body2" color="textSecondary" className='!pl-4 !mt-7'>
-            No documents found for this project.
+              {t("PopUp:Nodocumentsfoundforthisproject")}
           </Typography>
         )}
       </Grid>
@@ -229,7 +230,7 @@ export default function ProjectDocuments({ project }) {
         },
       }}>
         <DialogTitle>
-          Add New Document
+          {t("PopUp:AddNewDocument")}
           <IconButton
             className="!text-[#1D34D8]"
             aria-label="close"
@@ -259,8 +260,8 @@ export default function ProjectDocuments({ project }) {
                 )}
               </DialogContent>
               <DialogActions className='!px-6 !py-4'>
-                <Button onClick={() => setOpen(false)} className='!text-[#1D34D8]'>Cancel</Button>
-                <Button type="submit" variant="contained" className='!bg-[#1D34D8]'>Add Document</Button>
+                <Button onClick={() => setOpen(false)} className='!text-[#1D34D8]'>{t("PopUp:Cancel")}</Button>
+                <Button type="submit" variant="contained" className='!bg-[#1D34D8]'>{t("PopUp:AddDocument")}</Button>
               </DialogActions>
             </Form>
           )}

@@ -17,6 +17,7 @@ import {
   FormHelperText,
   Chip,
   Paper,
+  useMediaQuery
 } from "@mui/material";
 import Swal from "sweetalert2";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -33,8 +34,12 @@ import { teamMemberService } from "../../APIs/Services/teammember.service";
 import AddInstrumentWithQr from "../addInstrumentWithQr/addInstrumentWithQr";
 import CloseIcon from '@mui/icons-material/Close';
 import StatusButton from "../common/statusBtn";
+import InstrumentTabResponsive from "./InstrumentTabResponsive";
+import { useTranslation } from "react-i18next";
 
 export default function InstrumentTab({ project }) {
+  const { t } = useTranslation();
+
   const { state, dispatch } = useProjects();
   const [openDialog, setOpenDialog] = useState(false);
   const [openQRDialog, setOpenQRDialog] = useState(false);
@@ -60,16 +65,20 @@ export default function InstrumentTab({ project }) {
   const [editOpen, setEditOpen] = useState(false);
   const [selectedInstrumentStatus, setSelectedInstrumentStatus] = useState("");
   
+  const isSmallScreen = useMediaQuery('(max-width:800px)');
+  
+  
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: "Are you sure?",
-        text: "You won't be able to revert this!",
+        title: t("PopUp:Areyousure?"),
+        text: t("messages:YouWon'tBeAbleToRevertThis!"),
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#1D34D8",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!",
+        confirmButtonText: t("PopUp:Yes,deleteit"),
+        cancelButtonText: t("PopUp:Cancel")
       });
 
       if (result.isConfirmed) {
@@ -77,8 +86,8 @@ export default function InstrumentTab({ project }) {
         await projectService.removeInstrumentFromProject(body);
 
         Swal.fire({
-          title: "Deleted!",
-          text: "Instrument has been removed from the project.",
+          title: t("messages:Deleted"),
+          text: t("messages:Instrument has been removed from the project."),
           icon: "success",
           timer: 2000,
         });
@@ -90,8 +99,8 @@ export default function InstrumentTab({ project }) {
     } catch (error) {
       console.error("Error deleting instrument:", error.message);
       Swal.fire({
-        title: "Error!",
-        text: "Failed to remove instrument.",
+        title: t("messages:Error"),
+        text: t("messages:Failedtodelete"),
         icon: "error",
         timer: 2000,
       });
@@ -260,7 +269,7 @@ export default function InstrumentTab({ project }) {
     setQrImage(instrument.qrImage);
     setQrInstrumentName(instrument.name);
     setOpenQRDialog(true);
-  }
+  };
 
   const handleCloseQRDialog = () => {
     setOpenQRDialog(false);
@@ -372,7 +381,7 @@ export default function InstrumentTab({ project }) {
   const columns = [
     {
       field: "name",
-      headerName: "Instrument Name",
+      headerName: t("columns:InstrumentName"),
       width: 200,
       renderCell: (params) => {
         const mainImage = params.row.images?.find((img) => img.isMain);
@@ -392,20 +401,20 @@ export default function InstrumentTab({ project }) {
     },
     {
       field: "addedProjectDate",
-      headerName: "Date Added",
+      headerName: t("columns:DateAdded"),
       width: 150,
       renderCell: (params) => formatDate(params.row.addedProjectDate),
     },
-    { field: "instrumentType", headerName: "Type", width: 150 },
+    { field: "instrumentType", headerName: t("columns:Type"), width: 150 },
     {
       field: "status",
-      headerName: "Status",
+      headerName: t("columns:Status"),
       width: 160,
       renderCell: (params) => renderStatus(params.row.status.split("_").join(" ")),
     },
     {
       field: "actions",
-      headerName: "Actions",
+      headerName: t("columns:Actions"),
       width: 180,
       renderCell: (params) => (
         <>
@@ -466,378 +475,380 @@ export default function InstrumentTab({ project }) {
     return <div>Error loading instruments</div>;
   }
 
-  return (
-    <Box height={400} px={0} className="!px-0">
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:gap-1">
-          {/* Type Input */}
-          <TextField
-            label="Name"
-            variant="outlined"
-            onChange={(e) => setSearchType(e.target.value)}
-            value={searchType}
-            className="rounded-3xl w-full sm:w-[200px]"
-          />
-
-<FormControl
-  variant="outlined"
-  className="w-full sm:w-[200px]"
-  sx={{
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    position: "relative",
-  }}
->
-  <InputLabel>Status</InputLabel>
-  <Select
-    label="Status"
-    value={searchStatus}
-    onChange={handleStatusChange}
-    className="rounded-3xl"
+  if(isSmallScreen)
+  {
+    return <InstrumentTabResponsive searchType={searchType} setSearchType={setSearchType} searchStatus={searchStatus} handleStatusChange={handleStatusChange} filteredInstruments={filteredInstruments} statuses={statuses} />
+  }
+  else{
+    return (
+      <Box height={400} px={0} className="!px-0">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:gap-1">
+            {/* Type Input */}
+            <TextField
+              label= {t("PopUp:Name")}
+              variant="outlined"
+              onChange={(e) => setSearchType(e.target.value)}
+              value={searchType}
+              className="rounded-3xl w-full sm:w-[200px]"
+            />
+  
+  <FormControl
+    variant="outlined"
+    className="w-full sm:w-[200px]"
     sx={{
-      width: "220px", // Static width for the Select box
-      paddingRight: "20px", // Leave space for the icon
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "center",
+      position: "relative",
     }}
   >
-    {statuses.map((status) => (
-      <MenuItem key={status} value={status}>
-        {status}
-      </MenuItem>
-    ))}
-  </Select>
-
-  {searchStatus && (
-    <IconButton
-      onClick={handleClearStatus}
+    <InputLabel>{t("columns:Status")}</InputLabel>
+    <Select
+      label={t("columns:Status")}
+      value={searchStatus}
+      onChange={handleStatusChange}
+      className="rounded-3xl"
       sx={{
-        position: "absolute",
-        right: "18px",
-        top: "50%",
-        transform: "translateY(-50%)",
-        padding: 0.5,
-        color: "grey.600",
-        "&:hover": { color: "grey.800" },
+        width: "220px", 
+        paddingRight: "20px",
       }}
     >
-      <CloseIcon />
-    </IconButton>
-  )}
-</FormControl>
-
-
-
-        </div>
-
-        <Button
-          className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0 !mr-3"
-          startIcon={<AddIcon />}
-          variant="contained"
-          onClick={() => setOpenDialog(true)}
-          aria-hidden
-        >
-          Add New Instrument
-        </Button>
-      </div>
-
-      <Paper
-        className="!lg:max-w-[100%]"
+      {statuses.map((status) => (
+        <MenuItem key={status} value={status}>
+          {status}
+        </MenuItem>
+      ))}
+    </Select>
+  
+    {searchStatus && (
+      <IconButton
+        onClick={handleClearStatus}
         sx={{
-          overflowX: "hidden",
-          maxWidth: { xs: "250px", sm: "700px", md: "750px", lg: "100%" },
+          position: "absolute",
+          right: "18px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          padding: 0.5,
+          color: "grey.600",
+          "&:hover": { color: "grey.800" },
         }}
       >
-        <Box
-          sx={{
-            maxWidth: { xs: "250px", sm: "700px", md: "750px", lg: "100%" },
-            overflowX: "auto",
-          }}
-        >
-          <DataGrid
-            rows={filteredInstruments}
-            columns={columns}
-            initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
-            pageSizeOptions={[20, 40]}
-            sx={{
-              border: 0,
-              minWidth: 640,
-              overflowX: "auto",
-              "& .MuiDataGrid-cell": {
-                display: "flex",
-                alignItems: "center",
-              },
-              "& .MuiDataGrid-columnHeader": {
-                display: "flex",
-                alignItems: "center",
-              },
-            }}
-            getRowId={(row) => row.id}
-          />
-        </Box>
-      </Paper>
-
-      {/* Dialog for Adding New Instrument */}
-      <Dialog
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        PaperProps={{
-          style: {
-            borderRadius: 20,
-            backgroundColor: "#fcfcfc",
-          },
-        }}
-      >
-        <DialogTitle className="!font-medium">Select instrument for adding project</DialogTitle>
-        <DialogContent>
-        <FormControl fullWidth margin="dense" error={instrumentError}>
-        <InputLabel>Select Instrument</InputLabel>
-        <Select
-          value={selectedInstrumentId}
-          onChange={(e) => {
-            setSelectedInstrumentId(e.target.value);
-            setInstrumentError(false);
-          }}
-          label="Select Instrument"
-        >
-          {allInstruments.map((instrument) => (
-            <MenuItem key={instrument.id} value={instrument.id}>
-              {instrument.name}
-            </MenuItem>
-          ))}
-        </Select>
-          {instrumentError && <FormHelperText>Please select an instrument.</FormHelperText>}
-        </FormControl>
-
-        <FormControl fullWidth margin="dense" error={managerError}>
-          <InputLabel id="project-manager-label">Project Manager</InputLabel>
-          <Select
-            labelId="project-manager-label"
-            value={selectedManager}
-            onChange={(e) => {
-              setSelectedManager(e.target.value);
-              setManagerError(false); // Clear error on selection
-            }}
-            label="Project Manager"
+        <CloseIcon />
+      </IconButton>
+    )}
+  </FormControl>
+        </div>
+          <Button
+            className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0 !mr-3"
+            startIcon={<AddIcon />}
+            variant="contained"
+            onClick={() => setOpenDialog(true)}
+            aria-hidden
           >
-            {projectManagers.map((manager) => (
-              <MenuItem key={manager.id} value={manager.id}>
-                {manager.name} {manager.lastName}
+            {t("PopUp:AddNewInstrument")}
+          </Button>
+        </div>
+  
+        <Paper
+          className="!lg:max-w-[100%]"
+          sx={{
+            overflowX: "hidden",
+            maxWidth: { xs: "250px", sm: "700px", md: "750px", lg: "100%" },
+          }}
+        >
+          <Box
+            sx={{
+              maxWidth: { xs: "250px", sm: "700px", md: "750px", lg: "100%" },
+              overflowX: "auto",
+            }}
+          >
+            <DataGrid
+              rows={filteredInstruments}
+              columns={columns}
+              initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
+              pageSizeOptions={[20, 40]}
+              sx={{
+                border: 0,
+                minWidth: 640,
+                overflowX: "auto",
+                "& .MuiDataGrid-cell": {
+                  display: "flex",
+                  alignItems: "center",
+                },
+                "& .MuiDataGrid-columnHeader": {
+                  display: "flex",
+                  alignItems: "center",
+                },
+              }}
+              getRowId={(row) => row.id}
+            />
+          </Box>
+        </Paper>
+  
+        {/* Dialog for Adding New Instrument */}
+        <Dialog
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          PaperProps={{
+            style: {
+              borderRadius: 20,
+              backgroundColor: "#fcfcfc",
+            },
+          }}
+        >
+          <DialogTitle className="!font-medium">{t("PopUp:Select instrument for adding project")}</DialogTitle>
+          <DialogContent>
+          <FormControl fullWidth margin="dense" error={instrumentError}>
+          <InputLabel>{t("PopUp:SelectInstrument")}</InputLabel>
+          <Select
+            value={selectedInstrumentId}
+            onChange={(e) => {
+              setSelectedInstrumentId(e.target.value);
+              setInstrumentError(false);
+            }}
+            label="Select Instrument"
+          >
+            {allInstruments.map((instrument) => (
+              <MenuItem key={instrument.id} value={instrument.id}>
+                {instrument.name}
               </MenuItem>
             ))}
           </Select>
-          {managerError && <FormHelperText>Please select a project manager.</FormHelperText>}
-        </FormControl>
-
-
-          {/* Count Input */}
-          <FormControl fullWidth margin="dense">
-            <TextField
-              type="number"
-              label="Instrument Count"
-              value={instrumentCount}
-              onChange={(e) => setInstrumentCount(e.target.value)}
-              inputProps={{ min: 1 }}
-            />
+            {instrumentError && <FormHelperText>{t("Please select an instrument.")}</FormHelperText>}
           </FormControl>
-
-          <AddInstrumentWithQr
-            onComplete={(instrumentId) => {
-              if (!allInstruments?.find((x) => x?.id == instrumentId)) {
-                Swal.fire(`Not Found ${instrumentId}`, `Invalid QR Code ${JSON.stringify(allInstruments)}, `);
-                return;
-              }
-              setSelectedInstrumentId(instrumentId);
-            }}
-          />
-        </DialogContent>
-        <DialogActions className="!px-6">
-          <Button onClick={() => setOpenDialog(false)} className="!text-[#1D34D8]">
-            Cancel
-          </Button>
-          <Button onClick={handleAddInstrument} variant="contained" className="!bg-[#1D34D8]">
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* QR Code Dialog */}
-      <Dialog
-        open={openQRDialog}
-        onClose={handleCloseQRDialog}
-        fullWidth
-        maxWidth="xs"
-        PaperProps={{
-          style: {
-            borderRadius: 20,
-            //height: "500px",
-            backgroundColor: "#fcfcfc",
-          },
-        }}
-      >
-        <DialogTitle>
-          Instrument info
-          <IconButton
-            className="!text-[#1D34D8]"
-            aria-label="close"
-            onClick={handleCloseQRDialog}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-            }}
-          >
-            <CancelOutlinedIcon />
-          </IconButton>
-          <div className="text-sm text-gray-500 mt-3">
-            Scan Qr to get more information about the history of instrument you want
-          </div>
-        </DialogTitle>
-
-        <DialogContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="body1">Instrument details:</Typography>
-
-            <Button
-              className="!text-[#1D34D8] !rounded-xl"
-              startIcon={<ShareIcon />}
-              onClick={handleShare}
-              sx={{ textTransform: "none", fontWeight: "bold" }}
+  
+          <FormControl fullWidth margin="dense" error={managerError}>
+            <InputLabel id="project-manager-label">{t("Project_Manager")}</InputLabel>
+            <Select
+              labelId="project-manager-label"
+              value={selectedManager}
+              onChange={(e) => {
+                setSelectedManager(e.target.value);
+                setManagerError(false);
+              }}
+              label={t("Project_Manager")}
             >
-              Share
+              {projectManagers.map((manager) => (
+                <MenuItem key={manager.id} value={manager.id}>
+                  {manager.name} {manager.lastName}
+                </MenuItem>
+              ))}
+            </Select>
+            {managerError && <FormHelperText>{t("Please select a project manager.")}</FormHelperText>}
+          </FormControl>
+  
+  
+            {/* Count Input */}
+            <FormControl fullWidth margin="dense">
+              <TextField
+                type="number"
+                label={t("PopUp:InstrumentCount")}
+                value={instrumentCount}
+                onChange={(e) => setInstrumentCount(e.target.value)}
+                inputProps={{ min: 1 }}
+              />
+            </FormControl>
+  
+            <AddInstrumentWithQr
+              onComplete={(instrumentId) => {
+                if (!allInstruments?.find((x) => x?.id == instrumentId)) {
+                  Swal.fire(`Not Found ${instrumentId}`, `Invalid QR Code ${JSON.stringify(allInstruments)}, `);
+                  return;
+                }
+                setSelectedInstrumentId(instrumentId);
+              }}
+            />
+          </DialogContent>
+          <DialogActions className="!px-6">
+            <Button onClick={() => setOpenDialog(false)} className="!text-[#1D34D8]">
+              {t("PopUp:Cancel")}
             </Button>
-          </Box>
-          <Box my={2}>
-            <div className="border rounded-xl px-3">
-              <div className="grid grid-cols-2">
-                <div className="flex flex-col justify-between ">
-                  <div className="flex flex-col text-start">
-                    <h5 className="mt-2 text-gray-500 font-medium">Instrument QR:</h5>
-                    <p className="mt-2 text-gray-500">Scan Qr to get more information</p>
-                  </div>
-                  <div className="">
-                    <Button
-                      className="!rounded-3xl !m-3 !text-black"
-                      onClick={handlePrint}
-                      sx={{
-                        fontWeight: "bold",
-                        textTransform: "none",
-                        border: "2px solid black",
-                        borderRadius: "30px",
-                        padding: "8px 16px",
-                      }}
-                    >
-                      Print QR Code
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex justify-center items-center">
-                  <img
-                    className="border-[25px] rounded-xl my-5"
-                    src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
-                    alt="Instrument QR Code"
-                    style={{ width: 170, height: 170 }}
-                  />
-                </div>
-              </div>
-
-              {/* Print Button */}
-            </div>
-          </Box>
-        </DialogContent>
-      </Dialog>
-
-      {/* Instrument History Dialog */}
-      <Dialog open={openHistoryDialog} onClose={handleCloseHistoryDialog}
-        fullWidth
-        maxWidth="sm"
-        PaperProps={{
-          style: {
-            borderRadius: 20,
-            height: "500px",
-            backgroundColor: "#fcfcfc"  
-          },
-        }}
-      >
-        <DialogTitle>
-          Instrument History
-          <IconButton
-            className="!text-blue-700"
-            aria-label="close"
-            onClick={handleCloseHistoryDialog}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-            }}
-          >
-            <CancelOutlinedIcon />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent
-          className="!border !border-gray-300 rounded-xl !p-2 !m-6 !mt-0 bg-white"
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
-            alignItems: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
-            overflowY: "auto",
-            overflowX: "hidden",  
-            maxHeight: "calc(100% - 64px)",  
-            paddingRight: "8px" 
+            <Button onClick={handleAddInstrument} variant="contained" className="!bg-[#1D34D8]">
+              {t("PopUp:Add")}
+            </Button>
+          </DialogActions>
+        </Dialog>
+  
+        {/* QR Code Dialog */}
+        <Dialog
+          open={openQRDialog}
+          onClose={handleCloseQRDialog}
+          fullWidth
+          maxWidth="xs"
+          PaperProps={{
+            style: {
+              borderRadius: 20,
+              //height: "500px",
+              backgroundColor: "#fcfcfc",
+            },
           }}
         >
-          {instrumentHistory && instrumentHistory.length > 0 ? (
-            <>
-              <Box display="flex" gap={2} mb={2} >
-                {instrument?.images?.slice(0, 3).map((img, index) => (
-                  <img
-                    key={index}
-                    src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${img.image}`}
-                    alt="Instrument"
-                    style={{
-                      flexGrow: 1, 
-                      width: '32%', 
-                      height: 100,
-                      borderRadius: 8,
-                      objectFit: 'cover' 
-                    }}
-                  />
-                ))}
-              </Box> 
-              <Box mb={2} p={2} sx={{ borderRadius: 3 }} className="block sm:!hidden !w-full !p-0">
-              <Typography variant="h6" className=" block sm:!hidden">
-                Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
-              </Typography>
-              </Box>
-
-              <Typography variant="h6" dividers>Details</Typography>
-              <div className='border-b border-slate-300 w-full my-2'></div>
-              {instrumentHistory.map((entry, index) => (
-                <Box key={index} mb={2} width="100%">
-                  <div className="flex justify-between items-center">
-                    <Typography variant="subtitle1" className='!font-medium'>{entry.title}</Typography>
-                    <Typography variant="subtitle2" color="textSecondary">
-                      {formatDate(entry.eventDate)}
-                    </Typography>
+          <DialogTitle>
+            {t("PopUp:InstrumentInfo")}
+            <IconButton
+              className="!text-[#1D34D8]"
+              aria-label="close"
+              onClick={handleCloseQRDialog}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CancelOutlinedIcon />
+            </IconButton>
+            <div className="text-sm text-gray-500 mt-3">
+              {t("PopUp:Scan Qr to get more information about the history of instrument you want")}
+            </div>
+          </DialogTitle>
+  
+          <DialogContent>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="body1">{t("PopUp:Instrument details")}</Typography>
+  
+              <Button
+                className="!text-[#1D34D8] !rounded-xl"
+                startIcon={<ShareIcon />}
+                onClick={handleShare}
+                sx={{ textTransform: "none", fontWeight: "bold" }}
+              >
+                {t("PopUp:Share")}
+              </Button>
+            </Box>
+            <Box my={2}>
+              <div className="border rounded-xl px-3">
+                <div className="grid grid-cols-2">
+                  <div className="flex flex-col justify-between ">
+                    <div className="flex flex-col text-start">
+                      <h5 className="mt-2 text-gray-500 font-medium">{t("PopUp:Instrument QR:")}</h5>
+                      <p className="mt-2 text-gray-500">{t("PopUp:Scan Qr to get more information")}</p>
+                    </div>
+                    <div className="">
+                      <Button
+                        className="!rounded-3xl !m-3 !text-black"
+                        onClick={handlePrint}
+                        sx={{
+                          fontWeight: "bold",
+                          textTransform: "none",
+                          border: "2px solid black",
+                          borderRadius: "30px",
+                          padding: "8px 16px",
+                        }}
+                      >
+                        {t("PopUp:Print QR Code")}
+                      </Button>
+                    </div>
                   </div>
-                  <Typography variant="body2" className='!text-gray-500 !ml-1'>{entry.description}</Typography>
+  
+                  <div className="flex justify-center items-center">
+                    <img
+                      className="border-[25px] rounded-xl my-5"
+                      src={`${process.env.REACT_APP_DOCUMENT_URL}/${qrImage}`}
+                      alt="Instrument QR Code"
+                      style={{ width: 170, height: 170 }}
+                    />
+                  </div>
+                </div>
+  
+                {/* Print Button */}
+              </div>
+            </Box>
+          </DialogContent>
+        </Dialog>
+  
+        {/* Instrument History Dialog */}
+        <Dialog open={openHistoryDialog} onClose={handleCloseHistoryDialog}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            style: {
+              borderRadius: 20,
+              height: "500px",
+              backgroundColor: "#fcfcfc"  
+            },
+          }}
+        >
+          <DialogTitle>
+          {t("PopUp:InstrumentHistory")}
+            <IconButton
+              className="!text-blue-700"
+              aria-label="close"
+              onClick={handleCloseHistoryDialog}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+              }}
+            >
+              <CancelOutlinedIcon />
+            </IconButton>
+          </DialogTitle>
+  
+          <DialogContent
+            className="!border !border-gray-300 rounded-xl !p-2 !m-6 !mt-0 bg-white"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
+              alignItems: instrumentHistory && instrumentHistory.length > 0 ? "flex-start" : "center",
+              overflowY: "auto",
+              overflowX: "hidden",  
+              maxHeight: "calc(100% - 64px)",  
+              paddingRight: "8px" 
+            }}
+          >
+            {instrumentHistory && instrumentHistory.length > 0 ? (
+              <>
+                <Box display="flex" gap={2} mb={2} >
+                  {instrument?.images?.slice(0, 3).map((img, index) => (
+                    <img
+                      key={index}
+                      src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${img.image}`}
+                      alt="Instrument"
+                      style={{
+                        flexGrow: 1, 
+                        width: '32%', 
+                        height: 100,
+                        borderRadius: 8,
+                        objectFit: 'cover' 
+                      }}
+                    />
+                  ))}
+                </Box> 
+                <Box mb={2} p={2} sx={{ borderRadius: 3 }} className="block sm:!hidden !w-full !p-0">
+                <Typography variant="h6" className=" block sm:!hidden">
+                {t("columns:Status")}: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+                </Typography>
                 </Box>
-              ))}
-            </>
-          ) : (
-            <Typography variant="body2" className='text-gray-500'>Nothing here yet...</Typography>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <InstrumentStatusModal
-        instrumentId={selectedInstrumentId}
-        currentStatus={selectedInstrumentStatus}
-        open={editOpen}
-        onClose={handleEditClose}
-      />
-    </Box>
-  );
+  
+                <Typography variant="h6" dividers>{t("PopUp:Details")}</Typography>
+                <div className='border-b border-slate-300 w-full my-2'></div>
+                {instrumentHistory.map((entry, index) => (
+                  <Box key={index} mb={2} width="100%">
+                    <div className="flex justify-between items-center">
+                      <Typography variant="subtitle1" className='!font-medium'>{entry.title}</Typography>
+                      <Typography variant="subtitle2" color="textSecondary">
+                        {formatDate(entry.eventDate)}
+                      </Typography>
+                    </div>
+                    <Typography variant="body2" className='!text-gray-500 !ml-1'>{entry.description}</Typography>
+                  </Box>
+                ))}
+              </>
+            ) : (
+              <Typography variant="body2" className='text-gray-500'> {t("messages:Nothing here yet...")}</Typography>
+            )}
+          </DialogContent>
+        </Dialog>
+  
+        <InstrumentStatusModal
+          instrumentId={selectedInstrumentId}
+          currentStatus={selectedInstrumentStatus}
+          open={editOpen}
+          onClose={handleEditClose}
+        />
+      </Box>
+    );
+  }
 }

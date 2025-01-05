@@ -77,7 +77,7 @@ const ResetPassword = () => {
         <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
           <Box textAlign="center" mb={3}>
             <Typography variant="h4" gutterBottom className='!text-[#1D34D8]'>
-              {t("Reset Password")}
+              {t("ResetPassword")}
             </Typography>
             {/* <Typography variant="body1" color="textSecondary">
               {t("ResetPasswordMessage")}
@@ -93,7 +93,7 @@ const ResetPassword = () => {
             {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting }) => (
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <CssTextField
-                  label={t("Email")}
+                  label={t("columns:Email")}
                   required
                   variant="outlined"
                   type="text"
@@ -108,7 +108,7 @@ const ResetPassword = () => {
                 />
 
                 <CssTextField
-                  label={t("New Password")}
+                  label={t("login:New Password")}
                   type={showPassword ? 'text' : 'password'}
                   name="password"
                   onChange={handleChange}
@@ -144,7 +144,7 @@ const ResetPassword = () => {
                     fontSize: '1rem'
                   }}
                 >
-                  {t("Submit")}
+                  {t("PopUp:Submit")}
                 </Button>
               </form>
             )}

@@ -28,8 +28,11 @@ import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import * as Yup from 'yup';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth } from "../../context/authContext";
+import { useTranslation } from 'react-i18next';
 
 const SettingsAndTeams = () => {
+  const { t } = useTranslation();
+
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -71,13 +74,14 @@ const SettingsAndTeams = () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: `This action will permanently delete the user. Do you want to proceed?`,
+        title: t("PopUp:Areyousure?"),
+        text: t("PopUp:ThisactionwillpermanentlydeletetheuserDoyouwanttoproceed?"),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#1D34D8',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t('PopUp:Yes,deleteit'),
+        cancelButtonText: t("PopUp:Cancel")
       });
 
       if (result.isConfirmed) {
@@ -85,11 +89,11 @@ const SettingsAndTeams = () => {
         setTeamMembers((prevMembers) =>
           prevMembers.filter((member) => member.id !== id)
         );
-        Swal.fire('Deleted!', 'Team member has been removed from the project.', 'success');
+        Swal.fire(t('messages:Deleted!'), t('messages:Teammemberhasbeenremoved.'), 'success');
       }
     } catch (error) {
       console.error('Error deleting team member:', error.message);
-      Swal.fire('Error!', 'Failed to remove team member.', 'error');
+      Swal.fire(t('messages:Error!'), t('messages:Failedtoremoveteammember.'), 'error');
     }
   };
 
@@ -97,13 +101,13 @@ const SettingsAndTeams = () => {
     setIsEditDialogOpen(false)
     try {
       const confirmation = await Swal.fire({
-        title: "Are you sure?",
-        text: "Do you want to reset the password for this user?",
+        title: t("PopUp:Areyousure?"),
+        text: t("messages:Doyouwanttoresetthepasswordforthisuser?"),
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#1D34D8",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, reset it!",
+        confirmButtonText: t("messages:Yes,resetIt"),
       });
   
       if (!confirmation.isConfirmed) return;
@@ -118,8 +122,8 @@ const SettingsAndTeams = () => {
       });
     } catch (error) {
       Swal.fire({
-        title: "Error!",
-        text: "Failed to reset the password. Please try again.",
+        title: t("Error!"),
+        text: t("Failedtoresetthepassword.Pleasetryagain."),
         icon: "error",
         confirmButtonColor: "#d33",
       });
@@ -153,18 +157,24 @@ const SettingsAndTeams = () => {
   };
 
   const validationSchema = Yup.object({
-    name: Yup.string().required('Required'),
-    lastName: Yup.string().required('Required'),
-    role: Yup.number().required('Required'),
+    name: Yup.string()
+      .required(t('messages:Required'))
+      .max(30, t('messages:Namemustbeatmost30characters')),
+    lastName: Yup.string()
+      .required(t('messages:Required'))
+      .max(40, t('messages:Lastnamemustbeatmost40characters')),
+    role: Yup.number()
+      .required(t('messages:Required')),
     image: Yup.mixed().nullable(),
     birthDate: Yup.date()
-      .required('Birth Date is required')
-      .max(new Date(), 'Birth Date cannot be in the future'),
-      phoneNumber: Yup.string()
-      .matches(/^\+?[0-9]{10,15}$/, 'Invalid phone number format')
-      .required('Phone Number is required'),
-      email: Yup.string().email('Invalid email format').required('Email is required'), // Email validation
-
+      .required(t('messages:Required'))
+      .max(new Date(), t('messages:BirthDatecannotbeinfuture')),
+    phoneNumber: Yup.string()
+      .matches(/^\+?[0-9]{10,15}$/, t('messages:InvalidphoneNumberFormat'))
+      .required(t('messages:Required')),
+    email: Yup.string()
+      .email(t('messages:Invalidemailformat'))
+      .required(t('messages:Required')), 
   });
 
   const handleUpdateTeamMember = async (values) => {
@@ -183,20 +193,24 @@ const SettingsAndTeams = () => {
   
       setIsEditDialogOpen(false);
   
-      Swal.fire('Success', 'Team member has been updated!', 'success').then(() => {
+      Swal.fire({
+        title: t('messages:Success'),
+        text: t('messages:Team member has been updated!'),
+        icon: 'success',
+      }).then(() => {
         window.location.reload();
       });
     } catch (error) {
       console.error('Error updating team member:', error.response || error.message);
       setIsEditDialogOpen(false);
-      Swal.fire('Error', 'Failed to update team member.', 'error');
+      Swal.fire(t('messages:Error'), t('messages:Team member has been updated!'), 'error');
     }
   };
   
   const columns = [
     {
       field: 'name',
-      headerName: 'Name & Last name',
+      headerName: t("columns:NameLastname"),
       minWidth: 300,
       renderCell: (params) => {
         const fullName = `${params.row.name} ${params.row.lastName}`; 
@@ -217,7 +231,7 @@ const SettingsAndTeams = () => {
     },
     {
       field: 'email',
-      headerName: 'Email',
+      headerName: t("columns:Email"),
       minWidth: 250,
       renderCell: (params) => (
         <Typography>{params.row?.email || 'N/A'}</Typography>
@@ -225,7 +239,7 @@ const SettingsAndTeams = () => {
     },
     {
       field: 'phoneNumber',
-      headerName: 'Phone Number',
+      headerName: t('columns:Phonenumber'),
       minWidth: 150,
       renderCell: (params) => (
         <Typography>{params.row?.phoneNumber || 'N/A'}</Typography>
@@ -233,19 +247,21 @@ const SettingsAndTeams = () => {
     },
     {
       field: 'role',
-      headerName: 'Role',
+      headerName: t('columns:Role'),
       minWidth: 130,
-      renderCell: (params) => params.row?.role?.split('_').join(' '),
-    },
+      renderCell: (params) => {
+        const role = params.row?.role;
+        return t(role);
+      },    },
     {
       field: 'dateAddedProject',
-      headerName: 'Joined date',
+      headerName: t('columns:JoinedDate'),
       minWidth: 150,
       renderCell: (params) => formatDate(params.row?.addedTimeProject),
     },
     {
       field: 'actions',
-      headerName: 'Actions',
+      headerName: t('Actions'),
       minWidth: 150,
       renderCell: (params) => {
         const isCurrentUser = params.row.id === currentUserId;
@@ -289,7 +305,7 @@ const SettingsAndTeams = () => {
     },
   ];
   
-  if (loading) return <Typography>Loading...</Typography>;
+  if (loading) return <Typography>{t("Loading")}</Typography>;
 
   return (
     <Box>
@@ -353,7 +369,7 @@ const SettingsAndTeams = () => {
       }}
     >
       <DialogTitle className="!font-semibold">
-        Edit Team Member
+        {t("PopUp:EditTeamMember")}
         <IconButton
           className="!text-[#1D34D8]"
           aria-label="close"
@@ -423,7 +439,7 @@ const SettingsAndTeams = () => {
                   className="!text-[#1D34D8]"
                   onClick={() => document.getElementById('profile-image-input').click()}
                 >
-                  Edit Image
+                  {t("PopUp:EditImage")}
                 </Button>
                 <input
                   id="profile-image-input"
@@ -440,7 +456,7 @@ const SettingsAndTeams = () => {
               <Field
                 as={TextField}
                 name="name"
-                label="Name"
+                label= {t("PopUp:Name")}
                 fullWidth
                 margin="normal"
                 error={touched.name && Boolean(errors.name)}
@@ -449,7 +465,7 @@ const SettingsAndTeams = () => {
               <Field
                 as={TextField}
                 name="lastName"
-                label="Last Name"
+                label={t("LastName")}
                 fullWidth
                 margin="normal"
                 error={touched.lastName && Boolean(errors.lastName)}
@@ -458,7 +474,7 @@ const SettingsAndTeams = () => {
               <Field
                 as={TextField}
                 name="email"
-                label="Email"
+                label={t("columns:Email")}
                 fullWidth
                 margin="normal"
                 error={touched.email && Boolean(errors.email)}
@@ -468,7 +484,7 @@ const SettingsAndTeams = () => {
               <Field
                 as={TextField}
                 name="birthDate"
-                label="Birth Date"
+                label= {t("PopUp:BirthDate")}
                 type="date"
                 fullWidth
                 margin="normal"
@@ -479,7 +495,7 @@ const SettingsAndTeams = () => {
               <Field
                 as={TextField}
                 name="phoneNumber"
-                label="Phone Number"
+                label={t("columns:Phonenumber")}
                 fullWidth
                 margin="normal"
                 error={touched.phoneNumber && Boolean(errors.phoneNumber)}
@@ -488,7 +504,7 @@ const SettingsAndTeams = () => {
               <Field name="role">
                     {({ field, form }) => (
                       <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
-                        <InputLabel id="role-label">Role</InputLabel>
+                        <InputLabel id="role-label">{t("role")}</InputLabel>
                         <Select
                           {...field}
                           labelId="role-label"
@@ -517,7 +533,7 @@ const SettingsAndTeams = () => {
                     onClick={() => handleResetPassword(teamMemberToEdit.id)}
                     className="!text-[#1D34D8]"
                   >
-                    Reset Password
+                    {t("ResetPassword")}
                   </Button>
                 </Box>
 
@@ -527,10 +543,10 @@ const SettingsAndTeams = () => {
                     className="!text-[#1D34D8] !mr-2"
                     onClick={() => setIsEditDialogOpen(false)}
                   >
-                    Cancel
+                    {t("PopUp:Cancel")}
                   </Button>
                   <Button type="submit" variant="contained" className="!bg-[#1D34D8]">
-                    Save
+                    {t("PopUp:Save")}
                   </Button>
                 </Box>
               </DialogActions>

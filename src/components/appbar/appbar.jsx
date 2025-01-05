@@ -33,8 +33,11 @@ import { userSerivce } from '../../APIs/Services/user.service';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { LangInput } from '../common/langInput/Index';
+import { useTranslation } from "react-i18next";
 
 export default function Appbar({ toggleSidebar }) {
+  const { t, i18n } = useTranslation();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
 
@@ -190,7 +193,7 @@ const validationCreateUserSchema = Yup.object().shape({
       //dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
     } catch (error) {
       console.error('Error adding project:', error);
-      Swal.fire('Error', 'Failed to add project.', 'error');
+      Swal.fire(t('messages:Error'), t('Failed to add project.'), 'error');
       setOpenDialog(false)
     } finally {
       setSubmitting(false);
@@ -201,14 +204,14 @@ const validationCreateUserSchema = Yup.object().shape({
     // Show confirmation dialog
     handleMenuClose();
     const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "Do you want to reset the password?",
+      title: t("PopUp:Areyousure?"),
+      text: t("messages:DoYouWantToResetThePassword?"),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#1D34D8",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, reset it!",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("messages:Yes,resetIt"),
+      cancelButtonText: t("PopUp:Cancel"),
     });
   
     // Exit if the user cancels
@@ -314,9 +317,9 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleProfileButtonClick}>Profile</MenuItem>
+      <MenuItem onClick={handleProfileButtonClick}>{t("Profile")}</MenuItem>
       <MenuItem onClick={() => handleResetPassword(email)}>
-      Reset password
+      {t("ResetPassword")}
     </MenuItem>
     </Menu>
   );
@@ -395,6 +398,10 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }} className='!flex !justify-center !items-center'>
           <div className='flex justify-center items-center gap-5 p-2 pr-6'>
+            
+            <LangInput />
+
+            
             <IconButton
               size="large"
               edge="end"
@@ -461,8 +468,8 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                   onClick={handleAdminCreateOpenDialog}
                   sx={{ textTransform: "none", display: { xs: "none", md: "flex" } }}
                 >
-                  Create user
-                </Button>
+                  {t("CreateUser")}
+                  </Button>
               ) : (
                 <Button
                   variant="contained"
@@ -470,7 +477,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                   onClick={() => setOpenDialog(true)}
                   sx={{ ml: 2, textTransform: "none", display: { xs: "none", md: "flex" } }}
                 >
-                  Create new project
+                  {t("CreateProject")}
                 </Button>
               )
             )}

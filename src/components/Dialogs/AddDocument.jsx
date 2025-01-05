@@ -14,6 +14,7 @@ import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { styled } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 const VisuallyHiddenInput = styled("input")({
   display: "none",
@@ -31,6 +32,8 @@ const StyledBox = styled(Box)(({ theme }) => ({
 }));
 
 const AddDocumentsDialog = ({ open, handleClose, handleDocumentUpload }) => {
+  const { t } = useTranslation();
+
   const [selectedFiles, setSelectedFiles] = useState([]);
 
   const handleFileChange = (event) => {
@@ -59,7 +62,7 @@ const AddDocumentsDialog = ({ open, handleClose, handleDocumentUpload }) => {
     >
       <DialogTitle>
         <Typography variant="h6">
-          Upload Documents
+          {t("PopUp:UploadDocuments")}
           <IconButton
             className="!text-[#1D34D8]"
             aria-label="close"
@@ -76,7 +79,7 @@ const AddDocumentsDialog = ({ open, handleClose, handleDocumentUpload }) => {
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1" gutterBottom>
-          Select files to upload:
+          {t("PopUp:Select files to upload")}:
         </Typography>
         <StyledBox>
           <Button
@@ -84,7 +87,7 @@ const AddDocumentsDialog = ({ open, handleClose, handleDocumentUpload }) => {
             variant="contained"
             startIcon={<CloudUploadIcon />}
           >
-            Choose Files
+          {t("PopUp:UploadFiles")}
             <VisuallyHiddenInput
               name="files"
               type="file"
@@ -114,22 +117,22 @@ const AddDocumentsDialog = ({ open, handleClose, handleDocumentUpload }) => {
             </Grid>
           ) : (
             <Typography variant="body2" color="textSecondary">
-              No files selected
-            </Typography>
+            {t("PopUp:Nofilesuploaded")}
+          </Typography>
           )}
         </Box>
       </DialogContent>
       <DialogActions>
         <Box display="flex" justifyContent="flex-end" gap={2} width="100%">
           <Button variant="outlined" onClick={handleClose}>
-            Cancel
+          {t("PopUp:Cancel")}
           </Button>
           <Button
             variant="contained"
             className='!bg-[#1D34D8]'            
             onClick={handleUpload}
           >
-            Upload
+          {t("PopUp:Upload")}
           </Button>
         </Box>
       </DialogActions>

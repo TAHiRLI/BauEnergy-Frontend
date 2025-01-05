@@ -24,6 +24,7 @@ import AddDocumentsDialog from  '../../components/Dialogs/AddDocument'
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import html2canvas from "html2canvas";
 import { useSearchParams } from "react-router-dom"; 
+import { useTranslation } from "react-i18next";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Instrument name is required'),
@@ -49,6 +50,8 @@ const StyledBox = styled(Box)(({ theme }) => ({
 }));
 
 const InstrumentDetails = () => {
+  const { t } = useTranslation();
+
   const { id } = useParams();
   const [instrument, setInstrument] = useState(null);
   const [filteredInstrument, setfilteredInstrument] = useState(null);
@@ -158,13 +161,13 @@ useEffect(() => {
             throw new Error(response.data.message || 'Failed to upload documents.');
         }
 
-        Swal.fire('Success', 'Documents uploaded successfully!', 'success');
+        Swal.fire(t('messages:Success'), t('messages:Documents uploaded successfully!'), 'success');
         handleAddDocumentCloseDialog();
         fetchInstrument();
 
     } catch (error) {
         console.error('Error details:', error.response || error.message || error);
-        Swal.fire('Error', error.response?.data?.message || 'Failed to upload documents.', 'error');
+        Swal.fire(t('messages:Success'), error.response?.data?.message || 'Failed to upload documents.', 'error');
     }
 };
 
@@ -177,7 +180,7 @@ const fetchInstrument = async () => {
     }
     setIsFirstEffectComplete(true);
   } catch (error) {
-    setError('Error fetching instrument details');
+    setError(t('messages:Error fetching instrument details'));
   } finally {
     setLoading(false);
   }
@@ -234,13 +237,13 @@ const loadMoreInstruments = () => {
 
 
 const instrumentStatusOptions = [
-  { label: 'Available', value: 'Available' },
-  { label: 'In Use', value: 'In_use' },
-  { label: 'Under Maintenance', value: 'Under_maintenance' },
-  { label: 'In Delivery', value: 'In_delivery' },
-  { label: 'In Controlling', value: 'In_controlling' },
-  { label: 'Controlled', value: 'Controlled' },
-  { label: 'To Be Controlled', value: 'To_be_controlled' },
+  { label: t('PopUp:Available'), value: 'Available' },
+  { label: t('PopUp:InUse'), value: 'In_use' },
+  { label: t('PopUp:UnderMaintenance'), value: 'Under_maintenance' },
+  { label: t('PopUp:InDelivery'), value: 'In_delivery' },
+  { label: t('PopUp:InControlling'), value: 'In_controlling' },
+  { label: t('PopUp:Controlled'), value: 'Controlled' },
+  { label: t('PopUp:ToBeControlled'), value: 'To_be_controlled' },
 ];
 
   
@@ -467,7 +470,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     const response = await instrumentService.edit(id, formData);
     if (response.status !== 200) throw new Error('Failed to submit data');
     
-    Swal.fire('Success', 'Instrument has been updated!', 'success')
+    Swal.fire(t('messages:Success'), t('Instrument has been updated!'), 'success')
     // .then(() => {
     //   // Reload the page after the alert is closed
     //   window.location.reload();
@@ -478,7 +481,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     setRefresh(!refresh);
   } catch (error) {
     handleCloseUpdateModal();
-    Swal.fire('Error', 'Failed to edit instrument.', 'error');
+    Swal.fire(t('messages:Error'), t('Failed to edit instrument.'), 'error');
   } finally {
     setSubmitting(false);
   }
@@ -517,21 +520,22 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       // Show confirmation dialog
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: t('PopUp:Areyousure?'),
+        text: t("messages:YouWon'tBeAbleToRevertThis!"),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#1D34D8',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
-      });
+        confirmButtonText: t('PopUp:Yes,deleteit'),
+        cancelButtonText: t('PopUp:Cancel'),
+        });
   
       if (result.isConfirmed) {
         // Proceed with deletion
         await instrumentService.removePdf(instrument.id, pdfId);
         setExistingPdfs(existingPdfs.filter(pdf => pdf.id !== pdfId));
         handleCloseUpdateModal();
-        Swal.fire('Success', 'Document deleted successfully!', 'success');
+        Swal.fire(t('messages:Success'), 'Document deleted successfully!', 'success');
         setRefresh(!refresh); 
       }
     } catch (error) {
@@ -541,14 +545,14 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
   
   const handleDelete = async (id) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: 'Do you want to delete this instrument? This action cannot be undone.',
+      title: t('PopUp:Areyousure?'),
+      text: t('PopUp:Doyouwanttodeletethisinstrument?Thisactioncannotbeundone.'),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#1D34D8',
       cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
+      confirmButtonText: t('PopUp:Yes,deleteit'),
+      cancelButtonText: t('PopUp:Cancel'),
     });
   
     if (result.isConfirmed) {
@@ -556,7 +560,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
         const response = await instrumentService.remove(id);
         Swal.fire({
           icon: 'success',
-          title: 'Instrument Deleted',
+          title: t('PopUp:Instrument Deleted'),
           text: response.data?.message || 'The instrument has been successfully deleted...',
         });
         setRefresh((prev) => !prev);
@@ -565,7 +569,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
       } catch (err) {
         Swal.fire({
           icon: 'error',
-          title: 'Error',
+          title: t('messages:Error'),
           text: err.response?.data?.message || 'Failed to delete the instrument. Please try again later.',
         });
         console.error('Error deleting instrument:', err);
@@ -608,11 +612,11 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
             <p className="text-gray-700 my-2">{instrument.shortDesc}</p>
             <p className="text-gray-600 mb-2">{instrument.description}</p>
             <div className="text-gray-600">
-              Instrument Type: <span className="font-bold text-blue-700">{instrument.instrumentType}</span>
+            {t('Instrument_Type')}: <span className="font-bold text-blue-700">{instrument.instrumentType}</span>
             </div>
             {canViewPrice && (
               <div className="text-gray-600 my-2">
-                Price: {instrument.price.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {t('PopUp:Price')}: {instrument.price.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>            
             )}
             <div className="mt-4 flex gap-4">
@@ -626,7 +630,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                 onClick={handleOpenUpdateModal}
                 className="bg-[#1D34D8] text-white font-semibold rounded-3xl px-6 py-2 transition hover:shadow-lg"
               >
-                Edit Instrument
+                {t('PopUp:EditInstrument')}
               </button>
             </div>
           </div>
@@ -637,7 +641,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
       <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8' }}>
-            Documents
+          {t('columns:Documents')}
           </Typography>
           <IconButton onClick={handleAddDocumentOpenDialog}>
             <AddIcon sx={{ fontSize: 30, color: '#1D34D8' }} />
@@ -679,7 +683,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
             ))
           ) : (
             <Typography variant="body2" color="textSecondary" className='!ml-4'>
-              No documents available for this instrument.
+              {t('messages:NoDocumentsAvailableForThisInstrument')}
             </Typography>
           )}
         </Grid>
@@ -689,7 +693,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
       <Box mt={5} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
               <Box mt={3} mb={3} className='!flex !gap-2 sm:!flex-row !flex-col'>
         <TextField
-          label="Search by Project"
+          label= {t('PopUp:SearchbyProject')}
           value={projectSearch}
           onChange={(e) => {
               const value = e.target.value;
@@ -713,9 +717,9 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
 
 
           <FormControl fullWidth>
-            <InputLabel>Search by Status</InputLabel>
+            <InputLabel>{t('PopUp:SearchbyStatus')}</InputLabel>
             <Select
-              label="Search by Status"
+              label={t('PopUp:SearchbyStatus')}
               value={statusSearch || ''}
               onChange={(e) => {
                 setStatusSearch(e.target.value);
@@ -844,18 +848,18 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                     sx={{ color: "text.secondary" }}
                     className="sm:w-[240px] hidden sm:block"
                   >
-                    Status:{" "}
+                    {t('columns:Status')}:{" "}
                     <StatusButton
-                      text={firstInstrument.status
-                        .split("_")
-                        .join(" ")}
+                      text={t(`PopUp:${firstInstrument.status.split('_').join('')}`)}
+
+                      //text={firstInstrument.status.split("_").join(" ")}
                       color={getStatusColor(firstInstrument.status)}
                     />
                   </Typography>
 
                   {/* Project */}
                   <Typography sx={{ color: "text.secondary" }} className="!text-[14px]">
-                    Project: {firstInstrument.projectName || "Not assigned"}
+                  {t('Project')}: {firstInstrument.projectName || "Not assigned"}
                   </Typography>
                 </div>
 
@@ -936,7 +940,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                       sx={{ color: "text.secondary" }}
                       className="sm:w-[240px] hidden sm:block"
                     >
-                      Status:{" "}
+                      {t('columns:Status')}{" "}
                       <StatusButton
                         text={instrument.status.split("_").join(" ")}
                         color={getStatusColor(instrument.status)}
@@ -945,7 +949,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
 
                     {/* Project */}
                     <Typography sx={{ color: "text.secondary" }} className="!text-[14px]">
-                      Project: {instrument.projectName || "Not assigned"}
+                    {t('Project')}: {instrument.projectName || "Not assigned"}
                     </Typography>
                   </div>
 
@@ -1013,7 +1017,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                     },
                   }}
                 >
-                  {loading ? "Loading..." : "Load More"}
+                  {loading ? t("Loading") : t("LoadMore")}
                 </Button>
               </Box>
             )}
@@ -1028,7 +1032,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
           backgroundColor: "#fcfcfc"  
       },
       }}>
-        <DialogTitle>Edit Instrument
+        <DialogTitle>{t("PopUp:EditInstrument")}
           <IconButton
                           className="!text-blue-700"
                           aria-label="close"
@@ -1094,7 +1098,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                     className="!text-[#1D34D8]"
                     onClick={() => document.getElementById('profile-image-input').click()}
                   >
-                    Edit Image
+                    {t("PopUp:EditImage")}
                   </Button>
                   <input
                     id="profile-image-input"
@@ -1112,7 +1116,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                 <Field
                   as={TextField}
                   name="name"
-                  label="Instrument Name"
+                  label={t("columns:InstrumentName")}
                   fullWidth
                   error={touched.name && !!errors.name}
                   helperText={touched.name && errors.name}
@@ -1122,7 +1126,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                 <Field
                   as={TextField}
                   name="description"
-                  label="Description"
+                  label={t("columns:Description")}
                   fullWidth
                   error={touched.description && !!errors.description}
                   helperText={touched.description && errors.description}
@@ -1132,7 +1136,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                 <Field
                   as={TextField}
                   name="shortDesc"
-                  label="Short Description"
+                  label={t("PopUp:ShortDescription")}
                   fullWidth
                   error={touched.shortDesc && !!errors.shortDesc}
                   helperText={touched.shortDesc && errors.shortDesc}
@@ -1142,7 +1146,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                 <Field
                   as={TextField}
                   name="instrumentType"
-                  label="Instrument Type"
+                  label={t("PopUp:InstrumentType")}
                   fullWidth
                   error={touched.instrumentType && !!errors.instrumentType}
                   helperText={touched.instrumentType && errors.instrumentType}
@@ -1152,7 +1156,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                 <Field
                   as={TextField}
                   name="price"
-                  label="Price"
+                  label={t("PopUp:Price")}
                   fullWidth
                   error={touched.price && !!errors.price}
                   helperText={touched.price && errors.price}
@@ -1162,10 +1166,10 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
               </Box>
 
               <FormControl fullWidth margin="dense">
-                    <InputLabel>Tags</InputLabel>
+                    <InputLabel>{t("PopUp:Tag")}</InputLabel>
                     <Select
                         multiple
-                        label="Tags"
+                        label={t("PopUp:Tag")}
                         value={instrument.tags}
                         onChange={handleTagChange}
                         renderValue={(selected) => selected.join(', ')}
@@ -1180,13 +1184,13 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
               </FormControl>
 
               <FormControl fullWidth margin="dense" variant="outlined">
-                    <InputLabel htmlFor="add-new-tag">Add new tag (optional)</InputLabel>
+                    <InputLabel htmlFor="add-new-tag">{t("PopUp:Addnewtag")}</InputLabel>
                     <OutlinedInput
                         id="add-new-tag"
                         type="text"
                         onChange={(e) => setTagInput(e.target.value)}
                         value={tagInput}
-                        label="Add new tag (optional)"
+                        label={t("PopUp:Addnewtag")}
                         placeholder="Type a new tag"
                         endAdornment={
                         <InputAdornment position="end">
@@ -1207,7 +1211,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                     variant="contained"
                     startIcon={<CloudUploadIcon />}
                   >
-                    Upload files
+                      {t("PopUp:UploadFiles")}
                     <VisuallyHiddenInput
                       name="files"
                       type="file"
@@ -1233,7 +1237,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                         ))}
                       </Grid>
                     ) : (
-                      <Typography variant="body2" color="textSecondary">No files uploaded</Typography>
+                      <Typography variant="body2" color="textSecondary">{t("PopUp:Nofilesuploaded")}</Typography>
                     )}          
               </Box>
 
@@ -1264,10 +1268,10 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
 
               <DialogActions className='!px-0'>
               <Button variant="outlined" className='!text-[#1D34D8]' onClick={handleCloseUpdateModal}>
-                  Cancel
+              {t("PopUp:Cancel")}
                 </Button>
                 <Button type="submit" variant="contained" className='!bg-[#1D34D8]'>
-                  Save
+                {t("PopUp:Save")}
                 </Button>
         </DialogActions>
             </Form>
@@ -1295,7 +1299,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                 },
               }}>
                 <DialogTitle>
-                    Qr Instrument
+                    {t("PopUp:QrInstrument")}
                     <IconButton
                         className="!text-[#1D34D8]"
                         aria-label="close"
@@ -1314,14 +1318,14 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                 <DialogContent >
                   <div className='flex justify-between items-center'>
                     <Typography variant="body1" >
-                        Instrument details:
+                    {t("PopUp:Instrument details")}:
                     </Typography>
                     <Button
                       className='!text-[#1D34D8] !rounded-xl'
                       startIcon={<ShareIcon />}
                       onClick={handleShare}
                     >
-                      Share
+                    {t("PopUp:Share")}:
                     </Button>
                   </div>
 
@@ -1402,7 +1406,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                           }}
                         />
                         <div className="flex flex-col items-center text-xl font-bold italic">
-                          <p>Scan me</p>
+                          <p>{t("PopUp:ScanMe")}:</p>
                           <p>BauEnergy</p>
                         </div>
                       </div>
@@ -1412,7 +1416,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                         onClick={downloadQRCodeWithText}
                         className="bg-[#1D34D8] text-white px-4 py-2 rounded-3xl mt-4"
                       >
-                        Download QR Code
+                        {t("PopUp:DownloadQRCode")}
                       </button>
                     </Box>
 
@@ -1432,7 +1436,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
         }}
       >
         <DialogTitle>
-          Instrument History
+          {t("PopUp:InstrumentHistory")}
           <IconButton
             className="!text-blue-700"
             aria-label="close"
@@ -1480,11 +1484,11 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
               </Box> 
               <Box mb={2} p={2} sx={{ borderRadius: 3 }} className="block sm:!hidden !w-full !p-0">
               <Typography variant="h6" className=" block sm:!hidden">
-                Status: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
+              {t("columns:Status")}: <StatusButton text={instrument.status.split('_').join(' ')} color={getStatusColor(instrument.status)} />
               </Typography>
               </Box>
 
-              <Typography variant="h6" dividers>Details</Typography>
+              <Typography variant="h6" dividers>{t("PopUp:Details")}</Typography>
               <div className='border-b border-slate-300 w-full my-2'></div>
               {history.map((entry, index) => (
                 <Box key={index} mb={2} width="100%">
@@ -1499,7 +1503,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
               ))}
             </>
           ) : (
-            <Typography variant="body2" className='text-gray-500'>Nothing here yet...</Typography>
+            <Typography variant="body2" className='text-gray-500'>{t("Nothing here yet...")}</Typography>
           )}
         </DialogContent>
       </Dialog>

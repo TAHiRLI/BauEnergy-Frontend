@@ -7,8 +7,8 @@ import Swal from 'sweetalert2';
 import { useProjects, ProjectsActions } from '../../context/projectContext';
 import { projectService } from '../../APIs/Services/project.service';
 import { teamMemberService } from '../../APIs/Services/teammember.service'; 
-import Cookies from "universal-cookie";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import { useTranslation } from "react-i18next";
 
 
 export default function TeamMember({ project }) {
@@ -20,6 +20,8 @@ export default function TeamMember({ project }) {
   const [selectedTeamMember, setSelectedTeamMember] = useState(null); 
   const [loading, setLoading] = useState(false);
 
+  const { t } = useTranslation();
+  
   const fetchAllTeamMembers = async () => {
     try {
       const response = await teamMemberService.getAllByCompany(project.id); 
@@ -89,7 +91,7 @@ const handleAddExistingTeamMember = async () => {
 
       await teamMemberService.add(formData);
 
-      Swal.fire("Success", "Team member has been added to the project!", "success");
+      Swal.fire(t("messages:Success"), t("messages:Team member has been added to the project!"), "success");
       setOpenDialog(false);
 
       const response = await projectService.getById(project.id);
@@ -97,7 +99,7 @@ const handleAddExistingTeamMember = async () => {
     }
   } catch (error) {
     console.error("Error adding team member:", error);
-    Swal.fire("Error", error.message, "error");
+    Swal.fire(t("messages:Error"), error.message, "error");
   } finally {
     setLoading(false); 
   }
@@ -107,27 +109,27 @@ const handleAddExistingTeamMember = async () => {
   const handleDelete = async (id) => {
     try {
       const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: 'You won\'t be able to revert this!',
+        title: t('PopUp:Areyousure?'),
+        text: t("messages:YouWon'tBeAbleToRevertThis!"),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#1D34D8',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!',
+        confirmButtonText: t("PopUp:Yes,deleteit"),
+        cancelButtonText: t("PopUp:Cancel")
       });
 
       if (result.isConfirmed) {
         await teamMemberService.remove(id);
-        Swal.fire('Deleted!', 'Team member has been removed from the project.', 'success');
+        Swal.fire(t('messages:Deleted'), t('messages:Team member has been removed from the project.'), 'success');
         const response = await projectService.getById(project.id);
         dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
       }
     } catch (error) {
       console.error('Error deleting team member:', error.message);
-      Swal.fire('Error!', 'Failed to remove team member.', 'error');
+      Swal.fire(t("messages:Error"), t('messages:Failedtoremoveteammember'), 'error');
     }
   };
-
   
   const formatDate = (date) => {
     if (!date) {
@@ -148,7 +150,7 @@ const handleAddExistingTeamMember = async () => {
   const columns = [
     {
       field: 'name',
-      headerName: 'Name & Last name',
+      headerName: t("columns:NameLastname"),
       minWidth: 300,
       renderCell: (params) => {
         const fullName = `${params.row.name} ${params.row.lastName}`; 
@@ -169,14 +171,17 @@ const handleAddExistingTeamMember = async () => {
     },
     {
       field: 'role',
-      headerName: 'Role',
+      headerName: t('columns:Role'),
       minWidth: 130,
-      renderCell: (params) => params.row?.role?.split('_').join(' '),
+      renderCell: (params) => {
+        const role = params.row?.role;
+        return t(role);
+      },    
     },
-    { field: 'dateAddedProject', headerName: 'Joined date', minWidth: 150, renderCell: (params) => formatDate(params.row.dateAddedProject),  },
+    { field: 'dateAddedProject', headerName: t('columns:JoinedDate'), minWidth: 150, renderCell: (params) => formatDate(params.row.dateAddedProject),  },
     {
       field: 'actions',
-      headerName: 'Actions',
+      headerName: t('columns:Actions'),
       minWidth: 130,
       renderCell: (params) => (
         <>
@@ -208,7 +213,7 @@ const handleAddExistingTeamMember = async () => {
         variant="contained"
         onClick={() => setOpenDialog(true)}
       >
-        Add New People
+        {t("AddNewPeople")}
       </Button>
 
       <Paper
@@ -249,7 +254,7 @@ const handleAddExistingTeamMember = async () => {
             backgroundColor: "#fcfcfc"  
           },
         }}>
-        <DialogTitle className='!font-semibold'>{isCreatingNew ? 'Create New Team Member' : 'Select Existing Team Member'}
+        <DialogTitle className='!font-semibold'>{t("PopUp:SelectExistingTeamMember")}
         <IconButton
           className="!text-[#1D34D8]"
           aria-label="close"
@@ -265,10 +270,10 @@ const handleAddExistingTeamMember = async () => {
         </DialogTitle>
         <DialogContent>
           <FormControl fullWidth margin="dense">
-          <InputLabel sx={{ color: '#1D34D8' }}>Select Team Member</InputLabel>
+          <InputLabel sx={{ color: '#1D34D8' }}> {t("PopUp:SelectTeamMember")}</InputLabel>
           <Select
             value={selectedTeamMember ? selectedTeamMember.id : ''}
-            label="Select Team Member"
+            label={t("PopUp:SelectTeamMember")}
             onChange={(e) => {
               const selectedMember = allTeamMembers.find((member) => member.id === e.target.value);
               setSelectedTeamMember(selectedMember);
@@ -298,7 +303,7 @@ const handleAddExistingTeamMember = async () => {
             onClick={handleAddExistingTeamMember}
             disabled={!selectedTeamMember || loading} 
           >
-            Add to Project
+            {t("PopUp:AddToProject")}
           </Button>
         </FormControl>
         

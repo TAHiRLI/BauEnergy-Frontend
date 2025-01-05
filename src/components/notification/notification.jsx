@@ -11,8 +11,11 @@ import { projectService } from '../../APIs/Services/project.service';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import Swal from 'sweetalert2';
+import { useTranslation } from "react-i18next";
 
 const NotificationModal = ({ open, onClose }) => {
+  const { t } = useTranslation();
+  
   const [notifications, setNotifications] = useState([]);
   const [selectedNotificationIndex, setSelectedNotificationIndex] = useState(null); 
   const [openNotificationContent, setOpenNotificationContent] = useState(false); 
@@ -168,7 +171,7 @@ const NotificationModal = ({ open, onClose }) => {
         );
         Swal.fire({
           icon: "success",
-          title: "Rejected!",
+          title: t("messages:Rejected!"),
           text: response?.message || "The instrument has been successfully rejected.",
         });
         fetchNotifications();
@@ -176,8 +179,8 @@ const NotificationModal = ({ open, onClose }) => {
         console.error("Failed to reject instrument:", error);
         Swal.fire({
           icon: "error",
-          title: "Error",
-          text: "Something went wrong while rejecting the instrument.",
+          title: t("messages:Error"),
+          text: t("messages:Something went wrong while rejecting the instrument."),
         });
       }
     }
@@ -191,7 +194,7 @@ const NotificationModal = ({ open, onClose }) => {
       <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 ${open ? '' : 'hidden'}`} onClick={onClose} >
         <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-4 pb-0">
-            <h2 className="text-lg font-medium">Notifications</h2>
+            <h2 className="text-lg font-medium">{t("Notifications")}</h2>
             <IconButton className="!text-blue-700" aria-label="close" onClick={onClose}>
               <CancelOutlinedIcon />
             </IconButton>
@@ -205,7 +208,7 @@ const NotificationModal = ({ open, onClose }) => {
                   selectedTab === 0 ? 'bg-blue-100' : 'border border-black'
                 }`}
               >
-                All
+                {t("PopUp:All")}
               </button>
               <button
                 onClick={() => handleTabChange(1)}
@@ -213,13 +216,13 @@ const NotificationModal = ({ open, onClose }) => {
                   selectedTab === 1 ? 'bg-blue-100' : 'border border-black'
                 }`}
               >
-                Unread
+              {t("PopUp:Unread")}
               </button>
             </div>
 
             {/* Notification List or No Notifications Message */}
             {filteredNotifications.length === 0 ? (
-              <div className="text-center text-gray-500">You have no notifications</div>
+              <div className="text-center text-gray-500">{t("PopUp:Youhavenonotifications")}</div>
             ) : (
               <ul className="space-y-4 border rounded-xl overflow-y-auto max-h-96">
                 {filteredNotifications

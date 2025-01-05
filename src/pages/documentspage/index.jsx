@@ -7,6 +7,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { projectDocumentsService } from '../../APIs/Services/projectDocuments.service';
 import { instrumentDocumentsService } from '../../APIs/Services/instrumentDocument.service';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { t } from 'i18next';
 
 
 export const Documents = () => {
@@ -79,7 +80,7 @@ export const Documents = () => {
   return (
     <Box mt={2} p={3} sx={{ backgroundColor: '#ffffff', borderRadius: 3, boxShadow: 2 }}>
       <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1D34D8', mb: 2 }}>
-        Documents
+        {t("columns:Documents")}
       </Typography>
 
       {loading ? (
@@ -141,7 +142,7 @@ export const Documents = () => {
             </>
           ) : (
             <Typography variant="body2" color="textSecondary" className='!ml-4'>
-              No documents in trash bin.
+              {t("columns:Nodocumentsintrashbin.")}
             </Typography>
           )}
 

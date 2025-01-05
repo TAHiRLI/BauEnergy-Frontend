@@ -2,8 +2,11 @@ import React from 'react';
 import { Box, Grid, Paper, Typography, Divider } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
+import { useTranslation } from "react-i18next";
 
 export default function ProjectOverviewTab({ project }) {
+  const { t } = useTranslation();
+
   const formatDate = (date) => {
     if(!date){
       return
@@ -32,18 +35,18 @@ export default function ProjectOverviewTab({ project }) {
         <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Paper elevation={1} sx={{ padding: 4, backgroundColor: '#f0f4f8', borderRadius: '16px', width: '100%' }}>
             <Typography variant="h6" fontWeight="bold" color="#1D34D8">
-              Project Timeline
+              {t("columns:ProjectTimeline")} 
             </Typography>
             <Divider sx={{ my: 2 }} />
             <Typography variant="subtitle1" gutterBottom>
-              Start Date
+              {t("columns:Start Date")} 
             </Typography>
             <Typography variant="body2" color="textSecondary" gutterBottom>
               {formatDate(project?.startDate)}
             </Typography>
 
             <Typography variant="subtitle1" gutterBottom>
-              End Date
+              {t("columns:End Date")} 
             </Typography>
             <Typography variant="body2" color="textSecondary">
               {formatDate(project?.endDate)}
@@ -69,13 +72,13 @@ export default function ProjectOverviewTab({ project }) {
             <Box textAlign="center" > 
               <PeopleIcon sx={{ fontSize: 50, color: '#1D34D8' }} />
               <Typography variant="h6" fontWeight="bold" mt={2}>
-                Team Members
+                {t("TeamMembers")}
               </Typography>
               <Typography variant="h4" fontWeight="bold" color="#1D34D8" mt={1}>
                 {project?.teamMembers?.length}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                Members involved in this project
+                {t("columns:Membersinvolvedinthisproject")}
               </Typography>
             </Box>
 
@@ -86,13 +89,13 @@ export default function ProjectOverviewTab({ project }) {
             <Box textAlign="center">
               <PrecisionManufacturingIcon sx={{ fontSize: 50, color: '#1D34D8' }} />
               <Typography variant="h6" fontWeight="bold" mt={2}>
-                Instruments Used
+                {t("columns:InstrumentsUsed")}
               </Typography>
               <Typography variant="h4" fontWeight="bold" color="#1D34D8" mt={1}>
                 {project?.instruments?.length}
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                Instruments used in the project
+                {t("columns:Instrumentsusedintheproject")}
               </Typography>
             </Box>
           </Paper>
