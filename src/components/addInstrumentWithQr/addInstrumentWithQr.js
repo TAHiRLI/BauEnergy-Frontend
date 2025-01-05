@@ -1,11 +1,12 @@
 import { Button, IconButton } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import QrReader from "../../components/QrScanner/QrScanner";
-import { DocumentScannerSharp } from "@mui/icons-material";
 
-const AddInstrumentWithQr = ({ onComplete }) => {
+import { DocumentScannerSharp } from "@mui/icons-material";
+import QrReader from "../../components/QrScanner/QrScanner";
+
+const AddInstrumentWithQr = ({ onComplete, showInitialLoad }) => {
   const [scannedResult, setScannedResult] = useState("");
-  const [showScanner, setShowScaner] = useState(false);
+  const [showScanner, setShowScaner] = useState( showInitialLoad);
 
   useEffect(() => {
     if (!scannedResult) return;

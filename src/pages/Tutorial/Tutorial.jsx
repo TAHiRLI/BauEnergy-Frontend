@@ -1,33 +1,50 @@
 import React, { useState } from "react";
-import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
+
+import { AuthActions } from "../../context/authContext";
+import Cookies from 'universal-cookie';
 import Questions from "../../components/Questions/Questions";
-import { useAuth } from "../../context/authContext";
+import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
+import dayjs from 'dayjs';
 import { fileService } from "../../APIs/Services/file.service";
+import { useAuth } from "../../context/authContext";
 import { userSerivce } from "../../APIs/Services/user.service";
+
+const cookies = new Cookies();
+
 import { AuthActions } from "../../context/authContext";
 import { useTranslation } from "react-i18next";
 
 const TutorialPage = () => {
   const { t, i18n } = useTranslation();
   const { user, dispatch } = useAuth();
+  console.log("🚀 ~ TutorialPage ~ user:", user)
 
   const [isEnded, setIsEnded] = useState(user.hasCompletedTutorial);
   const [isSuccessful, setIsSuccessful] = useState(null);
-  const [hasCertificate, setHasCertificate] = useState(() => (user.hasCompletedTutorial == false ? null : true));
   const [scorePercentage, setScorePercentage] =  useState(0);
   const [showQuestions, setShowQuestions] = useState(false);
 
-  const handleVideoEnd = () => {
-    setIsEnded(true); // Enable moving forward
+  const handleVideoEnd = async() => {
+    setIsEnded(true);
+    await userSerivce.CompletedTutorial();
+    dispatch({ type: AuthActions.success, payload: {...user, hasCompletedTutorial: true, } });
+    cookies.set('user', JSON.stringify({...user, hasCompletedTutorial: true,}), {
+      expires: new Date(dayjs(user.expiration)),
+      path: '/',
+    });
   };
 
   const handleCertificateGet = async () => {
     try {
-      console.log(user);
-      await userSerivce.CompletedTutorial();
-      dispatch({ type: AuthActions.completedTutorial });
-
-      await fileService.getCertificate(user?.authState?.teamMember, scorePercentage);
+      await userSerivce.CompletedTest();
+      dispatch({ type: AuthActions.success, payload: {...user, hasCompletedTest: true , hasCompletedTutorial: true, } });
+      cookies.set('user', JSON.stringify({...user, hasCompletedTest: true, hasCompletedTutorial: true,}), {
+        expires: new Date(dayjs(user.expiration)),
+        path: '/',
+      });
+        console.log("🚀 ~ cookies.set ~ user.expiration:", user.expiration)
+      await fileService.getCertificate(user?.authState?.fullName, user?.authState?.birthDate, scorePercentage);
+      
     } catch (error) {
       console.log("🚀 ~ handleCertificateGet ~ error:", error);
     }
@@ -43,7 +60,7 @@ const TutorialPage = () => {
       <div className="flex justify-center mt-3">
 
       {
-        !isSuccessful &&
+        (!isSuccessful || user.hasCompletedTutorial )&&
         <button
         onClick={() => setShowQuestions((x) => !x)}
         disabled={!isEnded}
@@ -61,7 +78,7 @@ const TutorialPage = () => {
       </button>
       }
       
-      {isSuccessful && (
+      {(isSuccessful || user.hasCompletedTest )&& (
         <button
           onClick={handleCertificateGet}
           style={{
@@ -74,7 +91,7 @@ const TutorialPage = () => {
             cursor: isEnded ? "pointer" : "not-allowed",
           }}
         >
-          {hasCertificate ? "Renew Certificate":"Get certificate"}
+          {user.hasCompletedTest ? "Renew Certificate":"Get certificate"}
         </button>
       )}
       </div>

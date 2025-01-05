@@ -1,9 +1,9 @@
+import Cookies from "universal-cookie";
 import Docxtemplater from "docxtemplater";
+import { HttpClient } from "../HttpClients";
 import PizZip from "pizzip";
 import PizZipUtils from "pizzip/utils/index.js";
 import { saveAs } from "file-saver";
-import Cookies from "universal-cookie";
-import { HttpClient } from "../HttpClients";
 const cookies = new Cookies();
 
 class FileService extends HttpClient {
@@ -15,13 +15,14 @@ class FileService extends HttpClient {
   //==========================================
   // Practice
   //==========================================
-  async getCertificate(user, scorePercent) {
-    let fileName = "BauEnergyZertifikate.docx";
+  async getCertificate(fulname, birthDate, scorePercent) {
+    let fileName = "BauEnergyZertifikate2.docx";
     var options = {
       data: {
-        ...user,
-        birthDate: "Not stored yet",
-        date: formatDate(new Date()),
+        name: fulname,
+        lastName: "", 
+        birthDate: formatDate(birthDate),
+        currentDate: formatDate(new Date()),
         scorePercent
       },
       outputName: "Certificate Of graduation",
@@ -30,11 +31,12 @@ class FileService extends HttpClient {
   }
 }
 const formatDate = (date) => {
+  if(!date) return "";
   const d = new Date(date);
   const day = String(d.getDate()).padStart(2, "0");
   const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are 0-based
   const year = d.getFullYear();
-  return `${day}/${month}/${year}`;
+  return `${day}.${month}.${year}`;
 };
 
 export const fileService = new FileService();

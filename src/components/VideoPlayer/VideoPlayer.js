@@ -1,11 +1,12 @@
-import React, { useRef, useState, useEffect } from "react";
-import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import PauseCircleIcon from "@mui/icons-material/PauseCircle";
-import { IconButton } from "@mui/material";
-import Replay10Icon from "@mui/icons-material/Replay10";
+import { FastForward, SkipNext } from "@mui/icons-material";
+import React, { useEffect, useRef, useState } from "react";
+
 import FastRewindIcon from "@mui/icons-material/FastRewind";
 import FirstPageIcon from "@mui/icons-material/FirstPage";
-import { FastForward, SkipNext } from "@mui/icons-material";
+import { IconButton } from "@mui/material";
+import PauseCircleIcon from "@mui/icons-material/PauseCircle";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import Replay10Icon from "@mui/icons-material/Replay10";
 
 const VideoPlayer = ({ onVideoEnd }) => {
   const videoRef = useRef(null);
@@ -110,7 +111,6 @@ const VideoPlayer = ({ onVideoEnd }) => {
         onTimeUpdate={handleTimeUpdate}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
-        preload={false}
         style={{ width: "100%" }}
       />
 
@@ -142,6 +142,7 @@ const VideoPlayer = ({ onVideoEnd }) => {
             min="0"
             max="100"
             value={progress}
+            onChange={()=>{}}
             style={{
               width: "100%",
               appearance: "none",
