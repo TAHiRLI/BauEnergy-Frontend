@@ -37,7 +37,7 @@ import { LangInput } from '../common/langInput/Index';
 import { useTranslation } from "react-i18next";
 
 export default function Appbar({ toggleSidebar }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
 
@@ -552,7 +552,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
               <Form>
                 <Field
                   as={TextField}
-                  label="Name"
+                  label={t("PopUp:Name")}
                   name="Name"
                   fullWidth
                   margin="dense"
@@ -561,7 +561,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 />
                 <Field
                   as={TextField}
-                  label="Description"
+                  label={t("columns:Description")}
                   name="Description"
                   fullWidth
                   margin="dense"
@@ -570,7 +570,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 />
                 <Field
                   as={TextField}
-                  label="Address"
+                  label={t("PopUp:Address")}
                   name="Address"
                   fullWidth
                   margin="dense"
@@ -579,7 +579,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 />
                 <Field
                   as={TextField}
-                  label="Start Date"
+                  label={t("columns:Start Date")}
                   name="StartDate"
                   type="date"
                   fullWidth
@@ -601,7 +601,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                   }}                                  />
               <Field
                   as={TextField}
-                  label="End Date"
+                  label={t("columns:End Date")}
                   name="EndDate"
                   type="date"
                   fullWidth

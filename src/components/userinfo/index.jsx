@@ -3,9 +3,12 @@ import { Avatar, Typography } from "@mui/material";
 import {userSerivce} from "../../APIs/Services/user.service"; 
 import {jwtDecode} from "jwt-decode";
 import { useAuth } from "../../context/authContext";
+import { useTranslation } from "react-i18next";
 
 
 const UserInfo = () => {
+  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userData, setUserData] = useState(null); 
@@ -38,7 +41,7 @@ const UserInfo = () => {
   }, [userEmail]);
 
   if (loading) {
-    return <Typography className="text-sm text-gray-500">Loading...</Typography>;
+    return <Typography className="text-sm text-gray-500">{t("Loading")}</Typography>;
   }
 
   if (error) {
@@ -46,7 +49,7 @@ const UserInfo = () => {
   }
 
   if (!userData) {
-    return <Typography className="text-sm text-gray-500">No user data found</Typography>;
+    return <Typography className="text-sm text-gray-500">{t("messages:No user data found")}</Typography>;
   }
 
 
@@ -59,7 +62,7 @@ const UserInfo = () => {
         {/* Display the user's role */}
         <Typography className="text-sm text-gray-500">
                 {Array.isArray(userData.role) 
-          ? userData.role.map(role => role.replace(/_/g, ' ')).join(", ") 
+          ? userData.role.map(role => t(role).replace(/_/g, ' ')).join(", ") 
           : userData.role.replace(/_/g, ' ')}        
         </Typography>
       </div>

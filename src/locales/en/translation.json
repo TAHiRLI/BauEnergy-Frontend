@@ -2,8 +2,8 @@
     "light": "Light mode",
     "dark": "Dark mode",
     "role": "Role",
-    "Company_Owner": "Company owner",
-    "Project_Manager": "Project manager",
+    "Company_Owner": "Company Owner",
+    "Project_Manager": "Project Manager",
     "User": "User",
     "TeamMembers" : "Team Members",
     "Instruments" : "Instruments",
@@ -89,7 +89,8 @@
         "Failed to edit instrument.": "Failed to edit instrument.",
         "Failed to add project.": "Failed to add project.",
         "Rejected!": "Rejected!",
-        "Something went wrong while rejecting the instrument.": "Something went wrong while rejecting the instrument."
+        "Something went wrong while rejecting the instrument.": "Something went wrong while rejecting the instrument.",
+        "No user data found": "No user data found"
     },
     "columns":{
         "NameLastname": "Name & Last name",
