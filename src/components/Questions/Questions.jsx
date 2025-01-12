@@ -3,25 +3,28 @@ import { Survey } from "survey-react-ui";
 import "survey-core/defaultV2.min.css";
 import { Model } from "survey-core";
 import Swal from "sweetalert2";
+import { useTranslation } from "react-i18next";
 
 const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
+  const { t } = useTranslation();
+  
   // Define the survey JSON
 
   const surveyJson = {
-    title: "Test Your Knowledge",
-    description: "Answer all questions correctly to pass the test.",
+    title: t("Quiz:Test Your Knowledge"),
+    description: t("Quiz:Answer all questions correctly to pass the test."),
     showProgressBar: "top",
     progressBarType: "questions",
     showTimerPanel: "top",
     firstPageIsStarted: true,
-    startSurveyText: "Start Quiz",
-    completedHtml: "<p>Thank you for completing the quiz!</p>",
+    startSurveyText: t("Quiz:Start Quiz"),
+    completedHtml: `<p>${t("Quiz:Thank you for completing the quiz!")}</p>`,
     pages: [
       {
         elements: [
           {
             type: "html",
-            html: "You are about to start the quiz. <br/>Click on <b>Start Quiz</b> to begin.",
+            html: `${t("Quiz:You are about to start the quiz.")} <br/>${t("Quiz:Click on")} <b>${t("Quiz:Start Quiz")}</b> ${t("Quiz:to begin.")}`,
           },
         ],
       },
@@ -130,10 +133,10 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
     // Show success or error message based on score
     if (correctAnswers === totalQuestions) {
       setIsSuccessful(true);
-      Swal.fire("Success", `You scored 100%! Well done!`, "success");
+      Swal.fire(t("messages:Success"), t("You scored 100%! Well done!"), "success");
     } else {
       setIsSuccessful(false);
-      Swal.fire("Your Score", `You scored ${scorePercentage}%. Keep practicing!`, "info");
+      Swal.fire(t("Your Score"), `You scored ${scorePercentage}%. Keep practicing!`, "info");
     }
 
     setIsCompleted(true); // Mark survey as completed
@@ -163,7 +166,7 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
               cursor: "pointer",
             }}
           >
-            Try Again
+            {t("Quiz:Try Again")}
           </button>
         )
       )}
