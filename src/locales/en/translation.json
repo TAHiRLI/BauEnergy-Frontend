@@ -206,7 +206,13 @@
     "Print QR Code": "Print QR Code",
     "Add New Instrument": "Add New Tool",
     "Instrument Deleted": "Tool Deleted",
-    "Select files to upload": "Select files to upload"
+    "Select files to upload": "Select files to upload",
+    "AddNewUser": "Add New User",
+    "Select Profile Photo": "Select Profile Photo",
+    "Do you want to update your information?": "Do you want to update your information?",
+    "Yes, update it!": "Yes, update it!",
+    "Your information has been updated successfully.": "Your information has been updated successfully.",
+    "Failed to update your information. Please try again later.": "Failed to update your information. Please try again later."
     },
     "Quiz":{
         "Test Your Knowledge": "Test Your Knowledge",

@@ -14,8 +14,11 @@ import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import Swal from "sweetalert2";
 import Cookies from "universal-cookie";
+import { useTranslation } from "react-i18next";
 
 const UpdateUserPage = () => {
+  const { t } = useTranslation();
+
   const { user } = useAuth();
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
   const userEmail = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
@@ -96,7 +99,7 @@ const UpdateUserPage = () => {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     setLoading(true);
-    console.log(imageFile); 
+    //console.log(imageFile); 
   
     const formData = new FormData();
     formData.append("Name", values.name);
@@ -114,13 +117,14 @@ const UpdateUserPage = () => {
   
     try {
       const result = await Swal.fire({
-        title: "Are you sure?",
-        text: "Do you want to update your information?",
+        title: t("PopUp:Areyousure?"),
+        text: t("PopUp:Do you want to update your information?"),
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#1D34D8",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, update it!",
+        confirmButtonText: t("PopUp:Yes, update it!"),
+        cancelButtonText: t("PopUp:Cancel"),
       });
   
       if (!result.isConfirmed) {
@@ -137,8 +141,8 @@ const UpdateUserPage = () => {
         cookies.set("user", { token: newToken }, { path: "/" });
   
         Swal.fire(
-          "Success",
-          "Your information has been updated successfully.",
+          t("messages:Success"),
+          t("PopUp:Your information has been updated successfully."),
           "success"
         ).then(() => {
           window.location.reload();
@@ -148,8 +152,8 @@ const UpdateUserPage = () => {
       console.error("Error updating user:", error);
   
       await Swal.fire({
-        title: "Error!",
-        text: "Failed to update your information. Please try again later.",
+        title: t("messages:Error"),
+        text: t("PopUp:Failed to update your information. Please try again later."),
         icon: "error",
         confirmButtonText: "OK",
       });
@@ -158,7 +162,12 @@ const UpdateUserPage = () => {
       setLoading(false);
     }
   };
-  console.log(userData)
+
+  const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
+  var isUser = false
+  if (userRoles.includes("User")) {
+    isUser = true;
+  }
   
   return (
     <Box
@@ -189,7 +198,7 @@ const UpdateUserPage = () => {
             color: "#1D34D8",
           }}
         >
-          User Information
+          {t("UserInformation")}
         </Typography>
         {loading ? (
           <Box
@@ -211,7 +220,7 @@ const UpdateUserPage = () => {
           >
             {({ errors, touched }) => (
               <Form>
-                              {/* Profile Image Section */}
+                {/* Profile Image Section */}
                 <Box
                   sx={{
                     display: "flex",
@@ -248,7 +257,7 @@ const UpdateUserPage = () => {
                       borderColor: "#1D34D8",
                     }}
                   >
-                    Edit Image
+                    {t("PopUp:EditImage")}
                     <input
                       type="file"
                       accept="image/*"
@@ -259,8 +268,7 @@ const UpdateUserPage = () => {
                 </Box>
                 <Field
                   as={TextField}
-                  label="First Name"
-                  name="name"
+                  label={t("FirstName")}
                   fullWidth
                   margin="dense"
                   onChange={(e) => {
@@ -271,7 +279,7 @@ const UpdateUserPage = () => {
                 />
                 <Field
                   as={TextField}
-                  label="Last Name"
+                  label={t("LastName")}
                   name="lastName"
                   fullWidth
                   margin="dense"
@@ -283,17 +291,18 @@ const UpdateUserPage = () => {
                 />
                 <Field
                   as={TextField}
-                  label="Email"
+                  label={t("columns:Email")}
                   name="email"
                   fullWidth
                   margin="dense"
                   onChange={(e) => {
                     handleChange(e);  
                   }}
+                  disabled={isUser}
                 />
                 <Field
                   as={TextField}
-                  label="Phone Number"
+                  label={t("columns:Phonenumber")}
                   name="phoneNumber"
                   fullWidth
                   margin="dense"
@@ -305,7 +314,7 @@ const UpdateUserPage = () => {
                 />
                 <Field
                   as={TextField}
-                  label="Birthdate"
+                  label={t("PopUp:BirthDate")}
                   name="birthDate"
                   type="date"
                   fullWidth
@@ -328,7 +337,7 @@ const UpdateUserPage = () => {
                     padding: "6px 20px",
                   }}
                 >
-                  Edit
+                  {t("PopUp:Edit")}
                 </Button>
               </Form>
             )}

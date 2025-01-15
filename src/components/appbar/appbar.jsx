@@ -505,10 +505,9 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
               <MoreIcon />
             </IconButton>
           </Box>
-
-
         </Toolbar>
       </AppBar>
+      
       <NotificationModal open={openNotifications} onClose={handleNotificationClose} />
       {renderMobileMenu}
       {renderMenu}
@@ -521,7 +520,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
           backgroundColor: "#fcfcfc"  
         },
       }}>
-        <DialogTitle>Add New Project
+        <DialogTitle>{t("PopUp:AddNewProject")}
         <IconButton
               className="!text-[#1D34D8]"
               aria-label="close"
@@ -624,9 +623,9 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 />
 
                 <DialogActions>
-                  <Button className='!text-[#1D34D8]' onClick={() => setOpenDialog(false)}>Cancel</Button>
+                  <Button className='!text-[#1D34D8]' onClick={() => setOpenDialog(false)}>{t("PopUp:Cancel")}</Button>
                   <Button type="submit" className='!bg-[#1D34D8]' variant="contained" disabled={isSubmitting}>
-                    Add Project
+                    {t("PopUp:AddProject")}
                   </Button>
                 </DialogActions>
               </Form>
@@ -635,6 +634,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
         </DialogContent>
       </Dialog>
 
+      {/* Add new User */}
       <Dialog
         open={openAdminCreateDialog}
         onClose={() => handleAdminCreateCloseDialog(false)}
@@ -647,7 +647,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
         }}
       >
         <DialogTitle>
-          Add New User
+          {t("PopUp:AddNewUser")}
           <IconButton
             className="!text-[#1D34D8]"
             aria-label="close"
@@ -694,7 +694,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                     variant="contained"
                     startIcon={<CloudUploadIcon />}
                   >
-                    Select Profile Photo
+                    {t("PopUp:Select Profile Photo")}
                     <input
                       type="file"
                       accept="image/*"
@@ -707,7 +707,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 <Field
                   as={TextField}
                   name="name"
-                  label="Name"
+                  label={t("PopUp:Name")}
                   fullWidth
                   margin="normal"
                   error={touched.name && Boolean(errors.name)}
@@ -717,7 +717,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 <Field
                   as={TextField}
                   name="lastName"
-                  label="Last Name"
+                  label={t("LastName")}
                   fullWidth
                   margin="normal"
                   error={touched.lastName && Boolean(errors.lastName)}
@@ -727,7 +727,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 <Field
                   as={TextField}
                   name="email"
-                  label="Email"
+                  label={t("columns:Email")}
                   fullWidth
                   margin="normal"
                   error={touched.email && Boolean(errors.email)}
@@ -737,7 +737,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 <Field
                   as={TextField}
                   name="birthDate"
-                  label="Birth Date"
+                  label={t("PopUp:BirthDate")}
                   type="date"
                   fullWidth
                   margin="normal"
@@ -749,7 +749,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 <Field
                   as={TextField}
                   name="phoneNumber"
-                  label="Phone Number"
+                  label={t("columns:Phonenumber")}
                   fullWidth
                   margin="normal"
                   error={touched.phoneNumber && Boolean(errors.phoneNumber)}
@@ -759,7 +759,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 <Field name="role">
                   {({ field, form }) => (
                     <FormControl fullWidth margin="normal" error={form.touched.role && Boolean(form.errors.role)}>
-                      <InputLabel id="role-label">Role</InputLabel>
+                      <InputLabel id="role-label">{t("role")}</InputLabel>
                       <Select
                         {...field}
                         labelId="role-label"
@@ -780,7 +780,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
                 </Field>
                 <DialogActions>
                   <Button type="submit" disabled={isSubmitting} variant="contained" className="!bg-[#1D34D8]">
-                    Submit
+                  {t("PopUp:Submit")}
                   </Button>
                 </DialogActions>
               </Form>
