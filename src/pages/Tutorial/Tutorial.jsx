@@ -7,8 +7,8 @@ import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import dayjs from 'dayjs';
 import { fileService } from "../../APIs/Services/file.service";
 import { useAuth } from "../../context/authContext";
-import { userSerivce } from "../../APIs/Services/user.service";
 import { useTranslation } from "react-i18next";
+import { userSerivce } from "../../APIs/Services/user.service";
 
 const cookies = new Cookies();
 
@@ -24,6 +24,8 @@ const TutorialPage = () => {
 
   const handleVideoEnd = async() => {
     setIsEnded(true);
+    if(user.hasCompletedTutorial) return // to do ^ here is a problem removing the token
+    
     await userSerivce.CompletedTutorial();
     dispatch({ type: AuthActions.success, payload: {...user, hasCompletedTutorial: true, } });
     cookies.set('user', JSON.stringify({...user, hasCompletedTutorial: true,}), {
