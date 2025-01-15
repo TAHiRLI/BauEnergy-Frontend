@@ -205,7 +205,13 @@
     "Print QR Code": "QR-Code drucken",
     "Add New Instrument": "Neues Werkzeug hinzufügen",
     "Instrument Deleted": "Werkzeug gelöscht",
-    "Select files to upload": "Wählen Sie die Dateien zum Hochladen aus"
+    "Select files to upload": "Wählen Sie die Dateien zum Hochladen aus",
+    "AddNewUser": "Neuen Benutzer hinzufügen",
+    "Select Profile Photo": "Wählen Sie Profilfoto",
+    "Do you want to update your information?": "Möchten Sie Ihre Informationen aktualisieren?",
+    "Yes, update it!": "Ja, aktualisieren Sie es!",
+    "Your information has been updated successfully.": "Ihre Informationen wurden erfolgreich aktualisiert.",
+    "Failed to update your information. Please try again later.": "Ihre Informationen konnten nicht aktualisiert werden. "
   },
   "Quiz": {
     "Test Your Knowledge": "Testen Sie Ihr Wissen",

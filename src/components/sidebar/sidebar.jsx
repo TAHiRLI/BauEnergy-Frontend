@@ -204,14 +204,16 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     </ListItemIcon>
                     <ListItemText primary={t("Certificate")} />
                   </ListItem>
-
-                  <ListItem button component={Link} onClick={handleProjectsClick} className="!rounded-xl">
-                    <ListItemIcon>
-                      <PollOutlinedIcon className="text-black" />
-                    </ListItemIcon>
-                    <ListItemText primary={t("Projects")}/>
-                    {openProjectsBtn ? <ExpandLess /> : <ExpandMore />}
-                  </ListItem>
+                  
+                  {!isUser && (
+                    <ListItem button component={Link} onClick={handleProjectsClick} className="!rounded-xl">
+                      <ListItemIcon>
+                        <PollOutlinedIcon className="text-black" />
+                      </ListItemIcon>
+                      <ListItemText primary={t("Projects")}/>
+                      {openProjectsBtn ? <ExpandLess /> : <ExpandMore />}
+                    </ListItem>
+                  )}
 
                   <Collapse in={openProjectsBtn} timeout="auto" unmountOnExit={false}>
                     <List component="div" disablePadding>
@@ -231,6 +233,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       ))}
                     </List>
                   </Collapse>
+
+
 
                   {!isUser && (
                     <ListItem button component={Link} to={ROUTES.INSTRUMENTS} className="!rounded-xl"  

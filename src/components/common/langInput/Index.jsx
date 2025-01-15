@@ -2,6 +2,7 @@ import { IconButton, Menu, MenuItem } from '@mui/material';
 import React from 'react';
 import de from "../../../assets/images/de.png";
 import en from "../../../assets/images/en.png";
+import ru from "../../../assets/images/ru.png";
 import { useTranslation } from 'react-i18next';
 
 export const LangInput = () => {
@@ -10,6 +11,7 @@ export const LangInput = () => {
     const options = [
         { image: de, value: "de", text: "Deutsch" },
         { image: en, value: "en", text: "English" },
+        { image: ru, value: "ru", text: "Russian" },
     ];
 
     // Find initial index or default to 0
