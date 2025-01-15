@@ -202,7 +202,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                     <ListItemIcon>
                       <WorkspacePremiumIcon className="text-black" />
                     </ListItemIcon>
-                    <ListItemText primary={t("Tutorial")} />
+                    <ListItemText primary={t("Certificate")} />
                   </ListItem>
 
                   <ListItem button component={Link} onClick={handleProjectsClick} className="!rounded-xl">
