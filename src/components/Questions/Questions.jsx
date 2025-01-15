@@ -1,12 +1,21 @@
-import React, { useRef, useState } from "react";
-import { Survey } from "survey-react-ui";
 import "survey-core/defaultV2.min.css";
+
+import { AuthActions, useAuth } from "../../context/authContext";
+import React, { useRef, useState } from "react";
+
+import Cookies from "universal-cookie";
 import { Model } from "survey-core";
+import { Survey } from "survey-react-ui";
 import Swal from "sweetalert2";
+import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
+import { userSerivce } from "../../APIs/Services/user.service";
+
+const cookies = new Cookies();
 
 const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
   const { t } = useTranslation();
+    const { user, dispatch } = useAuth();
   
   // Define the survey JSON
 
@@ -66,41 +75,7 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
             choices: ["Отключить источник энергии", "Проверить наличие спасательного оборудования", "Убедиться, что атмосфера безопасна", "Все перечисленное"],
             correctAnswer: "Все перечисленное",
           },
-          {
-            type: "radiogroup",
-            name: "q6",
-            title: "Какие действия запрещены при управлении транспортным средством?",
-            choices: ["Использовать громкую связь", "Вводить пункт назначения в навигацию во время движения", "Пристёгиваться ремнём безопасности", "Регулировать скорость в зависимости от дорожных условий"],
-            correctAnswer: "Вводить пункт назначения в навигацию во время движения",
-          },
-          {
-            type: "radiogroup",
-            name: "q7",
-            title: "Что необходимо сделать перед использованием средств защиты от падения с высоты?",
-            choices: ["Убедиться в отсутствии дефектов", "Прикрепить только к одному точке крепления", "Использовать только новый комплект защиты", "Проверить только визуально"],
-            correctAnswer: "Убедиться в отсутствии дефектов",
-          },
-          {
-            type: "radiogroup",
-            name: "q8",
-            title: "Что запрещено при выполнении подъёмных операций?",
-            choices: ["Проверять оборудование перед началом работы", "Использовать оборудование без квалификации", "Назначать опасные зоны", "Использовать оборудование, прошедшее проверку"],
-            correctAnswer: "Использовать оборудование без квалификации",
-          },
-          {
-            type: "radiogroup",
-            name: "q9",
-            title: "Кто имеет право прекратить выполнение опасной работы?",
-            choices: ["Только руководитель", "Только ответственное лицо", "Любой сотрудник", "Только старший специалист"],
-            correctAnswer: "Любой сотрудник",
-          },
-          {
-            type: "radiogroup",
-            name: "q10",
-            title: "Какие меры следует предпринять, чтобы избежать нахождения в опасной зоне?",
-            choices: ["Двигаться только в безопасных зонах", "Заблокировать опасные зоны", "Обозначить зоны риска падения предметов", "Все перечисленное"],
-            correctAnswer: "Все перечисленное",
-          },
+          
         ],
       },
     ],
@@ -116,7 +91,7 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
   surveyRef.current = survey;
 
   // Handle survey completion
-  survey.onComplete.add((sender) => {
+  survey.onComplete.add(async(sender) => {
     // Get all questions
     const allQuestions = sender.getAllQuestions();
 
@@ -134,6 +109,12 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
     if (correctAnswers === totalQuestions) {
       setIsSuccessful(true);
       Swal.fire(t("messages:Success"), t("You scored 100%! Well done!"), "success");
+      await userSerivce.CompletedTest();
+      dispatch({ type: AuthActions.success, payload: {...user, hasCompletedTest: true , hasCompletedTutorial: true, } });
+      cookies.set('user', JSON.stringify({...user, hasCompletedTest: true, hasCompletedTutorial: true,}), {
+        expires: new Date(dayjs(user.expiration)),
+        path: '/',
+      });
     } else {
       setIsSuccessful(false);
       Swal.fire(t("Your Score"), `You scored ${scorePercentage}%. Keep practicing!`, "info");

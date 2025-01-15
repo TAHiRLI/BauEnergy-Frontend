@@ -7,9 +7,12 @@ import { IconButton } from "@mui/material";
 import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import Replay10Icon from "@mui/icons-material/Replay10";
+import { useAuth } from "../../context/authContext";
 
 const VideoPlayer = ({ onVideoEnd }) => {
   const videoRef = useRef(null);
+  const { user } = useAuth();
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -72,6 +75,7 @@ const VideoPlayer = ({ onVideoEnd }) => {
   const handleVideoEnd = () => {
     onVideoEnd();
     setIsPlaying(false);
+    setProgress(0);
   };
 
   // Handle seeking via timeline
@@ -101,12 +105,19 @@ const VideoPlayer = ({ onVideoEnd }) => {
       video.currentTime = Math.max(video.currentTime - 10, 0);
     }
   };
+  const handleSkipForward = () => {
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = Math.max(video.currentTime + 10, 0);
+    }
+  };
 
   return (
     <div style={{ textAlign: "center" }} className="relative group mt-3">
       <video
         ref={videoRef}
         src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/videos/tutorial.mp4`}
+        // src={"https://www.w3schools.com/Html/mov_bbb.mp4"}
         onEnded={handleVideoEnd}
         onTimeUpdate={handleTimeUpdate}
         onPlay={() => setIsPlaying(true)}
@@ -128,21 +139,24 @@ const VideoPlayer = ({ onVideoEnd }) => {
             <PauseCircleIcon fontSize={"large"} color="primary" />
           )}
         </IconButton>
-        <IconButton disabled title="Back 10 seconds">
-          <SkipNext fontSize={"large"} sx={{ color: "#8c97a1" }} />
+        <IconButton onClick={handleSkipForward}   disabled={!user.hasCompletedTutorial} title="Back 10 seconds">
+          <SkipNext fontSize={"large"} color="primary" />
         </IconButton>
-        <IconButton disabled>
-          <FastForward fontSize={"large"} sx={{ color: "#8c97a1" }} />
-        </IconButton>
+     
 
         <div>
           <input
-
             type="range"
             min="0"
             max="100"
             value={progress}
-            onChange={()=>{}}
+            onChange={(e) => {
+              if (user.hasCompletedTutorial) {
+                handleTimelineChange(e); // Update the timeline if the user has completed the tutorial
+              }
+            }}
+            disabled={!user.hasCompletedTutorial} // Disable the slider if the user hasn't completed the tutorial
+           
             style={{
               width: "100%",
               appearance: "none",
