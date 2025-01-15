@@ -30,7 +30,7 @@ class FileService extends HttpClient {
     loadAndGenerateFile(`${this.docutmentUrl}/UserCertificates/${fileName}`, options);
   }
 }
-const formatDate = (date) => {
+export const formatDate = (date) => {
   if(!date) return "";
   const d = new Date(date);
   const day = String(d.getDate()).padStart(2, "0");
@@ -85,46 +85,3 @@ function loadAndGenerateFile(url, options) {
   });
 }
 
-function loadAndGenerateFileXML(url, options) {
-  PizZipUtils.getBinaryContent(url, function (error, content) {
-    if (error) {
-      throw error;
-    }
-    var zip = new PizZip(content);
-    var doc = new Docxtemplater(zip, {
-      paragraphLoop: true,
-      linebreaks: true,
-    });
-    doc.setData(options?.data);
-    try {
-      doc.render();
-    } catch (error) {
-      function replaceErrors(key, value) {
-        if (value instanceof Error) {
-          return Object.getOwnPropertyNames(value).reduce(function (error, key) {
-            error[key] = value[key];
-            return error;
-          }, {});
-        }
-        return value;
-      }
-      console.log(JSON.stringify({ error: error }, replaceErrors));
-
-      if (error.properties && error.properties.errors instanceof Array) {
-        const errorMessages = error.properties.errors
-          .map(function (error) {
-            return error.properties.explanation;
-          })
-          .join("\n");
-        console.log("errorMessages", errorMessages);
-      }
-      throw error;
-    }
-
-    var out = doc.getZip().generate({
-      type: "blob",
-      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    });
-    saveAs(out, options?.outputName);
-  });
-}

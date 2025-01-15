@@ -1,29 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { Divider, List, ListItem, ListItemIcon, ListItemText, Collapse, Drawer } from "@mui/material";
+import { Collapse, Divider, Drawer, List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
 import {
-  Menu as MenuIcon,
-  Search,
   ExpandLess,
   ExpandMore,
+  Menu as MenuIcon,
+  Search,
 } from "@mui/icons-material";
-import NotificationIcon from "@mui/icons-material/NotificationsNoneOutlined";
-import Home from "@mui/icons-material/HomeOutlined";
-import PollOutlinedIcon from "@mui/icons-material/PollOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
-import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { Link, useNavigate } from "react-router-dom";
-import { ROUTES } from "../../pages/routes/routes";
-import UserInfo from "../userinfo";
-import { projectService } from "../../APIs/Services/project.service";
+import React, { useEffect, useState } from "react";
+
+import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
 import Cookies from "universal-cookie";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import Home from "@mui/icons-material/HomeOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import NotificationIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import NotificationModal from "../notification/notification";
-import { jwtDecode } from "jwt-decode";
-import { useAuth } from "../../context/authContext";
-import { notificationService } from "../../APIs/Services/notification.service";
-import { useMediaQuery } from "@mui/material";
+import PollOutlinedIcon from "@mui/icons-material/PollOutlined";
+import { ROUTES } from "../../pages/routes/routes";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import UserInfo from "../userinfo";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import { jwtDecode } from "jwt-decode";
+import { notificationService } from "../../APIs/Services/notification.service";
+import { projectService } from "../../APIs/Services/project.service";
+import { useAuth } from "../../context/authContext";
+import { useMediaQuery } from "@mui/material";
 import { useTranslation } from 'react-i18next';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
@@ -87,6 +88,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   }, [userId]);
 
   const handleLogout = () => {
+    localStorage.removeItem("videoCurrentTime");
     const cookies = new Cookies();
     cookies.remove("user", { path: "/" });
     window.location.reload();
