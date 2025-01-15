@@ -13,12 +13,7 @@ class LoginService extends HttpClient {
         console.log(`Sending request to: ${this.baseUrl}/login`);
         const response = await this.post('auth/login', body, { withCredentials: true});
         const user = response.data;
-        //console.log(user)
-        cookies.set('user', user, { 
-            path: '/', 
-            secure: false, 
-            sameSite: 'Lax'
-        });
+       
         
         return user;
     }

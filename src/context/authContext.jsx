@@ -29,6 +29,7 @@ export const Roles = {
 export const AuthContext = createContext(INITIAL_STATE);
 
 const AuthReducer = (state, action) => {
+  
   switch (action.type) {
     case AuthActions.start:
       return {
@@ -102,6 +103,7 @@ const AuthReducer = (state, action) => {
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
+  console.log("🚀 ~ AuthProvider ~ state:", state)
 
   return (
     <AuthContext.Provider

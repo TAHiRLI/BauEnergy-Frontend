@@ -59,7 +59,8 @@ export const LoginPage = () => {
 
         // Redirect to the original path if it exists, otherwise go to the home page
         const redirectPath = location.state?.from?.pathname || ROUTES.BASE;
-        navigate(redirectPath, { replace: true });
+        // navigate(redirectPath, { replace: true });
+        window.location.replace(redirectPath)
       }
     } catch (err) {
       if (err.response?.status === 403) {
