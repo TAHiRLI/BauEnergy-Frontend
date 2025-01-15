@@ -40,12 +40,12 @@ const TutorialPage = () => {
 
   const handleCertificateGet = async () => {
     try {
-      // await userSerivce.CompletedTest();
-      // dispatch({ type: AuthActions.success, payload: {...user, hasCompletedTest: true , hasCompletedTutorial: true, } });
-      // cookies.set('user', JSON.stringify({...user, hasCompletedTest: true, hasCompletedTutorial: true,}), {
-      //   expires: new Date(dayjs(user.expiration)),
-      //   path: '/',
-      // });
+       await userSerivce.CompletedTest();
+       dispatch({ type: AuthActions.success, payload: {...user, hasCompletedTest: true , hasCompletedTutorial: true, } });
+       cookies.set('user', JSON.stringify({...user, hasCompletedTest: true, hasCompletedTutorial: true,}), {
+         expires: new Date(dayjs(user.expiration)),
+         path: '/',
+       });
 
       const certificateDiv = document.getElementById("certificate");
       const insturctionsDiv = document.getElementById("instructions");
