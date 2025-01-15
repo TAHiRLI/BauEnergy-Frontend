@@ -1,14 +1,21 @@
 import "survey-core/defaultV2.min.css";
 
+import { AuthActions, useAuth } from "../../context/authContext";
 import React, { useRef, useState } from "react";
 
+import Cookies from "universal-cookie";
 import { Model } from "survey-core";
 import { Survey } from "survey-react-ui";
 import Swal from "sweetalert2";
+import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
+import { userSerivce } from "../../APIs/Services/user.service";
+
+const cookies = new Cookies();
 
 const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
   const { t } = useTranslation();
+    const { user, dispatch } = useAuth();
   
   // Define the survey JSON
 
@@ -84,7 +91,7 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
   surveyRef.current = survey;
 
   // Handle survey completion
-  survey.onComplete.add((sender) => {
+  survey.onComplete.add(async(sender) => {
     // Get all questions
     const allQuestions = sender.getAllQuestions();
 
@@ -102,6 +109,12 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
     if (correctAnswers === totalQuestions) {
       setIsSuccessful(true);
       Swal.fire(t("messages:Success"), t("You scored 100%! Well done!"), "success");
+      await userSerivce.CompletedTest();
+      dispatch({ type: AuthActions.success, payload: {...user, hasCompletedTest: true , hasCompletedTutorial: true, } });
+      cookies.set('user', JSON.stringify({...user, hasCompletedTest: true, hasCompletedTutorial: true,}), {
+        expires: new Date(dayjs(user.expiration)),
+        path: '/',
+      });
     } else {
       setIsSuccessful(false);
       Swal.fire(t("Your Score"), `You scored ${scorePercentage}%. Keep practicing!`, "info");
