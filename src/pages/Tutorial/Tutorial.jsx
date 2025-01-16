@@ -7,7 +7,7 @@ import Questions from "../../components/Questions/Questions";
 import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import dayjs from "dayjs";
 import html2canvas from "html2canvas";
-import image from "../../assets/images/certificateImage.jpg";
+import image from "../../assets/images/certificateImage2.jpg";
 import instructions from "../../assets/images/instructions.png";
 import { jsPDF } from "jspdf";
 import { useAuth } from "../../context/authContext";
