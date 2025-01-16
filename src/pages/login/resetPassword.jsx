@@ -1,15 +1,17 @@
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Button, IconButton, InputAdornment, TextField, styled, Container, Box, Typography, Paper } from '@mui/material';
-import { Formik } from 'formik';
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import * as yup from 'yup';
+
 import { AuthActions, useAuth } from '../../context/authContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Box, Button, Container, IconButton, InputAdornment, Paper, TextField, Typography, styled } from '@mui/material';
+import React, { useState } from 'react';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { useLocation, useNavigate } from 'react-router-dom';
+
 import Cookies from 'universal-cookie';
-import { loginService } from '../../APIs/Services/login.service';
+import { Formik } from 'formik';
 import { ROUTES } from '../routes/routes';
 import dayjs from 'dayjs';
+import { loginService } from '../../APIs/Services/login.service';
+import { useTranslation } from 'react-i18next';
 
 const ResetPassword = () => {
   const location = useLocation();  
@@ -25,14 +27,12 @@ const ResetPassword = () => {
   });
 
   const { dispatch } = useAuth();
-  const navigate = useNavigate();
   const cookies = new Cookies();
 
   const handleFormSubmit = async (values, { setFieldError }) => {
     dispatch({ type: AuthActions.start });
     try {
       let res = await loginService.resetPassword(values);
-      console.log("🚀 ~ handleFormSubmit ~ res:", res)
       if (res.status === 200) {
         const user = {
           hasCompletedTutorial: res.data?.hasCompletedTutorial,
@@ -40,9 +40,11 @@ const ResetPassword = () => {
           tokenType: "Bearer",
           authState: res.data.userState,
         };
+        
         cookies.set('user', JSON.stringify(user), { expires: new Date(dayjs(res.data.expiresIn)), path: '/' });
         dispatch({ type: AuthActions.success, payload: user });
-        navigate(ROUTES.BASE, { replace: true });
+        // navigate(ROUTES.BASE, { replace: true });
+        window.location.replace(ROUTES.BASE)
       }
     } catch (err) {
       console.log("🚀 ~ handleFormSubmit ~ err:", err)
