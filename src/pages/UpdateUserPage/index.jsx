@@ -61,8 +61,9 @@ const UpdateUserPage = () => {
         const [firstName = "", ...lastNameParts] = fullName.split(" ");
         const lastName = lastNameParts.join(" ");
         const formattedBirthDate = response.data.birthDate
-          ? new Date(response.data.birthDate).toLocaleDateString('en-CA')
-          : "";
+        ? new Date(response.data.birthDate).toLocaleDateString('en-CA')
+        : "";
+        console.log(firstName)
   
         setUserData({
           name: firstName,
@@ -81,6 +82,8 @@ const UpdateUserPage = () => {
   
     fetchUserData();
   }, [userEmail]);
+
+  console.log(userData)
   
 
   const handleChange = (e) => {
@@ -269,6 +272,7 @@ const UpdateUserPage = () => {
                 <Field
                   as={TextField}
                   label={t("FirstName")}
+                  name="name"
                   fullWidth
                   margin="dense"
                   onChange={(e) => {
