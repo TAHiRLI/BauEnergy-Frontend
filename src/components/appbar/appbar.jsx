@@ -1,40 +1,42 @@
 import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Badge from '@mui/material/Badge';
-import MenuItem from '@mui/material/MenuItem';
-import Menu from '@mui/material/Menu';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import MoreIcon from '@mui/icons-material/MoreVert';
-import UserInfo from '../userinfo';
-import { useEffect, useState } from 'react';
-import { jwtDecode } from 'jwt-decode';
-import { useAuth } from "../../context/authContext";
 import * as Yup from 'yup';
-import { projectService } from '../../APIs/Services/project.service';
-import { loginService } from '../../APIs/Services/login.service';
-import Swal from 'sweetalert2';
-import { Formik, Form, Field } from 'formik';
+
 import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormHelperText, InputLabel, Select, TextField, useMediaQuery } from '@mui/material';
-import NotificationModal from '../notification/notification';
-import { notificationService } from '../../APIs/Services/notification.service';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell} from '@fortawesome/free-regular-svg-icons';
-import { faEllipsis } from '@fortawesome/free-solid-svg-icons';
+import { Field, Form, Formik } from 'formik';
+import { useEffect, useState } from 'react';
+
+import AccountCircle from '@mui/icons-material/AccountCircle';
 import AddIcon from '@mui/icons-material/Add';
-import MenuIcon from '@mui/icons-material/Menu';
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from '../../pages/routes/routes';
-import { useLocation } from "react-router-dom";
-import { userSerivce } from '../../APIs/Services/user.service';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import AppBar from '@mui/material/AppBar';
+import Badge from '@mui/material/Badge';
+import Box from '@mui/material/Box';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import IconButton from '@mui/material/IconButton';
 import { LangInput } from '../common/langInput/Index';
+import Menu from '@mui/material/Menu';
+import MenuIcon from '@mui/icons-material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MoreIcon from '@mui/icons-material/MoreVert';
+import NotificationModal from '../notification/notification';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { ROUTES } from '../../pages/routes/routes';
+import Swal from 'sweetalert2';
+import Toolbar from '@mui/material/Toolbar';
+import UserInfo from '../userinfo';
+import { faBell } from '@fortawesome/free-regular-svg-icons';
+import { faEllipsis } from '@fortawesome/free-solid-svg-icons';
+import { jwtDecode } from 'jwt-decode';
+import { loginService } from '../../APIs/Services/login.service';
+import { notificationService } from '../../APIs/Services/notification.service';
+import { projectService } from '../../APIs/Services/project.service';
+import { useAuth } from "../../context/authContext";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { userSerivce } from '../../APIs/Services/user.service';
 
 export default function Appbar({ toggleSidebar }) {
   const { t } = useTranslation();
@@ -341,7 +343,8 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
       open={isMobileMenuOpen}
       onClose={handleMobileMenuClose}
     >
-      <MenuItem onClick={handleNotificationClick}>
+    
+      {!isUser &&   <MenuItem onClick={handleNotificationClick}>
         <IconButton
           size="large"
           aria-label="show 17 new notifications"
@@ -353,21 +356,26 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
           </Badge>
         </IconButton>
         <p>{t("Notifications")}</p>
-      </MenuItem>
-      <MenuItem onClick={() => setOpenDialog(true)}>
+      </MenuItem>}
+      
+      {!isUser && <MenuItem onClick={() => setOpenDialog(true)}>
         <IconButton size="large" aria-label="create new project" color="inherit" 
         >
             <AddIcon />
         </IconButton>
         <p>{t("CreateProject")}</p>
-      </MenuItem>
-      <MenuItem onClick={handleAdminCreateOpenDialog}>
+      </MenuItem>}
+
+      
+   
+
+      {!isUser &&    <MenuItem onClick={handleAdminCreateOpenDialog}>
         <IconButton size="large" aria-label="create new project" color="inherit" 
         >
             <PersonAddIcon />
         </IconButton>
         <p>{t("CreateUser")}</p>
-      </MenuItem>
+      </MenuItem>}
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
           size="large"
