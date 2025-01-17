@@ -123,6 +123,7 @@ const VideoPlayer = ({ onVideoEnd }) => {
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         style={{ width: "100%" }}
+        playsInline
       />
 
       <div className="bg-black bg-opacity-50 absolute bottom-0 w-full p-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ">
