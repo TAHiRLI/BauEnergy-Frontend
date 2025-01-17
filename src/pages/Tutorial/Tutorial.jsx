@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { fileService, formatDate } from "../../APIs/Services/file.service";
 
 import { AuthActions } from "../../context/authContext";
@@ -10,6 +10,7 @@ import html2canvas from "html2canvas";
 import image from "../../assets/images/certificateImage2.jpg";
 import instructions from "../../assets/images/instructions.png";
 import { jsPDF } from "jspdf";
+import {jwtDecode} from "jwt-decode";
 import { useAuth } from "../../context/authContext";
 import { useTranslation } from "react-i18next";
 import { userSerivce } from "../../APIs/Services/user.service";
@@ -20,7 +21,29 @@ const TutorialPage = () => {
   const { t } = useTranslation();
   const { user, dispatch } = useAuth();
   console.log("🚀 ~ TutorialPage ~ user:", user)
+  const [userData, setUserData] = useState(null); 
+  const decodedToken = user?.token ? jwtDecode(user.token) : null;
+  const userEmail = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
+  
+      useEffect(() => {
+      const fetchUserData = async () => {
+        try {
+  
+          const response = await userSerivce.getByEmail(userEmail); 
+          const updatedUser = response.data;
+          setUserData(updatedUser);
+  
+        } catch (err) {
+          console.error("Error fetching user data:", err);
+        } 
+      };
+  
+      if (userEmail) {
+        fetchUserData();
+      }
+    }, [userEmail]);
 
+    
   const [isEnded, setIsEnded] = useState(user.hasCompletedTutorial);
   const [isSuccessful, setIsSuccessful] = useState(null);
   const [scorePercentage, setScorePercentage] = useState(100);
@@ -121,7 +144,7 @@ const TutorialPage = () => {
               
           <div id="certificate" className="certificate relative  border border-solid border-gray-500  mx-10 p-2">
             <img src={image} className="!w-full h-auto" alt="certificate Image" />
-            <p className="fullanme w-full text-nowrap absolute text-[5vw] top-[45%] text-center z-2">{user?.authState?.fullName}</p>
+            <p className="fullanme w-full text-nowrap absolute text-[5vw] top-[45%] text-center z-2">{userData?.fullName}</p>
             <p className="absollute absolute text-[2vw] top-[58.6%] right-[27%] ">{scorePercentage} %</p>
             <p className="absollute absolute text-[2vw] top-[78%] right-[66%] ">{formatDate(new Date())}</p>
           </div>
