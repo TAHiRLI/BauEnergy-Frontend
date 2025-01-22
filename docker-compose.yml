@@ -1,0 +1,23 @@
+version: '3.4'
+
+networks:
+  backend:
+    driver: bridge
+    external: true
+
+services:
+  bauenergy_frontend:
+    image: bauenergy_frontend
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        REACT_APP_API_URL: "https://api.must-bau.de/api"
+        REACT_APP_DOCUMENT_URL: "https://api.must-bau.de"
+
+    environment:
+      - NODE_ENV=production
+    networks:
+      - backend
+    ports:
+      - "8080:90"
