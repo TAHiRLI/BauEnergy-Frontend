@@ -35,7 +35,7 @@ jobs:
 
     # Deploy to Production Server
     - name: Deploy to Production Server
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/master'
       uses: appleboy/ssh-action@v0.1.8
       with:
         host: ${{ secrets.SERVER_PROD_HOST }}
