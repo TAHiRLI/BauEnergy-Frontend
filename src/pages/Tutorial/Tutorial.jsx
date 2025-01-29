@@ -8,6 +8,7 @@ import VideoPlayer from "../../components/VideoPlayer/VideoPlayer";
 import dayjs from "dayjs";
 import html2canvas from "html2canvas";
 import image from "../../assets/images/certificateImage2.jpg";
+import image3 from "../../assets/images/certificateImage3.jpg";
 import instructions from "../../assets/images/instructions.png";
 import { jsPDF } from "jspdf";
 import {jwtDecode} from "jwt-decode";
@@ -140,50 +141,62 @@ const TutorialPage = () => {
             Download Certificate
           </button>
 
-            <div className="mt-5">
+          <div className="mt-5">
               
-          <div id="certificate" className="certificate relative  border border-solid border-gray-500  mx-10 p-2">
-            <img src={image} className="!w-full h-auto" alt="certificate Image" />
-            <p className="fullanme w-full text-nowrap absolute text-[5vw] top-[45%] text-center z-2">{userData?.fullName}</p>
-            <p className="absollute absolute text-[2vw] top-[58.6%] right-[27%] ">{scorePercentage} %</p>
-            <p className="absollute absolute text-[2vw] top-[78%] right-[66%] ">{formatDate(new Date())}</p>
-          </div>
-          <div id="instructions" className="instructions aspect-[794/1122] border border-solid border-gray-500  mt-3 mx-10 p-2">
-            <img src={instructions} className="w-[15vw] ms-5" alt="" srcset="" />
+            <div id="certificate" className="certificate relative  border border-solid border-gray-500  mx-10 p-2">
+              <img src={image3} className="!w-full h-auto" alt="certificate Image" />
+              <p className="absolute text-[1.5vw]  top-[56%] left-[16%]">Test:</p>
+              <p className="absolute text-[1.5vw] top-[56%] right-[16%]">Eingangsunterweisung Deutshland</p>
+              <p className="absolute text-[1.5vw] top-[57.8%] left-[16%]">Ergebnis:</p>
+              <p className="absolute text-[1.5vw] top-[57.7%] right-[16%]"> (Bestanden) </p>
+              <p className="absolute text-[1.5vw] top-[59.6%] left-[16%]">Zertifikat gültig bis:</p>
 
-            <div className="p-5  text-[1.5vw] flex flex-col gap-y-2">
-              <p className=" mt-6 font-bold">Условия:</p>
-              <p>
-                Употребление наркотиков и алкоголя на время командировки запрещено Запрещается употребление любых
-                наркотических веществ и алкоголя на протяжении всей командировки. Нарушение данного правила может
-                повлечь за собой дисциплинарные меры вплоть до прекращения трудовых отношений.
-              </p>
-              <p>
-                Содержание в местах проживания порядка и чистоты Проживающие обязаны поддерживать чистоту и порядок в
-                предоставленных местах проживания. Это включает уборку жилых помещений, правильное использование бытовой
-                техники и соблюдение санитарных норм.
-              </p>
 
-              <p>
-                Содержание транспорта в чистоте и порядке Транспортные средства, предоставленные для работы или
-                передвижения, должны находиться в чистом и опрятном состоянии. Работники обязаны своевременно убирать
-                мусор и заботиться о техническом состоянии транспорта.
-              </p>
-              <p>
-                Эстетический вид — вымытая рабочая одежда, стрижка и борода Каждый сотрудник обязан соблюдать опрятный
-                внешний вид. Рабочая одежда должна быть чистой и ухоженной, а личная гигиена — на высоком уровне
-                (аккуратная стрижка и борода).
-              </p>
-              <p>
-                Содержание рабочего места в чистоте и порядке Рабочее место должно быть чистым и организованным. Мусор
-                следует убирать сразу, а оборудование размещать в установленных местах для предотвращения нарушений и
-                несчастных случаев.
-              </p>
+              <p className="fullanme w-full text-nowrap absolute text-[5vw] top-[45%] text-center z-2">{userData?.fullName}</p>
+              <p className="absollute absolute text-[2vw] top-[59.6%] right-[27%] ">{scorePercentage} %</p>
 
-              <p>
-              Я {userData?.fullName} подтверждаю, что ознакомлен с изложенными выше условиями, полностью их принимаю и обязуюсь соблюдать их в полном объеме!              </p>
+              <p className="absollute absolute text-[2vw] top-[78%] right-[66%] ">{formatDate(new Date())}</p>
+              <p className="absollute absolute text-[1.2vw] top-[82%] right-[69%] ">DATUM</p>
+
             </div>
-          </div>
+
+            <div id="instructions" className="instructions aspect-[794/1122] border border-solid border-gray-500  mt-3 mx-10 p-2">
+              <img src={instructions} className="w-[15vw] ms-5" alt="" srcset="" />
+
+              <div className="p-5  text-[1.5vw] flex flex-col gap-y-2">
+                <p className=" mt-6 font-bold">Условия:</p>
+                <p>
+                  Употребление наркотиков и алкоголя на время командировки запрещено Запрещается употребление любых
+                  наркотических веществ и алкоголя на протяжении всей командировки. Нарушение данного правила может
+                  повлечь за собой дисциплинарные меры вплоть до прекращения трудовых отношений.
+                </p>
+                <p>
+                  Содержание в местах проживания порядка и чистоты Проживающие обязаны поддерживать чистоту и порядок в
+                  предоставленных местах проживания. Это включает уборку жилых помещений, правильное использование бытовой
+                  техники и соблюдение санитарных норм.
+                </p>
+
+                <p>
+                  Содержание транспорта в чистоте и порядке Транспортные средства, предоставленные для работы или
+                  передвижения, должны находиться в чистом и опрятном состоянии. Работники обязаны своевременно убирать
+                  мусор и заботиться о техническом состоянии транспорта.
+                </p>
+                <p>
+                  Эстетический вид — вымытая рабочая одежда, стрижка и борода Каждый сотрудник обязан соблюдать опрятный
+                  внешний вид. Рабочая одежда должна быть чистой и ухоженной, а личная гигиена — на высоком уровне
+                  (аккуратная стрижка и борода).
+                </p>
+                <p>
+                  Содержание рабочего места в чистоте и порядке Рабочее место должно быть чистым и организованным. Мусор
+                  следует убирать сразу, а оборудование размещать в установленных местах для предотвращения нарушений и
+                  несчастных случаев.
+                </p>
+
+                <p>
+                Я {userData?.fullName} подтверждаю, что ознакомлен с изложенными выше условиями, полностью их принимаю и обязуюсь соблюдать их в полном объеме!              </p>
+              </div>
+            </div>
+
           </div>
 
         </>
