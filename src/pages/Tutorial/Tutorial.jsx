@@ -146,14 +146,14 @@ const TutorialPage = () => {
             <div id="certificate" className="certificate relative  border border-solid border-gray-500  mx-10 p-2">
               <img src={image3} className="!w-full h-auto" alt="certificate Image" />
               <p className="absolute text-[1.5vw]  top-[56%] left-[16%]">Test:</p>
-              <p className="absolute text-[1.5vw] top-[56%] right-[16%]">Eingangsunterweisung Deutshland</p>
+              <p className="absolute text-[1.5vw] top-[56%] right-[16%]">Eingangsunterweisung Deutschland</p>
               <p className="absolute text-[1.5vw] top-[57.8%] left-[16%]">Ergebnis:</p>
               <p className="absolute text-[1.5vw] top-[57.7%] right-[16%]"> (Bestanden) </p>
               <p className="absolute text-[1.5vw] top-[59.6%] left-[16%]">Zertifikat gültig bis:</p>
 
 
               <p className="fullanme w-full text-nowrap absolute text-[5vw] top-[45%] text-center z-2">{userData?.fullName}</p>
-              <p className="absollute absolute text-[2vw] top-[59.6%] right-[27%] ">{scorePercentage} %</p>
+              <p className="absollute absolute text-[2vw] top-[58.6%] right-[27%] ">{scorePercentage} %</p>
 
               <p className="absollute absolute text-[2vw] top-[78%] right-[66%] ">{formatDate(new Date())}</p>
               <p className="absollute absolute text-[1.2vw] top-[82%] right-[69%] ">DATUM</p>
