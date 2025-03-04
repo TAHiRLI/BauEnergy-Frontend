@@ -28,6 +28,7 @@ import { useTranslation } from "react-i18next";
 import { carService } from '../../APIs/Services/car.service';
 import CarSelectionPopup from '../../components/Dialogs/CarSelectionDialog';
 import ProjectCar from '../../components/ProjectsDetails/ProjectCar';
+import { useProjects } from '../../context/projectContext';
 
 
 function CustomTabPanel(props) {
@@ -60,6 +61,7 @@ export default function BasicTabs() {
   const location = useLocation();
   const navigate = useNavigate();
   const [project, setProject] = useState(location.state?.project || "null");
+  const {selectedProject, setSelectedProject} = useProjects();
   const [value, setValue] = useState(0);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [availableCars, setAvailableCars] = useState(null)
@@ -229,8 +231,8 @@ export default function BasicTabs() {
   }, []);
 
   const handleSelectCar = (car) => {
-    setSelectedCar(car); // Store selected car
-    console.log("Selected Car:", car);
+    setSelectedCar(car); 
+    //console.log("Selected Car:", car);
   };
   
   const isSmallScreen = useMediaQuery('(max-width:800px)');
@@ -316,7 +318,7 @@ export default function BasicTabs() {
         <ProjectDocuments project={project} />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={4}>
-        <ProjectCar project={project} />
+        <ProjectCar project={selectedProject} />
       </CustomTabPanel>
 
       {/* Edit Project Dialog */}

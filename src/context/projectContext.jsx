@@ -53,7 +53,7 @@
 
 // export const useProjects = ()=> useContext(ProjectContext)
 
-import { createContext, useContext, useReducer } from "react";
+import { createContext, useContext, useReducer, useState } from "react";
 import { projectService } from "../APIs/Services/project.service"; 
 
 const ProjectContext = createContext();
@@ -88,6 +88,8 @@ const ProjectReducer = (state, action) => {
 
 export const ProjectProvider = ({ children }) => {
     const [state, dispatch] = useReducer(ProjectReducer, initialState);
+    const [projects, setProjects] = useState([])
+    const [selectedProject, setSelectedProject] = useState(null)
 
     // Fetch project by ID and update state
     const fetchProject = async (projectId) => {
@@ -107,7 +109,7 @@ export const ProjectProvider = ({ children }) => {
     };
 
     return (
-        <ProjectContext.Provider value={{ state, dispatch, fetchProject, resetProject }}>
+        <ProjectContext.Provider value={{ state, dispatch, fetchProject, resetProject, projects, setProjects,selectedProject, setSelectedProject }}>
             {children}
         </ProjectContext.Provider>
     );

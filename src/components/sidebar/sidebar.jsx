@@ -27,17 +27,18 @@ import { useAuth } from "../../context/authContext";
 import { useMediaQuery } from "@mui/material";
 import { useTranslation } from 'react-i18next';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import { useProjects } from "../../context/projectContext";
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const { t } = useTranslation();
 
+  const {projects, setProjects} = useProjects();
+  const {selectedProject, setSelectedProject} = useProjects();
   const [openProjectsBtn, setOpenProjectsBtn] = useState(false);
-  const [projects, setProjects] = useState([]);
   const { user } = useAuth();
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
   const userId = decodedToken?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
   const navigate = useNavigate();
-  const [selectedProject, setSelectedProject] = useState(null);
 
   const handleProjectsClick = async () => {
     setOpenProjectsBtn(!openProjectsBtn);
@@ -61,6 +62,16 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
       console.error("Failed to fetch project details", error);
     }
   };
+
+  useEffect(() => {
+    if(selectedProject){
+      let project = projects.find(x => x.id == selectedProject.id)
+
+      if(project){
+        setSelectedProject(project)
+      }
+    }
+  }, [projects])
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 

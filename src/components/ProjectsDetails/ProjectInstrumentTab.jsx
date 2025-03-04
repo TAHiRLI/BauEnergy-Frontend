@@ -38,12 +38,12 @@ import InstrumentTabResponsive from "./InstrumentTabResponsive";
 import { useTranslation } from "react-i18next";
 import CarSelectDropdown from "../common/CarSelectDropdown";
 import { carService } from "../../APIs/Services/car.service";
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 
 export default function InstrumentTab({ project }) {
   const { t } = useTranslation();
 
-  const { state, dispatch, fetchProject } = useProjects();
+  const { state, dispatch, fetchProject, selectedProject, setSelectedProject } = useProjects();
   const [openDialog, setOpenDialog] = useState(false);
   const [openQRDialog, setOpenQRDialog] = useState(false);
   const [allInstruments, setAllInstruments] = useState([]);
@@ -212,8 +212,8 @@ export default function InstrumentTab({ project }) {
   };
 
   useEffect(() => {
-    setFilteredInstruments(state.project?.instruments || []);
-  }, [state.project?.instruments]);
+    setFilteredInstruments(selectedProject?.instruments || []);
+  }, [selectedProject?.instruments]);
   // console.log(state)
 
   useEffect(() => {
@@ -258,7 +258,7 @@ export default function InstrumentTab({ project }) {
   }, [dispatch, project.id, refresh]);
 
   const handleClearStatus = () => {
-    setSearchStatus(""); // Clear the selected status
+    setSearchStatus("");
     fetchInstruments(); 
   };
 
@@ -486,11 +486,30 @@ const handleAssignInstruments = async () => {
 
   try {
       await carService.assignInstrumentsToCar(selectedCar.id, selectedInstrumentIds);
-      console.log("Instruments assigned successfully!");
+      const projectResponse = await projectService.getById(selectedProject.id);
+      setSelectedProject(projectResponse.data); 
 
-      // ✅ Dispatch START and refetch project
-      dispatch({ type: ProjectsActions.START });
-      await fetchProject(state.data.id); // Re-fetch project
+      Swal.fire({
+        title: 'Instruments Loaded Successfully!',
+        html: `
+          <div style="display: flex; flex-direction:column; justify-content: center; align-items: center;">
+            <h3>Car has been loaded with selected instruments! 🎉</h3>
+            <div style="margin-top: 20px;">
+              <video width="100%" height="auto" autoplay loop muted>
+                <source src="/vecteezy_a-truck-moving-in-the-middle-of-a-city_54049303.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        `,
+        width: '40%', // Set the width of the SweetAlert popup
+        padding: '20px',
+        background: '#fff',
+        confirmButtonText: "OK",
+
+      });
+      
+    
   } catch (error) {
       console.error("Error assigning instruments:", error);
       dispatch({ type: ProjectsActions.FAILURE, payload: error.message });
@@ -500,20 +519,6 @@ const handleAssignInstruments = async () => {
 if (state.loading) return <p>Loading project...</p>;
 if (state.error) return <p>Error: {state.error}</p>;
 
-
-  // const handleAssignInstruments = async () => {
-  //   if (!selectedCar.id || selectedInstrumentIds.length === 0) {
-  //       console.error("Please select a car and at least one instrument.");
-  //       return;
-  //   }
-
-  //   try {
-  //       const response = await carService.assignInstrumentsToCar(selectedCar.id, selectedInstrumentIds);
-  //       console.log(response.data);
-  //   } catch (error) {
-  //       console.error("Error assigning instruments:", error);
-  //   }
-  //}
 
 
   if (state.error) {
@@ -603,18 +608,18 @@ if (state.error) return <p>Error: {state.error}</p>;
         {selectedInstrumentIds.length > 0 && (
         <Button
           className="!rounded-3xl !normal-case !py-2 !my-1 !sm:my-0 !mr-3 !min-w-40"
-          //startIcon={ <LocalShippingIcon className="text-black" /> }
+          startIcon={<LocalShippingOutlinedIcon />}
           variant="contained"
           onClick={() => handleAssignInstruments()}
           disabled={!selectedCar || selectedInstrumentIds.length === 0}
           sx={{
-            backgroundColor: !selectedCar || selectedInstrumentIds.length === 0 ? "#b0b0b0" : "#1D34D8", // Gray when disabled
+            backgroundColor: !selectedCar || selectedInstrumentIds.length === 0 ? "#b0b0b0" : "#1D34D8",
             color: "white",
             "&:hover": {
-              backgroundColor: !selectedCar || selectedInstrumentIds.length === 0 ? "#b0b0b0" : "#1628a0", // Slightly darker blue on hover
+              // backgroundColor: !selectedCar || selectedInstrumentIds.length === 0 ? "#b0b0b0" : "#1628a0",
             },
-            cursor: !selectedCar || selectedInstrumentIds.length === 0 ? "not-allowed" : "pointer",
-            opacity: !selectedCar || selectedInstrumentIds.length === 0 ? 0.7 : 1,
+             cursor: !selectedCar || selectedInstrumentIds.length === 0 ? "not-allowed" : "pointer",
+            // opacity: !selectedCar || selectedInstrumentIds.length === 0 ? 0.7 : 1,
           }}
           aria-hidden
         >
@@ -646,7 +651,7 @@ if (state.error) return <p>Error: {state.error}</p>;
               isRowSelectable={(params) => !params.row.carId}
               onRowSelectionModelChange={(newSelection) => {
                 setSelectedInstrumentIds(newSelection); 
-                console.log("Selected Instruments:", newSelection); 
+                //console.log("Selected Instruments:", newSelection); 
               }}
               sx={{
                 border: 0,
