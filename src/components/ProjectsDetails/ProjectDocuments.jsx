@@ -216,7 +216,7 @@ export default function ProjectDocuments({ project }) {
           ))
         ) : (
           <Typography variant="body2" color="textSecondary" className='!pl-4 !mt-7'>
-              {t("PopUp:Nodocumentsfoundforthisproject")}
+              {t("PopUp:Nodocumentsfoundforthisproject.")}
           </Typography>
         )}
       </Grid>

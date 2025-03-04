@@ -29,6 +29,12 @@ export class HttpClient{
     async putStatus(endpoint, id, body, config){
         return await axios.put(`${this.baseUrl}/${endpoint}/${id}/status`,body, config);
     }
+    async customPut(endpoint, body, config) {
+        return await axios.put(`${this.baseUrl}/${endpoint}`, body, config);
+    }
+    async customPut1(endpoint, id, config) {
+        return await axios.put(`${this.baseUrl}/${endpoint}/${id}`, config)
+    }
 
     async deletePdf(endpoint, id1, id2, config){
         return await axios.delete(`${this.baseUrl}/${endpoint}/${id1}/document/${id2}`, config)

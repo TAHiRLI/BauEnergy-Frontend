@@ -14,6 +14,7 @@ import { Documents } from "../documentspage" ;
 import SettingsAndTeams from "../SettingsAndTeams";
 import TutorialPage from "../Tutorial/Tutorial";
 import UpdateUserPage from "../UpdateUserPage";
+import Cars from "../Car";
 
 export const router = createBrowserRouter([
   {
@@ -115,6 +116,16 @@ export const router = createBrowserRouter([
             </PrivateRoute>
   },
 
+  // ======================
+  // Cars
+  {
+    path: ROUTES.CARS,
+    element: <PrivateRoute loginPath={ROUTES.BASE} allowedRoles={[Roles.admin]}>
+              <Layout>
+                <Cars />
+              </Layout>
+            </PrivateRoute>,
+  },
 
   // ======================
   // Certificates

@@ -36,11 +36,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import StatusButton from "../common/statusBtn";
 import InstrumentTabResponsive from "./InstrumentTabResponsive";
 import { useTranslation } from "react-i18next";
+import CarSelectDropdown from "../common/CarSelectDropdown";
+import { carService } from "../../APIs/Services/car.service";
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 export default function InstrumentTab({ project }) {
   const { t } = useTranslation();
 
-  const { state, dispatch } = useProjects();
+  const { state, dispatch, fetchProject } = useProjects();
   const [openDialog, setOpenDialog] = useState(false);
   const [openQRDialog, setOpenQRDialog] = useState(false);
   const [allInstruments, setAllInstruments] = useState([]);
@@ -64,9 +67,10 @@ export default function InstrumentTab({ project }) {
 
   const [editOpen, setEditOpen] = useState(false);
   const [selectedInstrumentStatus, setSelectedInstrumentStatus] = useState("");
-  
+  const [selectedInstrumentIds, setSelectedInstrumentIds] = useState([]);
+  const [selectedCar, setSelectedCar] = useState(null);
+
   const isSmallScreen = useMediaQuery('(max-width:800px)');
-  
   
   const handleDelete = async (id) => {
     try {
@@ -210,7 +214,7 @@ export default function InstrumentTab({ project }) {
   useEffect(() => {
     setFilteredInstruments(state.project?.instruments || []);
   }, [state.project?.instruments]);
-  console.log(state)
+  // console.log(state)
 
   useEffect(() => {
     handleSearch();
@@ -238,7 +242,7 @@ export default function InstrumentTab({ project }) {
     dispatch({ type: ProjectsActions.start });
     try {
       const response = await projectService.getById(project.id);
-      console.log(response)
+      // console.log(response)
       setAllInstruments(response.data.instruments);
       setFilteredInstruments(response.data.instruments);
       //console.log(response.data.instruments)
@@ -467,9 +471,50 @@ export default function InstrumentTab({ project }) {
     },
   ];
 
-  if (state.loading) {
-    return <div>Loading...</div>;
+  useEffect(() => {
+    if (project.id) {
+        dispatch({ type: ProjectsActions.START });
+        fetchProject(project.id); 
+    }
+}, [project.id]);
+
+const handleAssignInstruments = async () => {
+  if (!selectedCar?.id || selectedInstrumentIds.length === 0) {
+      console.error("Please select a car and at least one instrument.");
+      return;
   }
+
+  try {
+      await carService.assignInstrumentsToCar(selectedCar.id, selectedInstrumentIds);
+      console.log("Instruments assigned successfully!");
+
+      // ✅ Dispatch START and refetch project
+      dispatch({ type: ProjectsActions.START });
+      await fetchProject(state.data.id); // Re-fetch project
+  } catch (error) {
+      console.error("Error assigning instruments:", error);
+      dispatch({ type: ProjectsActions.FAILURE, payload: error.message });
+  }
+};
+
+if (state.loading) return <p>Loading project...</p>;
+if (state.error) return <p>Error: {state.error}</p>;
+
+
+  // const handleAssignInstruments = async () => {
+  //   if (!selectedCar.id || selectedInstrumentIds.length === 0) {
+  //       console.error("Please select a car and at least one instrument.");
+  //       return;
+  //   }
+
+  //   try {
+  //       const response = await carService.assignInstrumentsToCar(selectedCar.id, selectedInstrumentIds);
+  //       console.log(response.data);
+  //   } catch (error) {
+  //       console.error("Error assigning instruments:", error);
+  //   }
+  //}
+
 
   if (state.error) {
     return <div>Error loading instruments</div>;
@@ -493,63 +538,91 @@ export default function InstrumentTab({ project }) {
               className="rounded-3xl w-full sm:w-[200px]"
             />
   
-  <FormControl
-    variant="outlined"
-    className="w-full sm:w-[200px]"
-    sx={{
-      display: "flex",
-      flexDirection: "row",
-      alignItems: "center",
-      position: "relative",
-    }}
-  >
-    <InputLabel>{t("columns:Status")}</InputLabel>
-    <Select
-      label={t("columns:Status")}
-      value={searchStatus}
-      onChange={handleStatusChange}
-      className="rounded-3xl"
-      sx={{
-        width: "220px", 
-        paddingRight: "20px",
-      }}
-    >
-      {statuses.map((status) => (
-        <MenuItem key={status} value={status}>
-          {status}
-        </MenuItem>
-      ))}
-    </Select>
-  
-    {searchStatus && (
-      <IconButton
-        onClick={handleClearStatus}
-        sx={{
-          position: "absolute",
-          right: "18px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          padding: 0.5,
-          color: "grey.600",
-          "&:hover": { color: "grey.800" },
-        }}
-      >
-        <CloseIcon />
-      </IconButton>
-    )}
-  </FormControl>
+            <FormControl
+              variant="outlined"
+              className="w-full sm:w-[200px]"
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "center",
+                position: "relative",
+              }}
+            >
+              <InputLabel>{t("columns:Status")}</InputLabel>
+              <Select
+                label={t("columns:Status")}
+                value={searchStatus}
+                onChange={handleStatusChange}
+                className="rounded-3xl"
+                sx={{
+                  width: "220px", 
+                  paddingRight: "20px",
+                }}
+              >
+                {statuses.map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {status}
+                  </MenuItem>
+                ))}
+              </Select>
+            
+              {searchStatus && (
+                <IconButton
+                  onClick={handleClearStatus}
+                  sx={{
+                    position: "absolute",
+                    right: "18px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    padding: 0.5,
+                    color: "grey.600",
+                    "&:hover": { color: "grey.800" },
+                  }}
+                >
+                  <CloseIcon />
+                </IconButton>
+              )}
+            </FormControl>
+          </div>
+
+          <div className="flex items-center gap-3">
+          <CarSelectDropdown onSelectCar={(car) => setSelectedCar(car)} />
+
+            <Button
+              className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0 !mr-3 !min-w-40"
+              startIcon={<AddIcon />}
+              variant="contained"
+              onClick={() => setOpenDialog(true)}
+              aria-hidden
+            >
+              {t("PopUp:AddNewInstrument")}
+            </Button>
+          </div>
         </div>
-          <Button
-            className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0 !mr-3"
-            startIcon={<AddIcon />}
-            variant="contained"
-            onClick={() => setOpenDialog(true)}
-            aria-hidden
-          >
-            {t("PopUp:AddNewInstrument")}
-          </Button>
+        <div className="flex justify-end h-12">
+        {selectedInstrumentIds.length > 0 && (
+        <Button
+          className="!rounded-3xl !normal-case !py-2 !my-1 !sm:my-0 !mr-3 !min-w-40"
+          //startIcon={ <LocalShippingIcon className="text-black" /> }
+          variant="contained"
+          onClick={() => handleAssignInstruments()}
+          disabled={!selectedCar || selectedInstrumentIds.length === 0}
+          sx={{
+            backgroundColor: !selectedCar || selectedInstrumentIds.length === 0 ? "#b0b0b0" : "#1D34D8", // Gray when disabled
+            color: "white",
+            "&:hover": {
+              backgroundColor: !selectedCar || selectedInstrumentIds.length === 0 ? "#b0b0b0" : "#1628a0", // Slightly darker blue on hover
+            },
+            cursor: !selectedCar || selectedInstrumentIds.length === 0 ? "not-allowed" : "pointer",
+            opacity: !selectedCar || selectedInstrumentIds.length === 0 ? 0.7 : 1,
+          }}
+          aria-hidden
+        >
+          Load to car
+        </Button>
+      )}
+
         </div>
-  
         <Paper
           className="!lg:max-w-[100%]"
           sx={{
@@ -568,6 +641,13 @@ export default function InstrumentTab({ project }) {
               columns={columns}
               initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
               pageSizeOptions={[20, 40]}
+              checkboxSelection
+              disableSelectionOnClick
+              isRowSelectable={(params) => !params.row.carId}
+              onRowSelectionModelChange={(newSelection) => {
+                setSelectedInstrumentIds(newSelection); 
+                console.log("Selected Instruments:", newSelection); 
+              }}
               sx={{
                 border: 0,
                 minWidth: 640,

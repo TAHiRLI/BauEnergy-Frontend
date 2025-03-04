@@ -93,6 +93,7 @@ const TutorialPage = () => {
       console.log("🚀 ~ handleCertificateGet ~ error:", error);
     }
   };
+  
   return (
     <div className=" mt-3">
       {showQuestions ? (
@@ -206,3 +207,5 @@ const TutorialPage = () => {
 };
 
 export default TutorialPage;
+
+

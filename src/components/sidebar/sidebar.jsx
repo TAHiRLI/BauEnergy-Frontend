@@ -26,6 +26,7 @@ import { projectService } from "../../APIs/Services/project.service";
 import { useAuth } from "../../context/authContext";
 import { useMediaQuery } from "@mui/material";
 import { useTranslation } from 'react-i18next';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const { t } = useTranslation();
@@ -249,6 +250,20 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                       <ListItemText primary={t("Instruments")} />
                     </ListItem>
                   )}   
+
+                  {isAdmin && (
+                  <List>
+                    <ListItem button component={Link} to={ROUTES.CARS} className="!rounded-xl" 
+                  onClick={() => {
+                    if (isMobile) toggleSidebar();
+                  }}>
+                      <ListItemIcon >
+                        <LocalShippingIcon className="text-black" />
+                      </ListItemIcon>
+                      <ListItemText primary={t("Cars")} />
+                    </ListItem>
+                  </List>
+                )}
 
                   {!isUser && (
                     <ListItem button component={Link} to={ROUTES.DOCUMENTS} className="!rounded-xl"

@@ -10,7 +10,7 @@ import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { IconButton, useMediaQuery } from '@mui/material';
+import { IconButton, useMediaQuery, CircularProgress, } from '@mui/material';
 import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
 import InstrumentTab from '../../components/ProjectsDetails/ProjectInstrumentTab';
@@ -25,6 +25,9 @@ import Swal from 'sweetalert2';
 import { projectService } from '../../APIs/Services/project.service';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { useTranslation } from "react-i18next";
+import { carService } from '../../APIs/Services/car.service';
+import CarSelectionPopup from '../../components/Dialogs/CarSelectionDialog';
+import ProjectCar from '../../components/ProjectsDetails/ProjectCar';
 
 
 function CustomTabPanel(props) {
@@ -53,11 +56,15 @@ function a11yProps(index) {
 export default function BasicTabs() {
   const { t } = useTranslation();
   
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const [project, setProject] = useState(location.state?.project || "null");
   const [value, setValue] = useState(0);
   const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [availableCars, setAvailableCars] = useState(null)
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [selectedCar, setSelectedCar] = useState(null);
 
   useEffect(() => {
     if (location.state?.project) {
@@ -206,6 +213,25 @@ export default function BasicTabs() {
     }
   };
   
+  useEffect(() => {
+      const fetchAvailableCars = async () => {
+          try {
+              const response = await carService.getAll(); 
+              setAvailableCars(response.data);
+          } catch (error) {
+              console.error("Error fetching cars:", error);
+          } finally {
+              setLoading(false);
+          }
+      };
+
+      fetchAvailableCars();
+  }, []);
+
+  const handleSelectCar = (car) => {
+    setSelectedCar(car); // Store selected car
+    console.log("Selected Car:", car);
+  };
   
   const isSmallScreen = useMediaQuery('(max-width:800px)');
 
@@ -232,8 +258,8 @@ export default function BasicTabs() {
             onClick={handleShare}
           >
             {t("PopUp:Shareprojectlink")}
-          </Button>
-          <Button
+        </Button>
+        <Button
             className="!rounded-2xl !bg-[#1D34D8] !text-white !px-4 mr-0 sm:mr-1"
             variant="contained"
             sx={{
@@ -242,7 +268,18 @@ export default function BasicTabs() {
             onClick={handleEditDialogOpen}
           >
               {t("PopUp:EditProject")}
-            </Button>
+        </Button>
+
+        {/* <Button
+            className="!rounded-2xl !bg-[#1D34D8] !text-white !px-4 mr-0 sm:mr-1"
+            variant="contained"
+            sx={{
+              textTransform: 'none',
+            }}
+            onClick={() => setPopupOpen(true)}
+          >
+              Select car
+        </Button> */}
         </div>
       </div>
       <div className="text-gray-500 text-lg mt-1">
@@ -262,6 +299,7 @@ export default function BasicTabs() {
           <Tab label={t('PopUp:UsedInstruments')} {...a11yProps(1)} />
           <Tab label={t('TeamMembers')} {...a11yProps(2)} />
           <Tab label={t('columns:Documents')} {...a11yProps(3)} />
+          <Tab label={t('Car')} {...a11yProps(4)} />
         </Tabs>
       </Box>
 
@@ -276,6 +314,9 @@ export default function BasicTabs() {
       </CustomTabPanel>
       <CustomTabPanel value={value} index={3}>
         <ProjectDocuments project={project} />
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={4}>
+        <ProjectCar project={project} />
       </CustomTabPanel>
 
       {/* Edit Project Dialog */}
@@ -408,6 +449,13 @@ export default function BasicTabs() {
           </Formik>
         </DialogContent>
       </Dialog>
+
+      <CarSelectionPopup
+        open={popupOpen}
+        onClose={() => setPopupOpen(false)}
+        onSelectCar={handleSelectCar}
+        projectId= {project.id}
+      />
     </Box>
   );
 }
