@@ -7,6 +7,7 @@ const CarDropdown = ({ onSelectCar }) => {
   const [selectedCar, setSelectedCar] = useState("");
   const [loading, setLoading] = useState(true);
 
+
   useEffect(() => {
     const fetchAvailableCars = async () => {
       try {
@@ -29,7 +30,7 @@ const CarDropdown = ({ onSelectCar }) => {
   };
 
   return (
-    <FormControl fullWidth>
+    <FormControl >
       <InputLabel>Select Car</InputLabel>
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" height={50}>

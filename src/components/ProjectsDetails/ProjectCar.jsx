@@ -125,7 +125,7 @@ export default function CarTab( ) {
                         </Card>
                     ))
                 ) : (
-                    <Typography>No distinct car IDs found.</Typography>
+                    <Typography>No car found in this project.</Typography>
                 )
             )}
 

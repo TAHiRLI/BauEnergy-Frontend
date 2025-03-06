@@ -488,6 +488,7 @@ const handleAssignInstruments = async () => {
       await carService.assignInstrumentsToCar(selectedCar.id, selectedInstrumentIds);
       const projectResponse = await projectService.getById(selectedProject.id);
       setSelectedProject(projectResponse.data); 
+      window.location.reload();
 
       Swal.fire({
         title: 'Instruments Loaded Successfully!',
@@ -509,7 +510,7 @@ const handleAssignInstruments = async () => {
 
       });
       
-    
+
   } catch (error) {
       console.error("Error assigning instruments:", error);
       dispatch({ type: ProjectsActions.FAILURE, payload: error.message });
@@ -591,7 +592,7 @@ if (state.error) return <p>Error: {state.error}</p>;
           </div>
 
           <div className="flex items-center gap-3">
-          <CarSelectDropdown onSelectCar={(car) => setSelectedCar(car)} />
+            <CarSelectDropdown onSelectCar={(car) => setSelectedCar(car)} />
 
             <Button
               className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0 !mr-3 !min-w-40"
@@ -616,10 +617,8 @@ if (state.error) return <p>Error: {state.error}</p>;
             backgroundColor: !selectedCar || selectedInstrumentIds.length === 0 ? "#b0b0b0" : "#1D34D8",
             color: "white",
             "&:hover": {
-              // backgroundColor: !selectedCar || selectedInstrumentIds.length === 0 ? "#b0b0b0" : "#1628a0",
             },
              cursor: !selectedCar || selectedInstrumentIds.length === 0 ? "not-allowed" : "pointer",
-            // opacity: !selectedCar || selectedInstrumentIds.length === 0 ? 0.7 : 1,
           }}
           aria-hidden
         >
