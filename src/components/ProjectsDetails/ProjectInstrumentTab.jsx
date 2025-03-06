@@ -631,12 +631,12 @@ if (state.error) return <p>Error: {state.error}</p>;
           className="!lg:max-w-[100%]"
           sx={{
             overflowX: "hidden",
-            maxWidth: { xs: "250px", sm: "700px", md: "750px", lg: "100%" },
+            maxWidth: { xs: "250px", sm: "700px", md: "100%", lg: "100%" },
           }}
         >
           <Box
             sx={{
-              maxWidth: { xs: "250px", sm: "700px", md: "750px", lg: "100%" },
+              maxWidth: { xs: "250px", sm: "700px", md: "100%", lg: "100%" },
               overflowX: "auto",
             }}
           >
