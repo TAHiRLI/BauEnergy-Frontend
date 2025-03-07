@@ -21,7 +21,7 @@ function Layout({ children }) {
         <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       </nav>
       {/* Problem px-5 here  */}
-      <div className="flex-grow px-5 h-full mt-3 lg:ml-[260px]">
+      <div className="flex-grow px-5 h-full mt-3 lg:ml-[260px] overflow-x-hidden">
         {/* Appbar */}
         <Appbar position="static" className="bg-blue-200 "  toggleSidebar={toggleSidebar} >
           <Toolbar>

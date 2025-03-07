@@ -488,7 +488,7 @@ const handleAssignInstruments = async () => {
       await carService.assignInstrumentsToCar(selectedCar.id, selectedInstrumentIds);
       const projectResponse = await projectService.getById(selectedProject.id);
       setSelectedProject(projectResponse.data); 
-      window.location.reload();
+      //window.location.reload();
 
       Swal.fire({
         title: 'Instruments Loaded Successfully!',
@@ -503,7 +503,7 @@ const handleAssignInstruments = async () => {
             </div>
           </div>
         `,
-        width: '40%', // Set the width of the SweetAlert popup
+        width: '40%', 
         padding: '20px',
         background: '#fff',
         confirmButtonText: "OK",

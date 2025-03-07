@@ -8,10 +8,12 @@ import { carService } from '../../APIs/Services/car.service';
 import AddCarPopup from "../../components/Dialogs/AddCarDialog";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Swal from 'sweetalert2';
+import { useProjects } from '../../context/projectContext';
 
 const Cars = () => {
     const { t } = useTranslation();
   
+    const {selectedProject, setSelectedProject } = useProjects();
     const [loading, setLoading] = useState(true);
     const [cars, setCars] = useState([]);
     const [openPopup, setOpenPopup] = useState(false);

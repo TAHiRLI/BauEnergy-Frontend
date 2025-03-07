@@ -17,7 +17,7 @@ export default function CarTab( ) {
 
     
     useEffect(() => {
-        const formattedInstruments = selectedProject.instruments.map(i => ({
+        const formattedInstruments = selectedProject.instruments?.map(i => ({
             id: i.id,
             name: i.name || "",
             description: i.description || "",
@@ -159,7 +159,7 @@ export default function CarTab( ) {
                 </DialogTitle>
                 <DialogContent>
                     <List>
-                        {selectedCarInstruments.map((instrument) => (
+                        {selectedCarInstruments?.map((instrument) => (
                         <ListItemText primary={`(ID_${instrument.id}) ${instrument.name}`} secondary={instrument.description} 
                         />
                         ))}
