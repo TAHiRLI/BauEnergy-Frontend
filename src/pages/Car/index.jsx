@@ -86,7 +86,7 @@ const Cars = () => {
         }).then(async (result) => {
           if (result.isConfirmed) {
             try {
-              await carService.deleteCar(id);
+              await carService.remove(id);
               Swal.fire("Deleted!", "The car has been deleted.", "success");
               fetchCars(); 
             } catch (error) {
