@@ -41,7 +41,7 @@ const AddCarPopup = ({ open, onClose, onCarAdded }) => {
       PaperProps={{
         style: {
           borderRadius: 20,
-          height: "380px",
+          height: "390px",
           backgroundColor: "#fcfcfc",
         },
       }}>
@@ -78,6 +78,8 @@ const AddCarPopup = ({ open, onClose, onCarAdded }) => {
         <TextField
           label="Note"
           fullWidth
+          multiline
+          rows={3}
           margin="dense"
           value={note}
           onChange={(e) => setNote(e.target.value)}
@@ -85,9 +87,7 @@ const AddCarPopup = ({ open, onClose, onCarAdded }) => {
         {error && <p style={{ color: "red" }}>{error}</p>}
       </DialogContent>
       <DialogActions>
-        <Button variant="outlined" onClick={onClose}>
-          Cancel
-        </Button>
+        <Button  onClick={onClose}> Cancel </Button>
         <Button onClick={handleAddCar} variant="contained"
             className='!bg-[#1D34D8]'            
             disabled={loading}>
