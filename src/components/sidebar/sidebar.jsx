@@ -52,26 +52,49 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     }
   };
 
+  // const handleProjectSelect = async (projectId) => {
+  //   try {
+  //     const projectResponse = await projectService.getById(projectId);
+  //     setSelectedProject(projectResponse.data); 
+  //     navigate(`/project/${projectId}`, { state: { project: projectResponse.data } }); 
+  //     //console.log(projectResponse.data)
+  //   } catch (error) {
+  //     console.error("Failed to fetch project details", error);
+  //   }
+  // };
+
   const handleProjectSelect = async (projectId) => {
     try {
       const projectResponse = await projectService.getById(projectId);
-      setSelectedProject(projectResponse.data); 
+      setSelectedProject(projectResponse.data);
+      
+      // Save selected project in localStorage
+      localStorage.setItem("selectedProject", JSON.stringify(projectResponse.data));
+  
       navigate(`/project/${projectId}`, { state: { project: projectResponse.data } }); 
-      //console.log(projectResponse.data)
     } catch (error) {
       console.error("Failed to fetch project details", error);
     }
   };
+  
+  // useEffect(() => {
+  //   console.log(selectedProject)
+  //   if(selectedProject){
+  //     let project = projects.find(x => x.id == selectedProject.id)
+
+  //     if(project){
+  //       setSelectedProject(project)
+  //     }
+  //   }
+  // }, [projects])
 
   useEffect(() => {
-    if(selectedProject){
-      let project = projects.find(x => x.id == selectedProject.id)
-
-      if(project){
-        setSelectedProject(project)
-      }
+    const savedProject = localStorage.getItem("selectedProject");
+    if (savedProject) {
+      setSelectedProject(JSON.parse(savedProject));
     }
-  }, [projects])
+  }, []);
+  
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 

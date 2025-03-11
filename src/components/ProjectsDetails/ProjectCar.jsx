@@ -17,7 +17,7 @@ export default function CarTab( ) {
 
     
     useEffect(() => {
-        const formattedInstruments = selectedProject.instruments?.map(i => ({
+        const formattedInstruments = selectedProject?.instruments?.map(i => ({
             id: i.id,
             name: i.name || "",
             description: i.description || "",
@@ -99,9 +99,9 @@ export default function CarTab( ) {
                 cars.length > 0 ? (
                     cars.map((car) => (
                         <Card key={carId} style={{ marginBottom: "8px", padding: "5px", backgroundColor: "#f9f9f9", borderRadius: "15px" }}>
-                            <CardContent className="!flex items-center justify-between">
+                            <CardContent className="!flex items-center justify-between flex-col sm:flex-row">
                                 <Typography variant="h6">Car: {car.vehicleNumber}</Typography>
-                                <Box>
+                                <Box className="text-center">
                                     <Button
                                         className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-2 !sm:my-0 !mr-3 !min-w-40"
                                         //startIcon={<AddIcon />}
@@ -112,7 +112,7 @@ export default function CarTab( ) {
                                         Show instruments
                                     </Button>
                                     <Button
-                                        className="!bg-red-600 !rounded-3xl !normal-case !py-2 !my-2 !sm:my-0 !mr-3 !min-w-40"
+                                        className="!bg-red-600 !rounded-3xl !normal-case !py-2 !my-2 !sm:my-0 !min-w-40 "
                                         //startIcon={<AddIcon />}
                                         variant="contained"
                                         onClick={() => handleUnassign(car.id)}

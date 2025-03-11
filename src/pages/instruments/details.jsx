@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Box, Typography, Grid, Button, CircularProgress, ListItemText, TextField, FormControl, InputLabel, Checkbox, OutlinedInput, InputAdornment } from '@mui/material';
 import { Dialog, DialogTitle, DialogContent, IconButton, DialogActions, Select, MenuItem } from '@mui/material';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, Link, useNavigate } from 'react-router-dom';
 import { instrumentService } from '../../APIs/Services/instrument.service';
 import { instrumentHistoryService } from '../../APIs/Services/instrumentHistory.service';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -25,6 +25,8 @@ import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import html2canvas from "html2canvas";
 import { useSearchParams } from "react-router-dom"; 
 import { useTranslation } from "react-i18next";
+import { useProjects } from '../../context/projectContext';
+import { projectService } from '../../APIs/Services/project.service';
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Instrument name is required'),
@@ -80,6 +82,7 @@ const InstrumentDetails = () => {
   const [openAddDocumentDialog, setOpenAddDocumentDialog] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [qrImage, setQrImage] = useState("");
+  const {projects, setProjects, selectedProject, setSelectedProject} = useProjects();
 
   const handleAddDocumentOpenDialog = () => setOpenAddDocumentDialog(true);
   const handleAddDocumentCloseDialog = () => setOpenAddDocumentDialog(false);
@@ -87,14 +90,13 @@ const InstrumentDetails = () => {
   const handleFileChange = (event) => {
     setSelectedFiles([...event.target.files]);
   };
+  const navigate = useNavigate();
 
   const qrWrapper = document.getElementById("qr-wrapper");
   if (qrWrapper) {
     const canvas =  html2canvas(qrWrapper);
-    //const image = canvas?.toDataURL("image/png");
 
     const link = document.createElement("a");
-    //link.href = image;
     link.download = `instrument_${instrument.name || instrument.id}.png`;
     link.click();
   }
@@ -585,6 +587,21 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     }
   };
 
+  const handleProjectSelect = async (projectId) => {
+    try {
+      const projectResponse = await projectService.getById(projectId);
+      setSelectedProject(projectResponse.data);
+      
+      // Save selected project in localStorage
+      localStorage.setItem("selectedProject", JSON.stringify(projectResponse.data));
+
+      navigate(`/project/${projectId}`, { state: { project: projectResponse.data } }); 
+      
+    } catch (error) {
+      console.error("Failed to fetch project details", error);
+    }
+  };
+
   
   return (
     <Box p={1}>
@@ -949,8 +966,19 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
 
                     {/* Project */}
                     <Typography sx={{ color: "text.secondary" }} className="!text-[14px]">
-                    {t('Project')}: {instrument.projectName || "Not assigned"}
+                      {t('Project')}: 
+                      {instrument.projectName ? (
+                        <span
+                          style={{ textDecoration: "underline", color: "blue", cursor: "pointer" }}
+                          onClick={() => handleProjectSelect(instrument.projectId)}
+                        >
+                          {instrument.projectName}
+                        </span>
+                      ) : (
+                        "Not assigned"
+                      )}
                     </Typography>
+
                   </div>
 
                   {/* Action Buttons */}

@@ -62,7 +62,7 @@ export default function BasicTabs() {
   const navigate = useNavigate();
   const [project, setProject] = useState(location.state?.project || "null");
   const {selectedProject, setSelectedProject} = useProjects();
-  const [value, setValue] = useState(0);
+  const [value, setValue] = useState(1);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [availableCars, setAvailableCars] = useState(null)
   const [popupOpen, setPopupOpen] = useState(false);
@@ -299,9 +299,9 @@ export default function BasicTabs() {
         >
           <Tab label={t('PopUp:Overview')} {...a11yProps(0)} />
           <Tab label={t('PopUp:UsedInstruments')} {...a11yProps(1)} />
-          <Tab label={t('TeamMembers')} {...a11yProps(2)} />
-          <Tab label={t('columns:Documents')} {...a11yProps(3)} />
-          <Tab label={t('Car')} {...a11yProps(4)} />
+          <Tab label={t('Cars')} {...a11yProps(2)} />
+          <Tab label={t('TeamMembers')} {...a11yProps(3)} />
+          <Tab label={t('columns:Documents')} {...a11yProps(4)} />
         </Tabs>
       </Box>
 
@@ -309,15 +309,16 @@ export default function BasicTabs() {
         <ProjectOverview project={project} />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-        {isSmallScreen ? <InstrumentTabResponsive project={project} /> : <InstrumentTab project={project} />}
-      </CustomTabPanel>
-      <CustomTabPanel value={value} index={2}>
-        {isSmallScreen ? <TeamMemberTabResponsive project={project} /> : <TeamMember project={project} />}
+        {/* {isSmallScreen ? <InstrumentTabResponsive project={project} /> :  */}
+        <InstrumentTab project={project} />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={3}>
-        <ProjectDocuments project={project} />
+        {isSmallScreen ? <TeamMemberTabResponsive project={project} /> : <TeamMember project={project} />}
       </CustomTabPanel>
       <CustomTabPanel value={value} index={4}>
+        <ProjectDocuments project={project} />
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={2}>
         <ProjectCar project={selectedProject} />
       </CustomTabPanel>
 

@@ -17,7 +17,8 @@ import {
   FormHelperText,
   Chip,
   Paper,
-  useMediaQuery
+  useMediaQuery,
+  Autocomplete
 } from "@mui/material";
 import Swal from "sweetalert2";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -382,94 +383,228 @@ export default function InstrumentTab({ project }) {
     setRefresh((prev) => !prev);
   };
 
-  const columns = [
-    {
-      field: "name",
-      headerName: t("columns:InstrumentName"),
-      width: 200,
-      renderCell: (params) => {
-        const mainImage = params.row.images?.find((img) => img.isMain);
-        return (
-          <Box display="flex" alignItems="center" sx={{ cursor: "pointer" }} onClick={() => handleShowQR(params.row)}>
-            {mainImage && (
-              <img
-                src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${mainImage.image}`}
-                alt={params.row.name}
-                style={{ width: 50, height: 50, marginRight: 10 }}
-              />
-            )}
-          <Typography>(ID_{params.row.id}) {params.row.name}</Typography>
-          </Box>
-        );
-      },
-    },
-    {
-      field: "addedProjectDate",
-      headerName: t("columns:DateAdded"),
-      width: 150,
-      renderCell: (params) => formatDate(params.row.addedProjectDate),
-    },
-    { field: "instrumentType", headerName: t("columns:Type"), width: 150 },
-    {
-      field: "status",
-      headerName: t("columns:Status"),
-      width: 160,
-      renderCell: (params) => renderStatus(params.row.status.split("_").join(" ")),
-    },
+  // const columns = [
+  //   {
+  //     field: "name",
+  //     headerName: t("columns:InstrumentName"),
+  //     width: 200,
+  //     renderCell: (params) => {
+  //       const mainImage = params.row.images?.find((img) => img.isMain);
+  //       return (
+  //         <Box display="flex" alignItems="center" sx={{ cursor: "pointer" }} onClick={() => handleShowQR(params.row)}>
+  //           {mainImage && (
+  //             <img
+  //               src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${mainImage.image}`}
+  //               alt={params.row.name}
+  //               style={{ width: 50, height: 50, marginRight: 10 }}
+  //             />
+  //           )}
+  //         <Typography>(ID_{params.row.id}) {params.row.name}</Typography>
+  //         </Box>
+  //       );
+  //     },
+  //   },
+  //   {
+  //     field: "addedProjectDate",
+  //     headerName: t("columns:DateAdded"),
+  //     width: 150,
+  //     renderCell: (params) => formatDate(params.row.addedProjectDate),
+  //   },
+  //   { field: "instrumentType", headerName: t("columns:Type"), width: 150 },
+  //   {
+  //     field: "status",
+  //     headerName: t("columns:Status"),
+  //     width: 160,
+  //     renderCell: (params) => renderStatus(params.row.status.split("_").join(" ")),
+  //   },
+  //   {
+  //     field: "actions",
+  //     headerName: t("columns:Actions"),
+  //     width: 180,
+  //     renderCell: (params) => (
+  //       <>
+  //         <div className="text-center">
+  //           <IconButton
+  //             size="small"
+  //             variant="contained"
+  //             onClick={() => handleEditOpen(params.row.id, params.row.status)}
+  //             sx={{
+  //               backgroundColor: "#f5f5f5",
+  //               borderRadius: "20%",
+  //               padding: "5px",
+  //               border: "1px solid #e0e0e0",
+  //               "&:hover": { backgroundColor: "#e0e0e0" },
+  //               marginRight: "8px",
+  //             }}
+  //           >
+  //             <EditIcon style={{ color: "#424242" }} />
+  //           </IconButton>
+  //           <IconButton
+  //             onClick={() => handleDelete(params.row.id)}
+  //             sx={{
+  //               backgroundColor: "#f5f5f5",
+  //               borderRadius: "20%",
+  //               padding: "5px",
+  //               border: "1px solid #e0e0e0",
+  //               "&:hover": { backgroundColor: "#e0e0e0" },
+  //               marginRight: "8px",
+  //             }}
+  //           >
+  //             <DeleteIcon className="text-[#d33]" />
+  //           </IconButton>
+
+  //           <IconButton
+  //             onClick={() => handleShowHistory(params.row.id)}
+  //             color="primary"
+  //             sx={{
+  //               backgroundColor: "#f5f5f5",
+  //               borderRadius: "20%",
+  //               padding: "5px",
+  //               border: "1px solid #e0e0e0",
+  //               "&:hover": { backgroundColor: "#e0e0e0" },
+  //             }}
+  //           >
+  //             <HistoryIcon sx={{ color: "#424242" }} />
+  //           </IconButton>
+  //         </div>
+  //       </>
+  //     ),
+  //   },
+  // ];
+
+  const mobileColumns = [
+    { field: "name", headerName: t("columns:InstrumentName"), width: 200 },
     {
       field: "actions",
       headerName: t("columns:Actions"),
       width: 180,
       renderCell: (params) => (
-        <>
-          <div className="text-center">
-            <IconButton
-              size="small"
-              variant="contained"
-              onClick={() => handleEditOpen(params.row.id, params.row.status)}
-              sx={{
-                backgroundColor: "#f5f5f5",
-                borderRadius: "20%",
-                padding: "5px",
-                border: "1px solid #e0e0e0",
-                "&:hover": { backgroundColor: "#e0e0e0" },
-                marginRight: "8px",
-              }}
-            >
-              <EditIcon style={{ color: "#424242" }} />
-            </IconButton>
-            <IconButton
-              onClick={() => handleDelete(params.row.id)}
-              sx={{
-                backgroundColor: "#f5f5f5",
-                borderRadius: "20%",
-                padding: "5px",
-                border: "1px solid #e0e0e0",
-                "&:hover": { backgroundColor: "#e0e0e0" },
-                marginRight: "8px",
-              }}
-            >
-              <DeleteIcon className="text-[#d33]" />
-            </IconButton>
-
-            <IconButton
-              onClick={() => handleShowHistory(params.row.id)}
-              color="primary"
-              sx={{
-                backgroundColor: "#f5f5f5",
-                borderRadius: "20%",
-                padding: "5px",
-                border: "1px solid #e0e0e0",
-                "&:hover": { backgroundColor: "#e0e0e0" },
-              }}
-            >
-              <HistoryIcon sx={{ color: "#424242" }} />
-            </IconButton>
-          </div>
-        </>
+        <div className="text-center">
+          <IconButton
+            size="small"
+            variant="contained"
+            onClick={() => handleEditOpen(params.row.id, params.row.status)}
+            sx={{
+              backgroundColor: "#f5f5f5",
+              borderRadius: "20%",
+              padding: "5px",
+              border: "1px solid #e0e0e0",
+              "&:hover": { backgroundColor: "#e0e0e0" },
+              marginRight: "8px",
+            }}
+          >
+            <EditIcon style={{ color: "#424242" }} />
+          </IconButton>
+          <IconButton
+            onClick={() => handleDelete(params.row.id)}
+            sx={{
+              backgroundColor: "#f5f5f5",
+              borderRadius: "20%",
+              padding: "5px",
+              border: "1px solid #e0e0e0",
+              "&:hover": { backgroundColor: "#e0e0e0" },
+              marginRight: "8px",
+            }}
+          >
+            <DeleteIcon className="text-[#d33]" />
+          </IconButton>
+  
+          <IconButton
+            onClick={() => handleShowHistory(params.row.id)}
+            color="primary"
+            sx={{
+              backgroundColor: "#f5f5f5",
+              borderRadius: "20%",
+              padding: "5px",
+              border: "1px solid #e0e0e0",
+              "&:hover": { backgroundColor: "#e0e0e0" },
+            }}
+          >
+            <HistoryIcon sx={{ color: "#424242" }} />
+          </IconButton>
+        </div>
+      ),
+    },
+    {
+      field: "status",
+      headerName: t("columns:Status"),
+      width: 160,
+      renderCell: (params) => renderStatus(params.row.status.split("_").join(" ")),
+    },    {
+      field: "addedProjectDate",
+      headerName: t("columns:DateAdded"),
+      width: 150,
+      renderCell: (params) => formatDate(params.row.addedProjectDate),
+    },    { field: "instrumentType", headerName: t("columns:Type"), width: 150 },
+  ];
+  
+  const desktopColumns = [
+    { field: "name", headerName: t("columns:InstrumentName"), width: 200 },
+    {
+      field: "addedProjectDate",
+      headerName: t("columns:DateAdded"),
+      width: 150,
+      renderCell: (params) => formatDate(params.row.addedProjectDate),
+    },    { field: "instrumentType", headerName: t("columns:Type"), width: 150 },
+    {
+      field: "status",
+      headerName: t("columns:Status"),
+      width: 160,
+      renderCell: (params) => renderStatus(params.row.status.split("_").join(" ")),
+    },    {
+      field: "actions",
+      headerName: t("columns:Actions"),
+      width: 180,
+      renderCell: (params) => (
+        <div className="text-center">
+          <IconButton
+            size="small"
+            variant="contained"
+            onClick={() => handleEditOpen(params.row.id, params.row.status)}
+            sx={{
+              backgroundColor: "#f5f5f5",
+              borderRadius: "20%",
+              padding: "5px",
+              border: "1px solid #e0e0e0",
+              "&:hover": { backgroundColor: "#e0e0e0" },
+              marginRight: "8px",
+            }}
+          >
+            <EditIcon style={{ color: "#424242" }} />
+          </IconButton>
+          <IconButton
+            onClick={() => handleDelete(params.row.id)}
+            sx={{
+              backgroundColor: "#f5f5f5",
+              borderRadius: "20%",
+              padding: "5px",
+              border: "1px solid #e0e0e0",
+              "&:hover": { backgroundColor: "#e0e0e0" },
+              marginRight: "8px",
+            }}
+          >
+            <DeleteIcon className="text-[#d33]" />
+          </IconButton>
+  
+          <IconButton
+            onClick={() => handleShowHistory(params.row.id)}
+            color="primary"
+            sx={{
+              backgroundColor: "#f5f5f5",
+              borderRadius: "20%",
+              padding: "5px",
+              border: "1px solid #e0e0e0",
+              "&:hover": { backgroundColor: "#e0e0e0" },
+            }}
+          >
+            <HistoryIcon sx={{ color: "#424242" }} />
+          </IconButton>
+        </div>
       ),
     },
   ];
+
+  const columns = isSmallScreen ? mobileColumns : desktopColumns;
 
   useEffect(() => {
     if (project.id) {
@@ -493,6 +628,18 @@ const handleAssignInstruments = async () => {
       Swal.fire({
         title: 'Instruments Loaded Successfully!',
         html: `
+        <style>
+      @media (max-width: 1024px) {
+        .swal-container {
+          width: 90% !important;
+        }
+      }
+      @media (min-width: 1025px) {
+        .swal-container {
+          width: 40% !important;
+        }
+      }
+    </style>
           <div style="display: flex; flex-direction:column; justify-content: center; align-items: center;">
             <h3>Car has been loaded with selected instruments! 🎉</h3>
             <div style="margin-top: 20px;">
@@ -503,7 +650,9 @@ const handleAssignInstruments = async () => {
             </div>
           </div>
         `,
-        width: '40%', 
+        customClass: {
+          popup: 'swal-container' 
+        },
         padding: '20px',
         background: '#fff',
         confirmButtonText: "OK",
@@ -526,15 +675,15 @@ if (state.error) return <p>Error: {state.error}</p>;
     return <div>Error loading instruments</div>;
   }
 
-  if(isSmallScreen)
-  {
-    return <InstrumentTabResponsive searchType={searchType} setSearchType={setSearchType} searchStatus={searchStatus} handleStatusChange={handleStatusChange} filteredInstruments={filteredInstruments} statuses={statuses} />
-  }
-  else{
+  // if(isSmallScreen)
+  // {
+  //   return <InstrumentTabResponsive searchType={searchType} setSearchType={setSearchType} searchStatus={searchStatus} handleStatusChange={handleStatusChange} filteredInstruments={filteredInstruments} statuses={statuses} />
+  // }
+  // else{
     return (
-      <Box height={400} px={0} className="!px-0">
+      <Box px={0} className="!px-0">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-5">
-          <div className="flex flex-col gap-2 sm:flex-row sm:gap-1">
+          <div className="flex flex-row gap-2 sm:flex-row sm:gap-1">
             {/* Type Input */}
             <TextField
               label= {t("PopUp:Name")}
@@ -554,48 +703,27 @@ if (state.error) return <p>Error: {state.error}</p>;
                 position: "relative",
               }}
             >
-              <InputLabel>{t("columns:Status")}</InputLabel>
-              <Select
-                label={t("columns:Status")}
+              <Autocomplete
+                sx={{ width: 220 }}
+                options={statuses}
                 value={searchStatus}
-                onChange={handleStatusChange}
-                className="rounded-3xl"
-                sx={{
-                  width: "220px", 
-                  paddingRight: "20px",
+                onChange={(event, newValue) => {
+                  setSearchStatus(newValue);
                 }}
-              >
-                {statuses.map((status) => (
-                  <MenuItem key={status} value={status}>
-                    {status}
-                  </MenuItem>
-                ))}
-              </Select>
-            
-              {searchStatus && (
-                <IconButton
-                  onClick={handleClearStatus}
-                  sx={{
-                    position: "absolute",
-                    right: "18px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    padding: 0.5,
-                    color: "grey.600",
-                    "&:hover": { color: "grey.800" },
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              )}
+                clearOnBlur
+                handleHomeEndKeys
+                renderInput={(params) => <TextField {...params} label={t("columns:Status")} />}
+              />
+
             </FormControl>
+
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 justify-between">
             <CarSelectDropdown onSelectCar={(car) => setSelectedCar(car)} />
 
             <Button
-              className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0 !mr-3 !min-w-40"
+              className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0 sm:!mx-3 !min-w-40"
               startIcon={<AddIcon />}
               variant="contained"
               onClick={() => setOpenDialog(true)}
@@ -605,11 +733,12 @@ if (state.error) return <p>Error: {state.error}</p>;
             </Button>
           </div>
         </div>
+        
         <div className="flex justify-end h-12">
         {selectedInstrumentIds.length > 0 && (
         <Button
-          className="!rounded-3xl !normal-case !py-2 !my-1 !sm:my-0 !mr-3 !min-w-40"
-          startIcon={<LocalShippingOutlinedIcon />}
+        className="!rounded-3xl !normal-case !py-2 !my-1 !sm:my-0 !mr-3 w-full sm:w-auto"
+        startIcon={<LocalShippingOutlinedIcon />}
           variant="contained"
           onClick={() => handleAssignInstruments()}
           disabled={!selectedCar || selectedInstrumentIds.length === 0}
@@ -627,20 +756,22 @@ if (state.error) return <p>Error: {state.error}</p>;
       )}
 
         </div>
+
         <Paper
-          className="!lg:max-w-[100%]"
+          className="!mt-4 !sm:mt-0 !h-full"
           sx={{
             overflowX: "hidden",
-            maxWidth: { xs: "250px", sm: "700px", md: "100%", lg: "100%" },
+            maxWidth: "100vw",
+            
           }}
         >
           <Box
             sx={{
-              maxWidth: { xs: "250px", sm: "700px", md: "100%", lg: "100%" },
-              overflowX: "auto",
+              width: "100%",
             }}
           >
             <DataGrid
+              className="max-w-[100vw]"
               rows={filteredInstruments}
               columns={columns}
               initialState={{ pagination: { paginationModel: { pageSize: 20 } } }}
@@ -654,7 +785,7 @@ if (state.error) return <p>Error: {state.error}</p>;
               }}
               sx={{
                 border: 0,
-                minWidth: 640,
+                minWidth: 200,
                 overflowX: "auto",
                 "& .MuiDataGrid-cell": {
                   display: "flex",
@@ -935,4 +1066,4 @@ if (state.error) return <p>Error: {state.error}</p>;
       </Box>
     );
   }
-}
+// }
