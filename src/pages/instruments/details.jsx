@@ -595,7 +595,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
       // Save selected project in localStorage
       localStorage.setItem("selectedProject", JSON.stringify(projectResponse.data));
 
-      navigate(`/project/${projectId}`, { state: { project: projectResponse.data } }); 
+      navigate(`/project/${projectId}?tab=1`, { state: { project: projectResponse.data } }); 
       
     } catch (error) {
       console.error("Failed to fetch project details", error);

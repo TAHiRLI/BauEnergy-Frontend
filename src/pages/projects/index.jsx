@@ -62,11 +62,30 @@ export default function BasicTabs() {
   const navigate = useNavigate();
   const [project, setProject] = useState(location.state?.project || "null");
   const {selectedProject, setSelectedProject} = useProjects();
-  const [value, setValue] = useState(1);
+  const [value, setValue] = useState(0);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [availableCars, setAvailableCars] = useState(null)
   const [popupOpen, setPopupOpen] = useState(false);
   const [selectedCar, setSelectedCar] = useState(null);
+
+  const tabMapping = ["overview", "used-instruments", "cars", "team-members", "documents"];
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const tabFromUrl = urlParams.get("tab");
+
+    if (tabFromUrl !== null) {
+      const tabIndex = parseInt(tabFromUrl, 10);
+
+      if (!isNaN(tabIndex) && tabIndex >= 0 && tabIndex < tabMapping.length) {
+        setValue(tabIndex);
+      } else {
+        navigate(`/project/${project.id}?tab=0`, { replace: true });
+      }
+    } else {
+      navigate(`/project/${project.id}?tab=0`, { replace: true });
+    }
+  }, [location.search, navigate, project.id]);
 
   useEffect(() => {
     if (location.state?.project) {
@@ -74,9 +93,10 @@ export default function BasicTabs() {
     }
 }, [location.state]);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
+const handleChange = (event, newValue) => {
+  setValue(newValue);
+  navigate(`/project/${project.id}?tab=${newValue}`, { replace: true });
+};
 
   const formatDate = (date) => {
     if (!date) return;
@@ -291,7 +311,6 @@ export default function BasicTabs() {
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs
           scrollButtons="auto"
-
           value={value}
           onChange={handleChange}
           aria-label="basic tabs example"

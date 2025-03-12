@@ -473,7 +473,12 @@ export default function InstrumentTab({ project }) {
   // ];
 
   const mobileColumns = [
-    { field: "name", headerName: t("columns:InstrumentName"), width: 200 },
+    {
+      field: "name",
+      headerName: t("columns:InstrumentName"),
+      width: 200,
+      renderCell: (params) => `(ID_${params.row.id}) ${params.row.name}`,
+    },
     {
       field: "actions",
       headerName: t("columns:Actions"),
@@ -539,7 +544,12 @@ export default function InstrumentTab({ project }) {
   ];
   
   const desktopColumns = [
-    { field: "name", headerName: t("columns:InstrumentName"), width: 200 },
+    {
+      field: "name",
+      headerName: t("columns:InstrumentName"),
+      width: 200,
+      renderCell: (params) => `(ID_${params.row.id}) ${params.row.name}`, // Updated formatting
+    },
     {
       field: "addedProjectDate",
       headerName: t("columns:DateAdded"),
