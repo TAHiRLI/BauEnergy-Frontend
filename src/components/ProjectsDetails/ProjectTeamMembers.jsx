@@ -52,9 +52,10 @@ export default function TeamMember({ project }) {
     }
   };
   useEffect(() => {
-    
-    fetchTeamMembersForProject();
-  }, [dispatch, project.id]);
+    if (project?.id) {
+      fetchTeamMembersForProject();
+    }
+  }, [project.id]); 
   
   const RoleEnum = {
     Company_Owner: 0,
@@ -96,6 +97,7 @@ const handleAddExistingTeamMember = async () => {
       setOpenDialog(false);
 
       const response = await projectService.getById(project.id);
+      //fetchTeamMembersForProject();
       setSelectedProject(response.data)
       dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
     }
@@ -239,6 +241,7 @@ const handleAddExistingTeamMember = async () => {
           <DataGrid
             rows={selectedProject?.teamMembers || []}
             columns={columns}
+            loading={!selectedProject}
             initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
             pageSizeOptions={[5, 10]}
             sx={{

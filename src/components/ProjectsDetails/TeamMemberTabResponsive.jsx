@@ -49,8 +49,10 @@ export default function TeamMember({ project }) {
     }
   };
   useEffect(() => {
-    fetchTeamMembersForProject();
-  }, [dispatch, project.id]);
+    if (openDialog) {
+      fetchAllTeamMembers();
+    }
+  }, [openDialog]);
 
   const validationSchema = Yup.object({
    name: Yup.string().required('Required'),
