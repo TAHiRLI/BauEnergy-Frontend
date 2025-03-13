@@ -94,6 +94,22 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
       setSelectedProject(JSON.parse(savedProject));
     }
   }, []);
+
+  useEffect(() => {
+    const currentUrl = window.location.href;
+  
+    const urlParts = currentUrl.split("/");
+    let projectId = urlParts[urlParts.length - 1];
+  
+    projectId = projectId.split("?")[0];
+  
+    console.log("Extracted Project ID:", projectId);
+  
+    if (projectId) {
+      handleProjectSelect(projectId);
+    }
+  }, []);
+  
   
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
