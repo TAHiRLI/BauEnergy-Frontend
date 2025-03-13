@@ -19,12 +19,13 @@ export default function TeamMember({ project }) {
   const [isCreatingNew, setIsCreatingNew] = useState(false); 
   const [selectedTeamMember, setSelectedTeamMember] = useState(null); 
   const [loading, setLoading] = useState(false);
+  const {selectedProject, setSelectedProject} = useProjects();
 
+  console.log(selectedProject)
   const fetchAllTeamMembers = async () => {
     try {
       const response = await teamMemberService.getAllByCompany(project.id); 
       setAllTeamMembers(response.data);
-      console.log(response.data)
     } catch (error) {
       console.error('Error fetching all team members:', error);
     }
@@ -36,17 +37,18 @@ export default function TeamMember({ project }) {
     }
   }, [openDialog]);
 
+  const fetchTeamMembersForProject = async () => {
+    dispatch({ type: ProjectsActions.start });
+    try {
+      const response = await projectService.getById(project.id);
+      console.log(response)
+      dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      dispatch({ type: ProjectsActions.failure, payload: error });
+    }
+  };
   useEffect(() => {
-    const fetchTeamMembersForProject = async () => {
-      dispatch({ type: ProjectsActions.start });
-      try {
-        const response = await projectService.getById(project.id);
-        dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
-      } catch (error) {
-        console.error('Error fetching team members:', error);
-        dispatch({ type: ProjectsActions.failure, payload: error });
-      }
-    };
     fetchTeamMembersForProject();
   }, [dispatch, project.id]);
 
@@ -147,6 +149,7 @@ export default function TeamMember({ project }) {
       return 'Invalid date'; 
     }
   };
+  console.log(state.data)
 
     return (
         <Grid container spacing={2}>
@@ -160,7 +163,7 @@ export default function TeamMember({ project }) {
             Add New People
         </Button>
   
-        {state.data && state.data.map((tm) => {
+        {selectedProject.teamMembers && selectedProject.teamMembers.map((tm) => {
             const image = tm.image ? 
             `${tm.image}` : 
             `defaultUser.png`; 

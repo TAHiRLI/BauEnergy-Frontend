@@ -19,6 +19,7 @@ export default function TeamMember({ project }) {
   const [isCreatingNew, setIsCreatingNew] = useState(false); 
   const [selectedTeamMember, setSelectedTeamMember] = useState(null); 
   const [loading, setLoading] = useState(false);
+  const {selectedProject, setSelectedProject} = useProjects();
 
   const { t } = useTranslation();
   
@@ -147,12 +148,14 @@ const handleAddExistingTeamMember = async () => {
       return 'Invalid date'; 
     }
   };
+
   const columns = [
     {
       field: 'name',
       headerName: t("columns:NameLastname"),
       minWidth: 300,
       renderCell: (params) => {
+        console.log(params)
         const fullName = `${params.row.name} ${params.row.lastName}`; 
         const image = params.row.image ? 
           `${params.row.image}` : 
@@ -204,6 +207,7 @@ const handleAddExistingTeamMember = async () => {
       ),
     },
   ];
+
   
   return (
     <Box height={400} className="p-0">
@@ -231,7 +235,7 @@ const handleAddExistingTeamMember = async () => {
           }}
         >
           <DataGrid
-            rows={state.data || []}
+            rows={selectedProject?.teamMembers || []}
             columns={columns}
             initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
             pageSizeOptions={[5, 10]}
@@ -309,8 +313,6 @@ const handleAddExistingTeamMember = async () => {
         
         </DialogContent>
       </Dialog>
-
-
     </Box>
   );
 }

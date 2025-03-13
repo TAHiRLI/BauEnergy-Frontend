@@ -228,7 +228,6 @@ export default function InstrumentTab({ project }) {
     } = event;
     setSearchStatus(typeof value === "string" ? value.split(",") : value);
   };
-
   const fetchAllInstruments = async () => {
     try {
       const response = await instrumentService.getAllByName();
@@ -680,7 +679,6 @@ if (state.loading) return <p>Loading project...</p>;
 if (state.error) return <p>Error: {state.error}</p>;
 
 
-
   if (state.error) {
     return <div>Error loading instruments</div>;
   }
@@ -875,15 +873,43 @@ if (state.error) return <p>Error: {state.error}</p>;
               />
             </FormControl>
   
-            <AddInstrumentWithQr
+            {/* <AddInstrumentWithQr
               onComplete={(instrumentId) => {
+                console.log("asdsas")
+                console.log(instrumentId)
                 if (!allInstruments?.find((x) => x?.id == instrumentId)) {
                   Swal.fire(`Not Found ${instrumentId}`, `Invalid QR Code ${JSON.stringify(allInstruments)}, `);
                   return;
                 }
+                console.log(selectedInstrumentId)
                 setSelectedInstrumentId(instrumentId);
               }}
-            />
+            /> */}
+          <AddInstrumentWithQr
+            onComplete={(instrumentId) => {
+              console.log("Scanned Instrument ID:", instrumentId);
+              console.log("All Instruments List:", allInstruments);
+
+              if (!Array.isArray(allInstruments)) {
+                console.error("allInstruments is not an array:", allInstruments);
+                Swal.fire("Error", "Instrument list is not available.", "error");
+                return;
+              }
+
+              // if (!allInstruments?.find((x) => x?.id == instrumentId)) {
+              //   Swal.fire(
+              //     `Not Found: ${instrumentId}`,
+              //     `Invalid QR Code. Instrument not found in the list.`,
+              //     "error"
+              //   );
+              //   return;
+              // }
+
+              console.log("Setting selected instrument:", instrumentId);
+              setSelectedInstrumentId(instrumentId);
+            }}
+          />
+
           </DialogContent>
           <DialogActions className="!px-6">
             <Button onClick={() => setOpenDialog(false)} className="!text-[#1D34D8]">
