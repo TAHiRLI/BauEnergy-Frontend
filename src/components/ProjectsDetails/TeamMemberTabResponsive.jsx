@@ -99,6 +99,7 @@ export default function TeamMember({ project }) {
         setOpenDialog(false);
   
         const response = await projectService.getById(project.id);
+        setSelectedProject(response.data)
         dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
       }
     } catch (error) {
@@ -125,6 +126,7 @@ export default function TeamMember({ project }) {
         await teamMemberService.remove(id);
         Swal.fire('Deleted!', 'Team member has been removed from the project.', 'success');
         const response = await projectService.getById(project.id);
+        setSelectedProject(response.data)
         dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
       }
     } catch (error) {

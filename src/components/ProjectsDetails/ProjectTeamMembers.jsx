@@ -96,6 +96,7 @@ const handleAddExistingTeamMember = async () => {
       setOpenDialog(false);
 
       const response = await projectService.getById(project.id);
+      setSelectedProject(response.data)
       dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
     }
   } catch (error) {
@@ -124,6 +125,7 @@ const handleAddExistingTeamMember = async () => {
         await teamMemberService.remove(id);
         Swal.fire(t('messages:Deleted'), t('messages:Team member has been removed from the project.'), 'success');
         const response = await projectService.getById(project.id);
+        setSelectedProject(response.data)
         dispatch({ type: ProjectsActions.success, payload: response.data.teamMembers });
       }
     } catch (error) {
