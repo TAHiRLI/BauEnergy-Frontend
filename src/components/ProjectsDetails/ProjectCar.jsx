@@ -101,9 +101,9 @@ export default function CarTab( ) {
                         <Card key={carId} style={{ marginBottom: "8px", padding: "5px", backgroundColor: "#f9f9f9", borderRadius: "15px" }}>
                             <CardContent className="!flex items-center justify-between flex-col sm:flex-row">
                                 <Typography variant="h6">Car: {car.vehicleNumber}</Typography>
-                                <Box className="text-center">
+                                <Box className="text-center flex sm:gap-4 flex-col sm:flex-row">
                                     <Button
-                                        className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-2 !sm:my-0 !mr-3 !min-w-40"
+                                        className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-2 !sm:my-0 !min-w-40"
                                         //startIcon={<AddIcon />}
                                         variant="contained"
                                         onClick={() => handleShowInstruments(car.instruments)}                                    

@@ -40,7 +40,7 @@
 
 // export default AddInstrumentWithQr;
 
-import { Button, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 import React, { useState } from "react";
 import { DocumentScannerSharp } from "@mui/icons-material";
 import QrReader from "../../components/QrScanner/QrScanner";

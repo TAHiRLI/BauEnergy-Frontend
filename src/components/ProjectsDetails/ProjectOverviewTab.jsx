@@ -56,50 +56,51 @@ export default function ProjectOverviewTab({ project }) {
 
         {/* Team Members and Instruments Count */}
         <Grid item xs={12}>
-          <Paper
-            elevation={3}
-            sx={{
-              padding: 4,
-              display: 'flex',
-              justifyContent: 'space-around',
-              alignItems: 'center',
-              backgroundColor: '#f0f4f8',
-              borderRadius: '16px',
-              marginBottom: "30px"
-            }}
-          >
-            {/* Team Members Count */}
-            <Box textAlign="center" > 
-              <PeopleIcon sx={{ fontSize: 50, color: '#1D34D8' }} />
-              <Typography variant="h6" fontWeight="bold" mt={2}>
-                {t("TeamMembers")}
-              </Typography>
-              <Typography variant="h4" fontWeight="bold" color="#1D34D8" mt={1}>
-                {project?.teamMembers?.length}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {t("columns:Membersinvolvedinthisproject")}
-              </Typography>
-            </Box>
+  <Paper
+    elevation={3}
+    sx={{
+      paddingY: 4,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'top',
+      backgroundColor: '#f0f4f8',
+      borderRadius: '16px',
+      marginBottom: "30px",
+    }}
+  >
+    {/* Team Members Count */}
+    <Box textAlign="center" sx={{ width: "50%" }}> 
+      <PeopleIcon sx={{ fontSize: 50, color: '#1D34D8' }} />
+      <Typography variant="h6" fontWeight="bold" mt={2}>
+        {t("TeamMembers")}
+      </Typography>
+      <Typography variant="h4" fontWeight="bold" color="#1D34D8" mt={1}>
+        {project?.teamMembers?.length}
+      </Typography>
+      <Typography variant="body2" color="textSecondary">
+        {t("columns:Membersinvolvedinthisproject")}
+      </Typography>
+    </Box>
 
-            {/* Divider between counts */}
-            <Divider orientation="vertical" flexItem />
+    {/* Divider between counts */}
+    <Divider orientation="vertical" flexItem />
 
-            {/* Instruments Used Count */}
-            <Box textAlign="center">
-              <PrecisionManufacturingIcon sx={{ fontSize: 50, color: '#1D34D8' }} />
-              <Typography variant="h6" fontWeight="bold" mt={2}>
-                {t("columns:InstrumentsUsed")}
-              </Typography>
-              <Typography variant="h4" fontWeight="bold" color="#1D34D8" mt={1}>
-                {project?.instruments?.length}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {t("columns:Instrumentsusedintheproject")}
-              </Typography>
-            </Box>
-          </Paper>
-        </Grid>
+    {/* Instruments Used Count */}
+    <Box textAlign="center" sx={{ width: "50%" }}>
+      <PrecisionManufacturingIcon sx={{ fontSize: 50, color: '#1D34D8' }} />
+      <Typography variant="h6" fontWeight="bold" mt={2}>
+        {t("columns:InstrumentsUsed")}
+      </Typography>
+      <Typography variant="h4" fontWeight="bold" color="#1D34D8" mt={1}>
+        {project?.instruments?.length}
+      </Typography>
+      <Typography variant="body2" color="textSecondary">
+        {t("columns:Instrumentsusedintheproject")}
+      </Typography>
+    </Box>
+  </Paper>
+</Grid>
+
       </Grid>
     </Box>
   );

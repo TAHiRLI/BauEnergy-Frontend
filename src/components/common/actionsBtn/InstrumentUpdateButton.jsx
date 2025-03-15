@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 import { instrumentService } from "../../../APIs/Services/instrument.service";
+import Swal from "sweetalert2";
 
 const InstrumentStatusModal = ({ instrumentId, currentStatus, open, onClose }) => {
   const statusMap = {
@@ -39,7 +40,13 @@ const InstrumentStatusModal = ({ instrumentId, currentStatus, open, onClose }) =
         console.error("Failed to update status.");
       }
     } catch (error) {
-      console.error("Error while updating status:", error);
+      console.error("Error while updating status:", error.response.data);
+      Swal.fire({
+        title: "Error!",
+        text: error.response.data.message,
+        icon: "error",
+        confirmButtonColor: "#d33",
+      });
     }
   };
 
