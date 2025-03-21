@@ -54,13 +54,13 @@ const SettingsAndTeams = () => {
     try {
       const data = await teamMemberService.getAllMembers();
       setTeamMembers(data.data);
-      //console.log(data.data)
     } catch (error) {
       console.error('Error fetching team members:', error);
     } finally {
       setLoading(false);
     }
   };
+  console.log(teamMembers)
 
   const formatDate = (date) => {
     if (!date) return;

@@ -54,6 +54,26 @@ class UserService extends HttpClient {
       }
   });
   }
+
+  async register(body) {
+    return await this.post("Auth/SignUp", body, {
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+  }
+
+  async approveUser(userId, isApproved) {
+    return await this.post(
+        `Auth/ApproveUser?userId=${userId}&isApproved=${isApproved}`,
+        {},
+        {
+            headers: {
+                authorization: `Bearer ${cookies.get("user")?.token}`,
+            },
+        }
+    );
+  }
 }
 
 export const userSerivce = new UserService();

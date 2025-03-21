@@ -2,8 +2,7 @@ import { HttpClient } from "../HttpClients";
 
 class RegisterService extends HttpClient {
     constructor() {
-        const apiUrl = process.env.REACT_APP_API_URL;        
-        super(apiUrl);
+        super(process.env.REACT_APP_API_URL);
     }
 
     async register(body) {
@@ -15,7 +14,7 @@ class RegisterService extends HttpClient {
             }
         };
         
-        const response = await this.post('User', body, config);
+        const response = await this.post('Auth/SignUp', body, config);
         console.log(response);
         const user = response.data;
         

@@ -8,6 +8,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { projectService } from '../../APIs/Services/project.service';
+import { userSerivce } from '../../APIs/Services/user.service'
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import Swal from 'sweetalert2';
@@ -28,6 +29,7 @@ const NotificationModal = ({ open, onClose }) => {
   const fetchNotifications = async () => {
     try {
       const response = await notificationService.getAll(userId);
+      console.log(response)
       setNotifications(response.data);
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -187,6 +189,28 @@ const NotificationModal = ({ open, onClose }) => {
   };
   
 
+  const handleUserApprove = async (userId, notificationId) => {
+    try {
+      await userSerivce.approveUser(userId, true);
+      await notificationService.markRead(notificationId);
+      alert("User approved successfully!");
+    } catch (error) {
+      console.error("Error approving user:", error);
+      alert("Failed to approve user.");
+    }
+  };
+  
+  const handleUserReject = async (userId, notificationId) => {
+    try {
+      await userSerivce.approveUser(userId, false);
+      await notificationService.markRead(notificationId);
+      alert("User rejected and removed!");
+    } catch (error) {
+      console.error("Error rejecting user:", error);
+      alert("Failed to reject user.");
+    }
+  };
+
 
   return (
     <>
@@ -254,9 +278,8 @@ const NotificationModal = ({ open, onClose }) => {
                           <div className="flex justify-between items-center">
                             <p className="text-gray-500 text-xs">{notification.description}</p>
                           {/* Conditionally render Approve and Reject icons if hasAction is true */}
-                          {notification.hasAction && notification.approvalStatus === 0 && (
+                          {/* {notification.hasAction && notification.approvalStatus === 0 && (
                             <div className="flex space-x-2">
-                              {/* Approve Button */}
                               <div className="flex items-center justify-center w-10 h-10">
                                 <button
                                   onClick={(e) => {
@@ -269,7 +292,6 @@ const NotificationModal = ({ open, onClose }) => {
                                 </button>
                               </div>
 
-                              {/* Reject Button */}
                               <div className="flex items-center justify-center w-10 h-10">
                                 <button
                                   onClick={(e) => {
@@ -282,7 +304,71 @@ const NotificationModal = ({ open, onClose }) => {
                                 </button>
                               </div>
                             </div>
-                          )}
+                          )} */}
+
+{notification.hasAction && (
+
+  <div className="flex space-x-2">
+    {/* Handle Instrument Approvals */}
+    {notification.approvalStatus === 0 && notification.instrumentId && (
+      <>
+        <div className="flex items-center justify-center w-10 h-10">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleApprove(notification.instrumentId, notification.id);
+            }}
+            className="text-green-500 hover:text-green-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1"
+          >
+            <CheckIcon className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-center w-10 h-10">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleReject(notification.instrumentId, notification.id);
+            }}
+            className="text-red-500 hover:text-red-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1"
+          >
+            <CloseIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </>
+    )}
+
+    {/* Handle User Approvals */}
+    { notification.userId && (
+      <>
+        <div className="flex items-center justify-center w-10 h-10">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUserApprove(notification.userId, notification.id);
+            }}
+            className="text-green-500 hover:text-green-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1"
+          >
+            <CheckIcon className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-center w-10 h-10">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUserReject(notification.userId, notification.id);
+            }}
+            className="text-red-500 hover:text-red-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1"
+          >
+            <CloseIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </>
+    )}
+  </div>
+)}
+
                           </div>
 
 

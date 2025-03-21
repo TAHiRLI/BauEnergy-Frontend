@@ -4,23 +4,23 @@ import * as Yup from 'yup';
 import { Box, Button, TextField, Typography, Paper } from '@mui/material';
 import { Alert } from '@mui/material';
 import { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { userSerivce } from '../../APIs/Services/user.service';
 
 // Define validation schema with phone number
-const validationSchema = Yup.object({
-  CompanyName: Yup.string().required('Company Name is required'),
-  Username: Yup.string().required('UserName is required'),
-  FullName: Yup.string().required('Name is required'),
-  Email: Yup.string().email('Invalid email').required('Email is required'),
-  PhoneNumber: Yup.string()
-    .matches(/^\+?[1-9]\d{1,14}$/, 'Phone number is not valid (must include country code)')
-    .required('Phone number is required'),
-  Password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
-  PasswordConfirm: Yup.string()
-    .oneOf([Yup.ref('Password'), null], 'Passwords must match') // Use 'Password' instead of 'password'
-    .required('Password confirmation is required'),
-});
+// const validationSchema = Yup.object({
+//   Username: Yup.string().required('UserName is required'),
+//   FullName: Yup.string().required('Name is required'),
+//   Email: Yup.string().email('Invalid email').required('Email is required'),
+//   PhoneNumber: Yup.string()
+//     .matches(/^\+?[1-9]\d{1,14}$/, 'Phone number is not valid (must include country code)')
+//     .required('Phone number is required'),
+//   Password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+//   PasswordConfirm: Yup.string()
+//     .oneOf([Yup.ref('Password'), null], 'Passwords must match') // Use 'Password' instead of 'password'
+//     .required('Password confirmation is required'),
+// 
+// });
 
 const RegistrationView = () => {
   const [serverError, setServerError] = useState(null);
@@ -31,13 +31,9 @@ const RegistrationView = () => {
     try {
       console.log('Register values:', values);
       
-      const res = await axios.post('https://localhost:7068/api/User', values, {
-          headers: {
-              'Content-Type': 'application/json' 
-          }
-      });
+      const res = userSerivce.register(values)
 
-      console.log('Response:', res.data);
+      console.log('Response:', res);
       setRegistrationSuccess(true);
       
       navigate("/"); 
@@ -60,49 +56,37 @@ const RegistrationView = () => {
 
         <Formik
           initialValues={{
-            CompanyName: '',
-            Username: '',
-            FullName: '',
             Email: '',
-            PhoneNumber: '', 
+            //PhoneNumber: '', 
             Password: '',
-            PasswordConfirm: '',
+            //PasswordConfirm: '',
           }}
-          validationSchema={validationSchema}
+          //validationSchema={validationSchema}
           onSubmit={handleRegister}
         >
           {({ isSubmitting, errors, touched }) => (
-            <Form>
+            <Form>    
+
               <Field
                 as={TextField}
-                label="Company Name"
-                name="CompanyName"
+                label="FirstName"
+                name="FirstName"
+                type="text"
                 fullWidth
                 margin="dense"
-                error={touched.companyName && !!errors.companyName}
-                helperText={touched.companyName && errors.companyName}
+                error={touched.email && !!errors.email}
+                helperText={touched.email && errors.email}
+              />  
+              <Field
+                as={TextField}
+                label="LastName"
+                name="LastName"
+                type="text"
+                fullWidth
+                margin="dense"
+                error={touched.email && !!errors.email}
+                helperText={touched.email && errors.email}
               />
-
-              <Field
-                as={TextField}
-                label="UserName"
-                name="Username"
-                fullWidth
-                margin="dense"
-                error={touched.userName && !!errors.userName}
-                helperText={touched.userName && errors.userName}
-              />      
-
-              <Field
-                as={TextField}
-                label="Full Name"
-                name="FullName"
-                fullWidth
-                margin="dense"
-                error={touched.name && !!errors.name}
-                helperText={touched.name && errors.name}
-              />
-
               <Field
                 as={TextField}
                 label="Email"
@@ -113,6 +97,7 @@ const RegistrationView = () => {
                 error={touched.email && !!errors.email}
                 helperText={touched.email && errors.email}
               />
+
 
               <Field
                 as={TextField}
@@ -126,9 +111,9 @@ const RegistrationView = () => {
 
               <Field
                 as={TextField}
-                label="Password"
-                name="Password"
-                type="password"
+                label="BirthdDate"
+                name="BirthdDate"
+                type="date"
                 fullWidth
                 margin="dense"
                 error={touched.password && !!errors.password}
@@ -137,8 +122,8 @@ const RegistrationView = () => {
 
               <Field
                 as={TextField}
-                label="Confirm Password"
-                name="PasswordConfirm"
+                label="Password"
+                name="Password"
                 type="password"
                 fullWidth
                 margin="dense"
