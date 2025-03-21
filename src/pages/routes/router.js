@@ -8,7 +8,7 @@ import HomePage from "../HomePage";
 import { Roles } from "../../context/authContext";
 import ProjectPage from "../projects";
 import RegistrationView from "../Register";
-import ResetPassword from "../login/resetPassword";
+import ResetPassword from "../auth/resetPassword";
 import InstrumentDetails from "../instruments/details" ;
 import { Documents } from "../documentspage" ;
 import SettingsAndTeams from "../SettingsAndTeams";
