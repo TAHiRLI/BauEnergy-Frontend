@@ -50,6 +50,9 @@ export const LoginPage = () => {
           expiration: res.data.expiration,
         };
 
+        cookies.remove("user");
+
+
         cookies.set('user', JSON.stringify(user), {
           expires: new Date(dayjs(res.data.expiration)),
           path: '/',
@@ -88,16 +91,22 @@ export const LoginPage = () => {
           <img src="/BauEnergy logo.png" alt="BauEnergy Login" className='w-[77px] h-[59px] ' />
           <img src="/Powered by logo.png" alt="BauEnergy Login" className='w-[174px] h-[35px]'/>
         </div>
-        <div className='mt-1 sm:mt-5'>
+        <div className='mt-1 sm:mt-5 w-full'>
           <h2 className="text-3xl font-bold mb-4 text-gray-800">Welcome</h2>
           <p className="mb-8 text-gray-600">
             {t("login:YouDonthaveAccount")}
-            <a 
+            {/* <a 
               href="mailto:info@must-analytics.com" 
               className="text-blue-500 underline ml-1"
             >
               info@must-analytics.com
-            </a>
+            </a> */}
+              <a 
+                href="/register" 
+                className="text-blue-500 underline ml-1 hover:text-blue-700"
+              >
+                {t("Register")}
+              </a>
           </p>
           <Formik
             initialValues={{ email: '', password: '' }}

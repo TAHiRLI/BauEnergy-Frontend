@@ -191,9 +191,10 @@ const NotificationModal = ({ open, onClose }) => {
 
   const handleUserApprove = async (userId, notificationId) => {
     try {
-      await userSerivce.approveUser(userId, true);
+      var response = await userSerivce.approveUser(userId, true);
       await notificationService.markRead(notificationId);
-      alert("User approved successfully!");
+      alert(response.data.message);
+      console.log(response)
     } catch (error) {
       console.error("Error approving user:", error);
       alert("Failed to approve user.");
@@ -202,8 +203,9 @@ const NotificationModal = ({ open, onClose }) => {
   
   const handleUserReject = async (userId, notificationId) => {
     try {
-      await userSerivce.approveUser(userId, false);
+      var response = await userSerivce.approveUser(userId, false);
       await notificationService.markRead(notificationId);
+      console.log(response)
       alert("User rejected and removed!");
     } catch (error) {
       console.error("Error rejecting user:", error);
@@ -345,7 +347,7 @@ const NotificationModal = ({ open, onClose }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleUserApprove(notification.userId, notification.id);
+              handleUserApprove(notification.newUserId, notification.id);
             }}
             className="text-green-500 hover:text-green-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1"
           >
