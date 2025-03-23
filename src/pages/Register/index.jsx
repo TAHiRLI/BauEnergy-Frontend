@@ -57,9 +57,9 @@ const RegistrationView = () => {
           <h2 className="text-3xl font-bold mb-4 text-gray-800">Welcome</h2>
           <Formik
 initialValues={{
-Email: '',
+//Email: '',
 //PhoneNumber: '', 
-Password: '',
+//Password: '',
 //PasswordConfirm: '',
 }}
 //validationSchema={validationSchema}
@@ -146,7 +146,9 @@ onSubmit={handleRegister}
   />
 
   <Box mt={2}>
-    <Button type="submit" variant="contained" color="primary" fullWidth disabled={isSubmitting}>
+    <Button type="submit"  fullWidth disabled={isSubmitting}
+      className="w-full !bg-[#1D34D8] !text-white !font-medium !py-3 !rounded-3xl !hover:bg-blue-800 !transition !duration-200"
+    >
       {isSubmitting ? 'Registering...' : 'Register'}
     </Button>
   </Box>

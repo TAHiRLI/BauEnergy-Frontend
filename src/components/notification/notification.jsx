@@ -24,6 +24,7 @@ const NotificationModal = ({ open, onClose }) => {
   const { user } = useAuth();
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
   const userId = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+  const [disabledButtons, setDisabledButtons] = useState({});
 
 
   const fetchNotifications = async () => {
@@ -188,30 +189,80 @@ const NotificationModal = ({ open, onClose }) => {
     }
   };
   
-
   const handleUserApprove = async (userId, notificationId) => {
-    try {
-      var response = await userSerivce.approveUser(userId, true);
-      await notificationService.markRead(notificationId);
-      alert(response.data.message);
-      console.log(response)
-    } catch (error) {
-      console.error("Error approving user:", error);
-      alert("Failed to approve user.");
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to approve this user?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#1D34D8",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, approve!",
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        setDisabledButtons((prev) => ({ ...prev, [notificationId]: true }));
+  
+        var response = await userSerivce.approveUser(userId, true);
+        await notificationService.remove(notificationId);
+        fetchNotifications();
+  
+        Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: response.data.message,
+        });
+      } catch (error) {
+        console.error("Error approving user:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Failed to approve user.",
+        });
+  
+        setDisabledButtons((prev) => ({ ...prev, [notificationId]: false }));
+      }
     }
   };
   
   const handleUserReject = async (userId, notificationId) => {
-    try {
-      var response = await userSerivce.approveUser(userId, false);
-      await notificationService.markRead(notificationId);
-      console.log(response)
-      alert("User rejected and removed!");
-    } catch (error) {
-      console.error("Error rejecting user:", error);
-      alert("Failed to reject user.");
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to reject this user?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#1D34D8",
+      confirmButtonText: "Yes, reject!",
+    });
+  
+    if (result.isConfirmed) {
+      try {
+        setDisabledButtons((prev) => ({ ...prev, [notificationId]: true }));
+  
+        var response = await userSerivce.approveUser(userId, false);
+        await notificationService.remove(notificationId);
+        fetchNotifications();
+  
+        Swal.fire({
+          icon: "warning",
+          title: "User Rejected",
+          text: response.data.message,
+        });
+      } catch (error) {
+        console.error("Error rejecting user:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Failed to reject user.",
+        });
+  
+        setDisabledButtons((prev) => ({ ...prev, [notificationId]: false }));
+      }
     }
   };
+  
 
 
   return (
@@ -344,28 +395,34 @@ const NotificationModal = ({ open, onClose }) => {
     { notification.userId && (
       <>
         <div className="flex items-center justify-center w-10 h-10">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleUserApprove(notification.newUserId, notification.id);
-            }}
-            className="text-green-500 hover:text-green-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1"
-          >
-            <CheckIcon className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleUserApprove(notification.newUserId, notification.id);
+          }}
+          disabled={disabledButtons[notification.id]} 
+          className={`text-green-500 hover:text-green-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1 ${
+            disabledButtons[notification.id] ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          <CheckIcon className="w-4 h-4" />
+        </button>
+      </div>
 
-        <div className="flex items-center justify-center w-10 h-10">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleUserReject(notification.newUserId, notification.id);
-            }}
-            className="text-red-500 hover:text-red-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1"
-          >
-            <CloseIcon className="w-4 h-4" />
-          </button>
-        </div>
+      <div className="flex items-center justify-center w-10 h-10">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleUserReject(notification.newUserId, notification.id);
+          }}
+          disabled={disabledButtons[notification.id]} 
+          className={`text-red-500 hover:text-red-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1 ${
+            disabledButtons[notification.id] ? "opacity-50 cursor-not-allowed" : ""
+          }`}
+        >
+          <CloseIcon className="w-4 h-4" />
+        </button>
+      </div>
       </>
     )}
   </div>
