@@ -359,7 +359,7 @@ const NotificationModal = ({ open, onClose }) => {
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleUserReject(notification.userId, notification.id);
+              handleUserReject(notification.newUserId, notification.id);
             }}
             className="text-red-500 hover:text-red-600 rounded-lg bg-gray-200 hover:bg-gray-300 p-1"
           >
