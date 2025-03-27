@@ -185,179 +185,182 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
               {/* Navigation */}
               <div className="p-4 flex flex-col h-full">
-              <div className="flex-grow">
+                <div className="flex-grow">
 
-                <List>
-
-                {!isUser && (
-                  <ListItem
-                      button
-                      component={Link}
-                      className="!rounded-xl"
-                      onClick={() => {
-                        navigate("/instruments", { state: { focusSearch: true } });
-                        if (isMobile) toggleSidebar();
-                      }}
-                    >
-                      <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
-                        <Search className="text-black" />
-                      </ListItemIcon>
-                      <ListItemText primary= {t("Search")}/>
-                  </ListItem>   
-                )}
-
-                </List>
-
-                <List>
-                  <ListItem button className="!rounded-xl" onClick={() => {handleNotificationClick(); if (isMobile) toggleSidebar();
-}} component={Link}>
-                    <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
-                      <NotificationIcon className="text-black" />
-                    </ListItemIcon>
-                    <ListItemText primary={t("Notifications")}/>
-                  </ListItem>
-                </List>
-
-                {isAdmin && (
                   <List>
-                    <ListItem button component={Link} to={ROUTES.SETTINGSANDTEAMS} className="!rounded-xl" 
-                  onClick={() => {
-                    if (isMobile) toggleSidebar();
-                  }}>
-                      <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
-                        <SettingsOutlinedIcon className="text-black" />
-                      </ListItemIcon>
-                      <ListItemText primary={t("SettingTeams")} />
-                    </ListItem>
-                  </List>
-                )}
 
-                <div className="px-5 py-4">
-                  <Divider className="bg-gray-200 mx-4" />
-                </div>
-
-                {/* Projects */}
-                <List>
-                  <ListItem button component={Link} to={ROUTES.BASE} className="!rounded-xl" 
-                  onClick={() => {
-                    if (isMobile) toggleSidebar();
-                  }}>
-                    <ListItemIcon>
-                      <Home className="text-black" />
-                    </ListItemIcon>
-                    <ListItemText primary={t("Home")} />
-                  </ListItem>
-
-                  <ListItem button component={Link} to={ROUTES.CERTIFICATE} className="!rounded-xl"
-                  onClick={() => {
-                    if (isMobile) toggleSidebar();
-                  }}>
-                    <ListItemIcon>
-                      <WorkspacePremiumIcon className="text-black" />
-                    </ListItemIcon>
-                    <ListItemText primary={t("Certificate")} />
-                  </ListItem>
-                  
                   {!isUser && (
-                    <ListItem button component={Link} onClick={handleProjectsClick} className="!rounded-xl">
-                      <ListItemIcon>
-                        <PollOutlinedIcon className="text-black" />
-                      </ListItemIcon>
-                      <ListItemText primary={t("Projects")}/>
-                      {openProjectsBtn ? <ExpandLess /> : <ExpandMore />}
-                    </ListItem>
+                    <ListItem
+                        button
+                        component={Link}
+                        className="!rounded-xl"
+                        onClick={() => {
+                          navigate("/instruments", { state: { focusSearch: true } });
+                          if (isMobile) toggleSidebar();
+                        }}
+                      >
+                        <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
+                          <Search className="text-black" />
+                        </ListItemIcon>
+                        <ListItemText primary= {t("Search")}/>
+                    </ListItem>   
                   )}
 
-                  <Collapse in={openProjectsBtn} timeout="auto" unmountOnExit={false}>
-                    <List component="div" disablePadding>
-                      {projects.map((project) => (
-                        <ListItem
-                          button
-                          component={Link}
-                          className="pl-12 rounded-xl"
-                          key={project.id}
-                          onClick={
-                            () => {handleProjectSelect(project.id); if (isMobile) toggleSidebar();}
-                          }
-                        >
-                          <span className="text-[#1D34D8] mr-2 ml-7">&#x25A0;</span>
-                          <ListItemText primary={project.name} />
-                        </ListItem>
-                      ))}
-                    </List>
-                  </Collapse>
+                  </List>
 
-
-
-                  {!isUser && (
-                    <ListItem button component={Link} to={ROUTES.INSTRUMENTS} className="!rounded-xl"  
-                    onClick={() => {
-                      if (isMobile) toggleSidebar();
-                    }}>
-                      <ListItemIcon>
-                        <BuildOutlinedIcon className="text-black" />
-                      </ListItemIcon>
-                      <ListItemText primary={t("Instruments")} />
-                    </ListItem>
-                  )}   
-
-                  {isAdmin && (
                   <List>
-                    <ListItem button component={Link} to={ROUTES.CARS} className="!rounded-xl" 
-                  onClick={() => {
-                    if (isMobile) toggleSidebar();
-                  }}>
-                      <ListItemIcon >
-                        <LocalShippingIcon className="text-black" />
+                    <ListItem button className="!rounded-xl" onClick={() => {handleNotificationClick(); if (isMobile) toggleSidebar();
+  }} component={Link}>
+                      <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
+                        <NotificationIcon className="text-black" />
                       </ListItemIcon>
-                      <ListItemText primary={t("Cars")} />
+                      <ListItemText primary={t("Notifications")}/>
                     </ListItem>
                   </List>
-                )}
 
-                  {!isUser && (
-                    <ListItem button component={Link} to={ROUTES.DOCUMENTS} className="!rounded-xl"
+                  {isAdmin && (
+                    <List>
+                      <ListItem button component={Link} to={ROUTES.SETTINGSANDTEAMS} className="!rounded-xl" 
+                    onClick={() => {
+                      if (isMobile) toggleSidebar();
+                    }}>
+                        <ListItemIcon style={{ minWidth: "20px" }} className="mr-3">
+                          <SettingsOutlinedIcon className="text-black" />
+                        </ListItemIcon>
+                        <ListItemText primary={t("SettingTeams")} />
+                      </ListItem>
+                    </List>
+                  )}
+
+                  <div className="px-5 py-4">
+                    <Divider className="bg-gray-200 mx-4" />
+                  </div>
+
+                  {/* Projects */}
+                  <List>
+                    <ListItem button component={Link} to={ROUTES.BASE} className="!rounded-xl" 
                     onClick={() => {
                       if (isMobile) toggleSidebar();
                     }}>
                       <ListItemIcon>
-                        <DeleteOutlinedIcon className="text-black" />
+                        <Home className="text-black" />
                       </ListItemIcon>
-                      <ListItemText primary={t("Trahsbin")} /> 
+                      <ListItemText primary={t("Home")} />
                     </ListItem>
-                  )}   
 
-                  <ListItem button component={Link} onClick={handleLogout} className="!rounded-xl">
-                    <ListItemIcon>
-                      <LogoutOutlinedIcon className="text-black" />
-                    </ListItemIcon>
-                    <ListItemText primary={t("Logout")} />
+                    <ListItem button component={Link} to={ROUTES.CERTIFICATE} className="!rounded-xl"
+                    onClick={() => {
+                      if (isMobile) toggleSidebar();
+                    }}>
+                      <ListItemIcon>
+                        <WorkspacePremiumIcon className="text-black" />
+                      </ListItemIcon>
+                      <ListItemText primary={t("Certificate")} />
+                    </ListItem>
+                    
+                    {!isUser && (
+                      <ListItem button component={Link} onClick={handleProjectsClick} className="!rounded-xl">
+                        <ListItemIcon>
+                          <PollOutlinedIcon className="text-black" />
+                        </ListItemIcon>
+                        <ListItemText primary={t("Projects")}/>
+                        {openProjectsBtn ? <ExpandLess /> : <ExpandMore />}
+                      </ListItem>
+                    )}
+
+                    <Collapse in={openProjectsBtn} timeout="auto" unmountOnExit={false}>
+                      <List component="div" disablePadding>
+                        {projects.map((project) => (
+                          <ListItem
+                            button
+                            component={Link}
+                            className="pl-12 rounded-xl"
+                            key={project.id}
+                            onClick={
+                              () => {handleProjectSelect(project.id); if (isMobile) toggleSidebar();}
+                            }
+                          >
+                            <span className="text-[#1D34D8] mr-2 ml-7">&#x25A0;</span>
+                            <ListItemText primary={project.name} />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Collapse>
+
+
+
+                    {!isUser && (
+                      <ListItem button component={Link} to={ROUTES.INSTRUMENTS} className="!rounded-xl"  
+                      onClick={() => {
+                        if (isMobile) toggleSidebar();
+                      }}>
+                        <ListItemIcon>
+                          <BuildOutlinedIcon className="text-black" />
+                        </ListItemIcon>
+                        <ListItemText primary={t("Instruments")} />
+                      </ListItem>
+                    )}   
+
+                    {isAdmin && (
+                    <List>
+                      <ListItem button component={Link} to={ROUTES.CARS} className="!rounded-xl" 
+                    onClick={() => {
+                      if (isMobile) toggleSidebar();
+                    }}>
+                        <ListItemIcon >
+                          <LocalShippingIcon className="text-black" />
+                        </ListItemIcon>
+                        <ListItemText primary={t("Cars")} />
+                      </ListItem>
+                    </List>
+                  )}
+
+                    {!isUser && (
+                      <ListItem button component={Link} to={ROUTES.DOCUMENTS} className="!rounded-xl"
+                      onClick={() => {
+                        if (isMobile) toggleSidebar();
+                      }}>
+                        <ListItemIcon>
+                          <DeleteOutlinedIcon className="text-black" />
+                        </ListItemIcon>
+                        <ListItemText primary={t("Trahsbin")} /> 
+                      </ListItem>
+                    )}   
+
+                    <ListItem button component={Link} onClick={handleLogout} className="!rounded-xl">
+                      <ListItemIcon>
+                        <LogoutOutlinedIcon className="text-black" />
+                      </ListItemIcon>
+                      <ListItemText primary={t("Logout")} />
+                    </ListItem>
+                  </List>
+
+                {/* Bottom User Info */}
+                <div className="">
+                  <Divider className="bg-gray-200 mx-4" />
+                  <ListItem div>
+                    <UserInfo />
                   </ListItem>
-                </List>
-
-              {/* Bottom User Info */}
-              <div className="">
-                <Divider className="bg-gray-200 mx-4" />
-                <ListItem div>
-                  <UserInfo />
-                </ListItem>
-
-              </div>
                 </div>
 
-                <ListItem
+                </div>
+              </div>
+
+              {/* "Powered by" Section Stuck to Bottom */}
+              <div className="mt-auto">
+                  <ListItem
                     className="!mt-4 cursor-pointer"
                     onClick={() => window.open("https://www.musts.io/", "_blank")}
-                >
+                  >
                     <img
-                        src="/Powered by logo.png"
-                        alt="BauEnergy Login"
-                        className="w-[174px] h-[35px]"
+                      src="/Powered by logo.png"
+                      alt="BauEnergy Login"
+                      className="w-[174px] h-[35px]"
                     />
-                </ListItem>
+                  </ListItem>
               </div>
+              
             </div>
-
           </div>
 
           {/* Main Content */}

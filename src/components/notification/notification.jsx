@@ -248,7 +248,7 @@ const NotificationModal = ({ open, onClose }) => {
         Swal.fire({
           icon: "warning",
           title: "User Rejected",
-          text: response.data.message,
+          text: "User rejected and removed.",
         });
       } catch (error) {
         console.error("Error rejecting user:", error);

@@ -89,7 +89,7 @@ const SettingsAndTeams = () => {
         setTeamMembers((prevMembers) =>
           prevMembers.filter((member) => member.id !== id)
         );
-        Swal.fire(t('messages:Deleted!'), t('messages:Teammemberhasbeenremoved.'), 'success');
+        Swal.fire(t('messages:Deleted'), t('messages:Teammemberhasbeenremoved.'), 'success');
       }
     } catch (error) {
       console.error('Error deleting team member:', error.message);

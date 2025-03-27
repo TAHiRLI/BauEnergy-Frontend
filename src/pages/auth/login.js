@@ -11,6 +11,7 @@ import { ROUTES } from '../routes/routes';
 import dayjs from 'dayjs';
 import { loginService } from '../../APIs/Services/login.service';
 import { useTranslation } from "react-i18next";
+import { IconButton, InputAdornment, TextField } from '@mui/material';
 
 const validationSchema = yup.object().shape({
   email: yup.string().email('Invalid email').required('Email is required'),
@@ -33,7 +34,9 @@ export const LoginPage = () => {
   const [token, setToken] = useState(false);
   const [renderReset, setRenderReset] = useState(false);
  
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   const handleLogin = async (values, { setFieldError }) => {
     try {
@@ -130,23 +133,28 @@ export const LoginPage = () => {
 
                 {/* Password Field */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">{t("login:Password")}</label>
-                  <div className="relative">
-                    <Field
-                      type={showPassword ? 'text' : 'password'}
-                      name="password"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <div
-                      className="absolute inset-y-0 right-3 flex items-center cursor-pointer text-gray-500"
-                      onClick={handleClickShowPassword}
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </div>
-                  </div>
-                  {submitCount > 0 && errors.password && (
-                    <div className="text-red-500 text-sm mt-1">{errors.password}</div>
-                  )}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("login:Password")}
+                  </label>
+                  <Field
+                    as={TextField}
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    fullWidth
+                    variant="outlined"
+                    className="w-full"
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={togglePasswordVisibility} edge="end">
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    error={submitCount > 0 && !!errors.password}
+                    helperText={submitCount > 0 && errors.password ? errors.password : ""}
+                  />
                 </div>
 
                 {/* Error Message */}

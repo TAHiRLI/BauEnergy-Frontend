@@ -38,7 +38,7 @@
 
     "login": {
         "Welcome": "Welcome",
-        "YouDonthaveAccount": "You don't have an account? Please contact",
+        "YouDonthaveAccount": "You don't have an account?",
         "EmailAddress": "Email address",
         "Password": "Password",
         "Continue": "Continue",
