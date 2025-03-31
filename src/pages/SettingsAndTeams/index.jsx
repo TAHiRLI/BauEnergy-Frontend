@@ -28,11 +28,11 @@ import { userSerivce } from '../../APIs/Services/user.service';
 import EditIcon from '@mui/icons-material/Edit'; 
 import { Field, Form, Formik } from 'formik';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import CloseIcon from "@mui/icons-material/Close";
 import * as Yup from 'yup';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth } from "../../context/authContext";
 import { useTranslation } from 'react-i18next';
+import AddDocumentsDialog from '../../components/Dialogs/AddDocument';
 
 const SettingsAndTeams = () => {
   const { t } = useTranslation();
@@ -45,6 +45,9 @@ const SettingsAndTeams = () => {
   const [selectedImage, setSelectedImage] = useState(teamMemberToEdit?.image || null);
   const [open, setOpen] = useState(false);
   const [documents, setDocuments] = useState([]);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState([]);
 
   const { user } = useAuth(); 
   
@@ -236,17 +239,75 @@ const SettingsAndTeams = () => {
   //   setOpen(true)
   // };
 
+  const handleFileChange = (event) => {
+    setSelectedFiles([...event.target.files]);
+  };
+
   const handleOpen = async (userId) => {
     try {
       const response = await userSerivce.getUserDocuments(userId)
 console.log(response)      
-//setDocuments(data);
+      setSelectedUserId(userId)
+      setDocuments(response.data);
       setOpen(true);
     } catch (error) {
       console.error("Error fetching documents:", error);
     }
   };
   const handleClose = () => setOpen(false);
+
+  const handleDocumentUpload = async (selectedFiles) => {
+    console.log(selectedFiles)
+
+    if (selectedFiles?.length === 0) {
+        Swal.fire('Error', 'Please select at least one file.', 'error');
+        return;
+    }
+
+    const formData = new FormData();
+    selectedFiles.forEach((file) => formData.append('Files', file));
+    console.log(selectedFiles)
+    try {
+        const response = await userSerivce.uploadUserDocument(selectedUserId, selectedFiles); 
+
+        if (response.status !== 200) {
+            throw new Error(response.data.message || 'Failed to upload documents.');
+        }
+
+        Swal.fire(t('messages:Success'), t('messages:Documents uploaded successfully!'), 'success');
+        setUploadDialogOpen(false);
+        handleOpen(selectedUserId);
+
+    } catch (error) {
+        console.error('Error details:', error.response || error.message || error);
+        Swal.fire(t('messages:Success'), error.response?.data?.message || 'Failed to upload documents.', 'error');
+    }
+};
+
+const handleDeleteDocument = async (documentId) => {
+  try {
+    const confirm = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to recover this file!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (confirm.isConfirmed) {
+      await userSerivce.hardDelete(documentId);
+      Swal.fire("Deleted!", "Your file has been deleted.", "success");
+
+      // Refresh the documents list after deletion
+      setDocuments((prevDocs) => prevDocs.filter((doc) => doc.id !== documentId));
+    }
+  } catch (error) {
+    console.error("Error deleting document:", error);
+    Swal.fire("Error", "Failed to delete the document.", "error");
+  }
+};
+
   
   const columns = [
     {
@@ -612,47 +673,91 @@ console.log(response)
       </DialogContent>
       </Dialog>
 
-      {/* Dialog for showing documents */}
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm"
-      PaperProps={{
-        style: {
-          borderRadius: 20,
-          height: "390px",
-          backgroundColor: "#fcfcfc",
-        },
-      }}>
-        <DialogTitle>
-          User Documents
-          <IconButton
-            className="!text-[#1D34D8]"
-            aria-label="close"
-            onClick={handleClose}
-            sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-            }}
+{/* Dialog for showing documents */}
+<Dialog
+  open={open}
+  onClose={handleClose}
+  fullWidth
+  maxWidth="sm"
+  PaperProps={{
+    style: {
+      borderRadius: 20,
+      height: "490px",
+      backgroundColor: "#fcfcfc",
+    },
+  }}
+>
+  <DialogTitle>
+    User Documents
+    <IconButton
+      className="!text-[#1D34D8]"
+      aria-label="close"
+      onClick={handleClose}
+      sx={{
+        position: "absolute",
+        right: 8,
+        top: 8,
+      }}
+    >
+      <CancelOutlinedIcon />
+    </IconButton>
+  </DialogTitle>
+  <DialogContent dividers>
+    {documents.length === 0 ? (
+      <p>No documents available.</p>
+    ) : (
+      <List>
+        {documents.map((doc) => (
+          <ListItem
+            key={doc.id}
+            button
+
+            secondaryAction={
+              <IconButton
+                edge="end"
+                aria-label="delete"
+                onClick={() => handleDeleteDocument(doc.id)}
+              >
+                <DeleteIcon sx={{ color: "#d33" }} />
+              </IconButton>
+            }
           >
-            <CancelOutlinedIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          {documents.length === 0 ? (
-            <p>No documents available.</p>
-          ) : (
-            <List>
-              {documents.map((doc) => (
-                <ListItem key={doc.id} button component="a" href={doc.filePath} target="_blank">
-                  <ListItemText primary={doc.fileName} secondary={`Uploaded: ${new Date(doc.uploadedAt).toLocaleDateString()}`} />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} variant="contained" className='!bg-[#1D34D8]'> Close </Button>
-        </DialogActions>
-      </Dialog>
+          <ListItemText
+            primary={
+              <a href={doc.filePath} target="_blank" rel="noopener noreferrer">
+                {doc.fileName.split("_").slice(1).join("_")} {/* Extracts the actual name */}
+              </a>
+            }
+            secondary={`Uploaded: ${new Date(doc.createdAt).toLocaleDateString()}`}
+          />
+          </ListItem>
+        ))}
+      </List>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setUploadDialogOpen(true)} variant="outlined">
+      Upload File
+    </Button>
+    {/* Upload File Button */}
+    <Button
+      onClick={handleClose}
+      variant="contained"
+      className="!bg-[#1D34D8]"
+    >
+      Close
+    </Button>
+  </DialogActions>
+</Dialog>
+
+
+      {/* Upload File Dialog */}
+      <AddDocumentsDialog
+        open={uploadDialogOpen}
+        handleClose={() => setUploadDialogOpen(false)}
+        handleFileChange={handleFileChange}
+        handleDocumentUpload={handleDocumentUpload}
+      />
 
     </Box>
 
