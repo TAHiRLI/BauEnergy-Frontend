@@ -63,15 +63,13 @@ class UserService extends HttpClient {
     });
   }
 
-  // async approveUser(userId, isApproved) {
-  //   const token = cookies.get("user")?.token;
-  //   console.log("Auth Token:", token); // Debugging
-  //   return await this.post(`Auth/ApproveUser?userId=${userId}&isApproved=${isApproved}`,{},{
-  //     headers: {
-  //         authorization: `Bearer ${cookies.get("user")?.token}`
-  //     }
-  //   });
-  // }
+  async getUserDocuments(userId) {
+    return await this.get(`UserDocument/${userId}`, {
+      headers: {
+        authorization: `Bearer ${cookies.get("user")?.token}`,
+      },
+    });
+  }
 
   async approveUser(userId, isApproved) {
     return await this.post(

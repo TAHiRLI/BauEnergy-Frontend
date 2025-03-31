@@ -15,16 +15,20 @@ import {
   FormHelperText,
   DialogActions,
   TextField,
-
+  ListItem,
+  ListItemText,
+  List
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
 import Swal from 'sweetalert2';
 import { teamMemberService } from '../../APIs/Services/teammember.service';
 import { userSerivce } from '../../APIs/Services/user.service'; 
 import EditIcon from '@mui/icons-material/Edit'; 
 import { Field, Form, Formik } from 'formik';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import CloseIcon from "@mui/icons-material/Close";
 import * as Yup from 'yup';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth } from "../../context/authContext";
@@ -39,6 +43,8 @@ const SettingsAndTeams = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [teamMemberToEdit, setTeamMemberToEdit] = useState(null);
   const [selectedImage, setSelectedImage] = useState(teamMemberToEdit?.image || null);
+  const [open, setOpen] = useState(false);
+  const [documents, setDocuments] = useState([]);
 
   const { user } = useAuth(); 
   
@@ -60,7 +66,6 @@ const SettingsAndTeams = () => {
       setLoading(false);
     }
   };
-  console.log(teamMembers)
 
   const formatDate = (date) => {
     if (!date) return;
@@ -206,6 +211,42 @@ const SettingsAndTeams = () => {
       Swal.fire(t('messages:Error'), t('messages:Team member has been updated!'), 'error');
     }
   };
+
+//   const getUserDocuments = async (userId) => {
+//     try {
+//       const response = userSerivce.getUserDocuments(userId)
+//       console.log(response)
+//       //setDocuments(data);
+//     } catch (error) {
+//       console.error("Error fetching documents:", error);
+//     }
+//   };
+// getUserDocuments()
+
+  // const handleOpen = async (userId) => {
+  //   const getUserDocuments = async (userId) => {
+  //     try {
+  //       const response = userSerivce.getUserDocuments(userId)
+  //       console.log(response)
+  //       //setDocuments(data);
+  //     } catch (error) {
+  //       console.error("Error fetching documents:", error);
+  //     }
+  //   };
+  //   setOpen(true)
+  // };
+
+  const handleOpen = async (userId) => {
+    try {
+      const response = await userSerivce.getUserDocuments(userId)
+console.log(response)      
+//setDocuments(data);
+      setOpen(true);
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+    }
+  };
+  const handleClose = () => setOpen(false);
   
   const columns = [
     {
@@ -293,9 +334,24 @@ const SettingsAndTeams = () => {
                     padding: '5px',
                     border: '1px solid #e0e0e0',
                     '&:hover': { backgroundColor: '#e0e0e0' },
+                    marginRight: '8px',
                   }}
                 >
                   <DeleteIcon sx={{ color: '#d33' }} />
+                </IconButton>
+
+                {/* File button */}
+                <IconButton
+                    onClick={() => handleOpen(params.row.id)}
+                    sx={{
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '20%',
+                    padding: '5px',
+                    border: '1px solid #e0e0e0',
+                    '&:hover': { backgroundColor: '#e0e0e0' },
+                  }}
+                >
+                 <AttachFileIcon sx={{ color: '#1976d2' }} />  
                 </IconButton>
               </>
             )}
@@ -555,6 +611,49 @@ const SettingsAndTeams = () => {
         </Formik>
       </DialogContent>
       </Dialog>
+
+      {/* Dialog for showing documents */}
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm"
+      PaperProps={{
+        style: {
+          borderRadius: 20,
+          height: "390px",
+          backgroundColor: "#fcfcfc",
+        },
+      }}>
+        <DialogTitle>
+          User Documents
+          <IconButton
+            className="!text-[#1D34D8]"
+            aria-label="close"
+            onClick={handleClose}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+            }}
+          >
+            <CancelOutlinedIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {documents.length === 0 ? (
+            <p>No documents available.</p>
+          ) : (
+            <List>
+              {documents.map((doc) => (
+                <ListItem key={doc.id} button component="a" href={doc.filePath} target="_blank">
+                  <ListItemText primary={doc.fileName} secondary={`Uploaded: ${new Date(doc.uploadedAt).toLocaleDateString()}`} />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} variant="contained" className='!bg-[#1D34D8]'> Close </Button>
+        </DialogActions>
+      </Dialog>
+
     </Box>
 
   );
