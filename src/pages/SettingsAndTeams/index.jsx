@@ -724,7 +724,7 @@ const handleDeleteDocument = async (documentId) => {
           >
           <ListItemText
             primary={
-              <a href={doc.filePath} target="_blank" rel="noopener noreferrer">
+              <a href={`${process.env.REACT_APP_DOCUMENT_URL}/assets/userpdf/${doc.fileName}`} target="_blank" rel="noopener noreferrer">
                 {doc.fileName.split("_").slice(1).join("_")} {/* Extracts the actual name */}
               </a>
             }
