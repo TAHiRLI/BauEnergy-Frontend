@@ -673,82 +673,82 @@ const handleDeleteDocument = async (documentId) => {
       </DialogContent>
       </Dialog>
 
-{/* Dialog for showing documents */}
-<Dialog
-  open={open}
-  onClose={handleClose}
-  fullWidth
-  maxWidth="sm"
-  PaperProps={{
-    style: {
-      borderRadius: 20,
-      height: "490px",
-      backgroundColor: "#fcfcfc",
-    },
-  }}
->
-  <DialogTitle>
-    User Documents
-    <IconButton
-      className="!text-[#1D34D8]"
-      aria-label="close"
-      onClick={handleClose}
-      sx={{
-        position: "absolute",
-        right: 8,
-        top: 8,
-      }}
-    >
-      <CancelOutlinedIcon />
-    </IconButton>
-  </DialogTitle>
-  <DialogContent dividers>
-    {documents.length === 0 ? (
-      <p>No documents available.</p>
-    ) : (
-      <List>
-        {documents.map((doc) => (
-          <ListItem
-            key={doc.id}
-            button
-
-            secondaryAction={
-              <IconButton
-                edge="end"
-                aria-label="delete"
-                onClick={() => handleDeleteDocument(doc.id)}
-              >
-                <DeleteIcon sx={{ color: "#d33" }} />
-              </IconButton>
-            }
+      {/* Dialog for showing documents */}
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          style: {
+            borderRadius: 20,
+            height: "400px",
+            backgroundColor: "#fcfcfc",
+          },
+        }}
+      >
+        <DialogTitle>
+          User Documents
+          <IconButton
+            className="!text-[#1D34D8]"
+            aria-label="close"
+            onClick={handleClose}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+            }}
           >
-          <ListItemText
-            primary={
-              <a href={`${process.env.REACT_APP_DOCUMENT_URL}/assets/userpdf/${doc.fileName}`} target="_blank" rel="noopener noreferrer">
-                {doc.fileName.split("_").slice(1).join("_")} {/* Extracts the actual name */}
-              </a>
-            }
-            secondary={`Uploaded: ${new Date(doc.createdAt).toLocaleDateString()}`}
-          />
-          </ListItem>
-        ))}
-      </List>
-    )}
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setUploadDialogOpen(true)} variant="outlined">
-      Upload File
-    </Button>
-    {/* Upload File Button */}
-    <Button
-      onClick={handleClose}
-      variant="contained"
-      className="!bg-[#1D34D8]"
-    >
-      Close
-    </Button>
-  </DialogActions>
-</Dialog>
+            <CancelOutlinedIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {documents.length === 0 ? (
+            <p>No documents available.</p>
+          ) : (
+            <List>
+              {documents.map((doc) => (
+                <ListItem
+                  key={doc.id}
+                  button
+
+                  secondaryAction={
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => handleDeleteDocument(doc.id)}
+                    >
+                      <DeleteIcon sx={{ color: "#d33" }} />
+                    </IconButton>
+                  }
+                >
+                <ListItemText
+                  primary={
+                    <a href={`${process.env.REACT_APP_DOCUMENT_URL}/assets/userpdf/${doc.fileName}`} target="_blank" rel="noopener noreferrer">
+                      {doc.fileName.split("_").slice(1).join("_")} {/* Extracts the actual name */}
+                    </a>
+                  }
+                  secondary={`Uploaded: ${new Date(doc.createdAt).toLocaleDateString()}`}
+                />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setUploadDialogOpen(true)} variant="outlined">
+            Upload File
+          </Button>
+          {/* Upload File Button */}
+          <Button
+            onClick={handleClose}
+            variant="contained"
+            className="!bg-[#1D34D8]"
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
 
       {/* Upload File Dialog */}

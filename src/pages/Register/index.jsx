@@ -35,21 +35,29 @@ const RegistrationView = () => {
     try {
       console.log('Register values:', values);
       
-      const res = userSerivce.register(values)
+      const res = await userSerivce.register(values)
 
       console.log('Response:', res);
       setRegistrationSuccess(true);
       
       Swal.fire({
         title: "Success!",
-        text: "Your request was forwarded, please wait for confirmation!",
+        text: "res.data.message",
         icon: "success",
         confirmButtonText: "OK",
       }).then(() => {
         navigate("/"); 
       });
     } catch (error) {
+      console.log(error.response.data.error)
       console.error('Error:', error.response);
+      Swal.fire({
+        title: "Error!",
+        text: error.response.data.error,
+        icon: "error",
+        confirmButtonText: "OK",
+      })
+
       setServerError(error.response?.data?.message || 'Registration failed.');
     } finally {
       setSubmitting(false);
