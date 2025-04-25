@@ -124,8 +124,8 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
       const pdfBlob = pdf.output("blob");
   
       // 🔹 Compress PDF before upload
-      const compressedBlob = await compressPDF(pdfBlob);
-      await uploadCompressedPDF(compressedBlob);
+      //const compressedBlob = await compressPDF(pdfBlob);
+      await uploadCompressedPDF(pdfBlob);
     } catch (error) {
       console.error("Error generating PDF:", error);
     }

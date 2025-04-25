@@ -457,6 +457,7 @@ export const Instruments = () => {
       });
 
       newInstrument?.files?.forEach((file) => {
+        console.log(file)
         formData.append("Files", file);
       });
 

@@ -124,6 +124,8 @@ export default function InstrumentTab({ project }) {
       setManagerError(true);
     }
   
+    console.log(selectedManager)
+
     if (!selectedInstrumentId || !selectedManager) {
       Swal.fire("Error!", "Please select an instrument and a project manager.", "error");
       return;
@@ -136,6 +138,7 @@ export default function InstrumentTab({ project }) {
         projectManagerId: selectedManager,
         count: instrumentCount, 
       };
+      console.log(body)
   
       await projectService.addInstrumentToProject(body);
       setOpenDialog(false);
@@ -195,6 +198,7 @@ export default function InstrumentTab({ project }) {
         const response = await teamMemberService.getAllProjectManagers(project.id);
         //const data = await response.json();
         setProjectManagers(response.data);
+        console.log(response)
         if (response.data && response.data.length > 0) {
           setSelectedManager(response.data[0].id); 
         }

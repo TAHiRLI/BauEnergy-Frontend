@@ -363,7 +363,7 @@ const NotificationModal = ({ open, onClose }) => {
 
   <div className="flex space-x-2">
     {/* Handle Instrument Approvals */}
-    {notification.approvalStatus === 0 && notification.instrumentId && (
+    {notification.approvalStatus === 0 && notification.notificationType == 1 && (
       <>
         <div className="flex items-center justify-center w-10 h-10">
           <button
@@ -392,7 +392,7 @@ const NotificationModal = ({ open, onClose }) => {
     )}
 
     {/* Handle User Approvals */}
-    { notification.userId && (
+    { notification.userId && notification.notificationType == 0 && (
       <>
         <div className="flex items-center justify-center w-10 h-10">
         <button
