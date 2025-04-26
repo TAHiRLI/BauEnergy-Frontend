@@ -455,8 +455,9 @@ export const Instruments = () => {
       tags?.forEach((tag) => {
         formData.append("Tags", tag);
       });
+      console.log(files)
 
-      newInstrument?.files?.forEach((file) => {
+      files?.forEach((file) => {
         console.log(file)
         formData.append("Files", file);
       });

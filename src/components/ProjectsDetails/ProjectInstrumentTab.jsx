@@ -675,7 +675,14 @@ const handleAssignInstruments = async () => {
 
   } catch (error) {
       console.error("Error assigning instruments:", error);
-      dispatch({ type: ProjectsActions.FAILURE, payload: error.message });
+      console.log(error)
+      Swal.fire({
+        title: t("messages:Error"),
+        text: error.response.data.message,
+        icon: "error",
+        timer: 2000,
+      });
+      // dispatch({ type: ProjectsActions.FAILURE, payload: error.message });
   }
 };
 
@@ -746,8 +753,8 @@ if (state.error) return <p>Error: {state.error}</p>;
           </div>
         </div>
         
-        <div className="flex justify-end h-12">
         {selectedInstrumentIds.length > 0 && (
+        <div className="flex justify-end h-12">
         <Button
         className="!rounded-3xl !normal-case !py-2 !my-1 !sm:my-0 !mr-3 w-full sm:w-auto"
         startIcon={<LocalShippingOutlinedIcon />}
@@ -765,9 +772,9 @@ if (state.error) return <p>Error: {state.error}</p>;
         >
           Load to car
         </Button>
-      )}
 
         </div>
+      )}
 
         <Paper
           className="!mt-4 !sm:mt-0 !h-full"
