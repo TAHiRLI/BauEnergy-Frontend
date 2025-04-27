@@ -42,10 +42,9 @@ const InstrumentStatusModal = ({ instrumentId, currentStatus, open, onClose }) =
     } catch (error) {
       console.error("Error while updating status:", error.response.data);
       Swal.fire({
-        title: "Error!",
+        title: "Warning!",
         text: error.response.data.message,
-        icon: "error",
-        confirmButtonColor: "#d33",
+        icon: "warning",
       });
     }
   };
