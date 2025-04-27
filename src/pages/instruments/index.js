@@ -92,6 +92,12 @@ export const Instruments = () => {
   const [selectedImage, setSelectedImage] = useState("/toolimage.png" || null);
   const [imageError, setImageError] = useState(null);
 
+  const [isMac, setIsMac] = useState(false);
+
+    useEffect(() => {
+    setIsMac(/Mac/i.test(navigator.platform));
+  }, []);
+
   const handleInstrumentClick = (id) => {
     navigate(`/instruments/details/${id}`);
   };
@@ -605,27 +611,47 @@ export const Instruments = () => {
                   marginTop: "20px",
                 }}
               />
-              {/* Upload button */}
-              <Button
-                variant="text"
-                className="!text-[#1D34D8]"
-                onClick={() => document.getElementById("profile-image-input").click()}
-              >
-                {t("PopUp:UploadImage")}
-              </Button>
-              <input
-                id="profile-image-input"
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={handleImageUpload}
-              />
-              {/* Show error message */}
-              {imageError  && (
-                <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-                  {imageError}
-                </Typography>
-              )}
+              <div>
+                {/* Upload button */}
+                <Button
+                  variant="text"
+                  className="!text-[#1D34D8]"
+                  onClick={() => document.getElementById("profile-image-input").click()}
+                >
+                  {t("PopUp:UploadImage")}
+                </Button>
+                <Button
+                  variant="text"
+                  className="!text-[#1D34D8]"
+                  onClick={() => document.getElementById("profile-image-input-android").click()}
+                >
+                  {t("Capture Image")}
+                </Button>
+                <input
+                  id="profile-image-input"
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleImageUpload}
+                />
+                 {!isMac && (
+                  <input
+                    id="profile-image-input-android"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    style={{ display: "none" }}
+                    onChange={handleImageUpload}
+                  />
+                )}
+                {/* Show error message */}
+                {imageError  && (
+                  <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
+                    {imageError}
+                  </Typography>
+                )}
+
+              </div>
             </Box>
 
 

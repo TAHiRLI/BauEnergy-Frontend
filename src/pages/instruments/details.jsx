@@ -682,6 +682,10 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                       cursor: 'pointer',
                       color: '#1D34D8',
                       fontWeight: 'bold',
+                      maxWidth: { xs: '250px' },
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
                     }}
                     onClick={() =>
                       handleDownload(`${process.env.REACT_APP_DOCUMENT_URL}/assets/pdf/${doc.fileName}`)
