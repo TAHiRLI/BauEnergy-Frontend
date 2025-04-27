@@ -1114,7 +1114,8 @@ export const Instruments = () => {
                 id="profile-image-input"
                 type="file"
                 // capture="environment"
-                accept="image/jpeg,image/png,image/jpg,image/heic,image/heif,image/webp,image/*"
+                // accept="image/jpeg,image/png,image/jpg,image/heic,image/heif,image/webp,image/*"
+                accept=""
                 style={{ display: "none" }}
                 onChange={handleImageUpload}
               />
