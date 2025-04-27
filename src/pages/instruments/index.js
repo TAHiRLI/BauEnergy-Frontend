@@ -92,10 +92,12 @@ export const Instruments = () => {
   const [selectedImage, setSelectedImage] = useState("/toolimage.png" || null);
   const [imageError, setImageError] = useState(null);
 
-  const [isMac, setIsMac] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
 
-    useEffect(() => {
-    setIsMac(/Mac/i.test(navigator.platform));
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isRealAndroid = userAgent.includes("android") && !userAgent.includes("windows") && !userAgent.includes("macintosh");
+    setIsAndroid(isRealAndroid);
   }, []);
 
   const handleInstrumentClick = (id) => {
@@ -611,7 +613,6 @@ export const Instruments = () => {
                   marginTop: "20px",
                 }}
               />
-              <div>
                 {/* Upload button */}
                 <Button
                   variant="text"
@@ -620,13 +621,7 @@ export const Instruments = () => {
                 >
                   {t("PopUp:UploadImage")}
                 </Button>
-                <Button
-                  variant="text"
-                  className="!text-[#1D34D8]"
-                  onClick={() => document.getElementById("profile-image-input-android").click()}
-                >
-                  {t("Capture Image")}
-                </Button>
+
                 <input
                   id="profile-image-input"
                   type="file"
@@ -634,16 +629,7 @@ export const Instruments = () => {
                   style={{ display: "none" }}
                   onChange={handleImageUpload}
                 />
-                 {!isMac && (
-                  <input
-                    id="profile-image-input-android"
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    style={{ display: "none" }}
-                    onChange={handleImageUpload}
-                  />
-                )}
+                 
                 {/* Show error message */}
                 {imageError  && (
                   <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
@@ -651,7 +637,7 @@ export const Instruments = () => {
                   </Typography>
                 )}
 
-              </div>
+
             </Box>
 
 
@@ -1107,51 +1093,82 @@ export const Instruments = () => {
             </IconButton>
           </DialogTitle>
           <DialogContent>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                marginBottom: 2,
-              }}
-            >
-              {/* Display the selected image */}
-              <img
-                src={imagePreviews ?? "/toolimage.png"}
-                alt="Instrument Preview"
-                style={{
-                  width: 250,
-                  height: 200,
-                  borderRadius: "10%",
-                  objectFit: "cover",
-                  marginBottom: 0,
-                  marginTop: "20px",
-                }}
-              />
-              {/* Upload button */}
-              <Button
-                variant="text"
-                className="!text-[#1D34D8]"
-                onClick={() => document.getElementById("profile-image-input").click()}
-              >
-                {t("PopUp:UploadImage")}
-              </Button>
-              <input
-                id="profile-image-input"
-                type="file"
-                // capture="environment"
-                // accept="image/jpeg,image/png,image/jpg,image/heic,image/heif,image/webp,image/*"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={handleImageUpload}
-              />
-              {/* Show error message */}
-              {imageError  && (
-                <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-                  {imageError}
-                </Typography>
-              )}
-            </Box>
+          <Box
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    marginBottom: 2,
+  }}
+>
+  {/* Display the selected image */}
+  <img
+    src={imagePreviews ?? "/toolimage.png"}
+    alt="Instrument Preview"
+    style={{
+      width: 250,
+      height: 200,
+      borderRadius: "10%",
+      objectFit: "cover",
+      marginBottom: 0,
+      marginTop: "20px",
+    }}
+  />
+
+  {/* Buttons Row */}
+  <Box
+    sx={{
+      display: "flex",
+      gap: 2, // space between buttons
+      marginTop: 2,
+    }}
+  >
+    {/* Upload from gallery */}
+    <Button
+      variant="text"
+      className="!text-[#1D34D8]"
+      onClick={() => document.getElementById("profile-image-input").click()}
+    >
+      {t("PopUp:UploadImage")}
+    </Button>
+    <input
+      id="profile-image-input"
+      type="file"
+      accept="image/*"
+      style={{ display: "none" }}
+      onChange={handleImageUpload}
+    />
+
+    {/* Capture with camera (only Android) */}
+    {isAndroid && (
+      <>
+        <Button
+          variant="text"
+          className="!text-[#1D34D8]"
+          onClick={() => document.getElementById("profile-image-input-android").click()}
+        >
+          {t("Capture Image")}
+        </Button>
+        <input
+          id="profile-image-input-android"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          style={{ display: "none" }}
+          onChange={handleImageUpload}
+        />
+      </>
+    )}
+  </Box>
+
+  {/* Show error message */}
+  {imageError && (
+    <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
+      {imageError}
+    </Typography>
+  )}
+</Box>
+
 
 
             <TextField
