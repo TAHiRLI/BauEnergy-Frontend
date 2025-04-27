@@ -1115,7 +1115,7 @@ export const Instruments = () => {
                 type="file"
                 // capture="environment"
                 // accept="image/jpeg,image/png,image/jpg,image/heic,image/heif,image/webp,image/*"
-                accept=""
+                accept="image/*"
                 style={{ display: "none" }}
                 onChange={handleImageUpload}
               />
