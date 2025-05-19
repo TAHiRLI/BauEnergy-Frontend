@@ -88,6 +88,9 @@ const InstrumentDetails = () => {
   const handleAddDocumentOpenDialog = () => setOpenAddDocumentDialog(true);
   const handleAddDocumentCloseDialog = () => setOpenAddDocumentDialog(false);
   const [triggerSearch, setTriggerSearch] = useState(true);
+
+  const [currentInstrumentName, setCurrentInstrumentName] = useState()
+
   const handleFileChange = (event) => {
     setSelectedFiles([...event.target.files]);
   };
@@ -178,6 +181,7 @@ const fetchInstrument = async () => {
   try {
     const response = await instrumentService.getById(id);
     setInstrument(response.data);
+    setCurrentInstrumentName(response.data.name)
     if(hasQr){
       setFirstInstrument(response.data)
     }
@@ -199,7 +203,7 @@ const fetchInstrument = async () => {
           const response = await instrumentService.getByExactName(
               projectSearch,
               statusSearch,
-              instrument.name,
+              currentInstrumentName,
               currentPage
           );
 
@@ -222,6 +226,7 @@ const fetchInstrument = async () => {
           setTriggerSearch(false); 
       }
   };
+  
   useEffect(() => {
 
     if (!isFirstEffectComplete || !triggerSearch) return;
@@ -578,39 +583,89 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     }
   };
   
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: t('PopUp:Areyousure?'),
-      text: t('PopUp:Doyouwanttodeletethisinstrument?Thisactioncannotbeundone.'),
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#1D34D8',
-      cancelButtonColor: '#d33',
-      confirmButtonText: t('PopUp:Yes,deleteit'),
-      cancelButtonText: t('PopUp:Cancel'),
-    });
-  
-    if (result.isConfirmed) {
-      try {
-        const response = await instrumentService.remove(id);
-        Swal.fire({
-          icon: 'success',
-          title: t('PopUp:Instrument Deleted'),
-          text: response.data?.message || 'The instrument has been successfully deleted...',
-        });
-        setRefresh((prev) => !prev);
-        fetchInstrumentsByName();
+// const handleDelete = async (id) => {
+//   const result = await Swal.fire({
+//     title: t('PopUp:Areyousure?'),
+//     text: t('PopUp:Doyouwanttodeletethisinstrument?Thisactioncannotbeundone.'),
+//     icon: 'warning',
+//     showCancelButton: true,
+//     confirmButtonColor: '#1D34D8',
+//     cancelButtonColor: '#d33',
+//     confirmButtonText: t('PopUp:Yes,deleteit'),
+//     cancelButtonText: t('PopUp:Cancel'),
+//   });
 
-      } catch (err) {
-        Swal.fire({
-          icon: 'error',
-          title: t('messages:Error'),
-          text: err.response?.data?.message || 'Failed to delete the instrument. Please try again later.',
-        });
-        console.error('Error deleting instrument:', err);
+//   if (result.isConfirmed) {
+//     try {
+//       const response = await instrumentService.remove(id);
+//       Swal.fire({
+//         icon: 'success',
+//         title: t('PopUp:Instrument Deleted'),
+//         text: response.data?.message || 'The instrument has been successfully deleted...',
+//       });
+
+//       setRefresh((prev) => !prev);
+//       await fetchInstrumentsByName(); 
+
+//       const instrumentByNameResponse =  instrumentService.getByExactName(filteredInstrument[0].name)
+
+//       if(filteredInstrument.length === 1){
+//         console.log(filteredInstrument)
+//         navigate('/')
+//       }
+
+//     } catch (err) {
+//       Swal.fire({
+//         icon: 'error',
+//         title: t('messages:Error'),
+//         text: err.response?.data?.message || 'Failed to delete the instrument. Please try again later.',
+//       });
+//       console.error('Error deleting instrument:', err);
+//     }
+//   }
+// };
+
+const handleDelete = async (id) => {
+  const result = await Swal.fire({
+    title: t('PopUp:Areyousure?'),
+    text: t('PopUp:Doyouwanttodeletethisinstrument?Thisactioncannotbeundone.'),
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#1D34D8',
+    cancelButtonColor: '#d33',
+    confirmButtonText: t('PopUp:Yes,deleteit'),
+    cancelButtonText: t('PopUp:Cancel'),
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const response = await instrumentService.remove(id);
+      Swal.fire({
+        icon: 'success',
+        title: t('PopUp:Instrument Deleted'),
+        text: response.data?.message || 'The instrument has been successfully deleted...',
+      });
+
+      // If only one instrument left before delete, redirect to homepage after delete
+      if (filteredInstrument.length === 1) {
+        navigate('/');
+        return;
       }
+
+      setRefresh((prev) => !prev);
+      await fetchInstrumentsByName();
+
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: t('messages:Error'),
+        text: err.response?.data?.message || 'Failed to delete the instrument. Please try again later.',
+      });
+      console.error('Error deleting instrument:', err);
     }
-  };
+  }
+};
+
   
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -634,7 +689,6 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
       console.error("Failed to fetch project details", error);
     }
   };
-console.log(instrument)
   
   return (
     <Box p={1}>
