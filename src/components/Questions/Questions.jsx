@@ -109,12 +109,15 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
         return;
       }
   
-      const SCALE_FACTOR = 1; // Reduce this to 0.5 or 0.7 for better compression
+      // const SCALE_FACTOR = 1; // Reduce this to 0.5 or 0.7 for better compression
+
+const SCALE_FACTOR = Math.max(window.devicePixelRatio * 2, 4)
+
       const canvasCertificate = await html2canvas(certificateDiv, { scale: SCALE_FACTOR });
       const canvasInstructions = await html2canvas(instructionsDiv, { scale: SCALE_FACTOR });
   
-      let imgDataCertificate = canvasCertificate.toDataURL("image/jpeg", 0.5);
-      let imgDataInstructions = canvasInstructions.toDataURL("image/jpeg", 0.5);
+      let imgDataCertificate = canvasCertificate.toDataURL("image/jpeg", 0.95);
+      let imgDataInstructions = canvasInstructions.toDataURL("image/jpeg", 0.95);
   
       const pdf = new jsPDF("portrait", "pt", "a4");
       pdf.addImage(imgDataCertificate, "JPEG", 20, 20, 550, 780);
