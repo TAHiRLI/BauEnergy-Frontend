@@ -111,20 +111,42 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
   
       // const SCALE_FACTOR = 1; // Reduce this to 0.5 or 0.7 for better compression
 
+
+//       const canvasCertificate = await html2canvas(certificateDiv, { scale: SCALE_FACTOR });
+//       const canvasInstructions = await html2canvas(instructionsDiv, { scale: SCALE_FACTOR });
+  
+//       let imgDataCertificate = canvasCertificate.toDataURL("image/jpeg", 0.95);
+//       let imgDataInstructions = canvasInstructions.toDataURL("image/jpeg", 0.95);
+  
+//       const pdf = new jsPDF("portrait", "pt", "a4");
+//       pdf.addImage(imgDataCertificate, "JPEG", 20, 20, 550, 780);
+//       pdf.addPage();
+//       pdf.addImage(imgDataInstructions, "JPEG", 20, 20, 550, 780);
+  
+
 const SCALE_FACTOR = Math.max(window.devicePixelRatio * 2, 4)
 
-      const canvasCertificate = await html2canvas(certificateDiv, { scale: SCALE_FACTOR });
-      const canvasInstructions = await html2canvas(instructionsDiv, { scale: SCALE_FACTOR });
-  
-      let imgDataCertificate = canvasCertificate.toDataURL("image/jpeg", 0.95);
-      let imgDataInstructions = canvasInstructions.toDataURL("image/jpeg", 0.95);
-  
-      const pdf = new jsPDF("portrait", "pt", "a4");
-      pdf.addImage(imgDataCertificate, "JPEG", 20, 20, 550, 780);
-      pdf.addPage();
-      pdf.addImage(imgDataInstructions, "JPEG", 20, 20, 550, 780);
-  
+const canvasCertificate = await html2canvas(certificateDiv, { scale: SCALE_FACTOR });
+const canvasInstructions = await html2canvas(instructionsDiv, { scale: SCALE_FACTOR });
+
+const imgDataCertificate = canvasCertificate.toDataURL("image/jpeg", 0.95);
+const imgDataInstructions = canvasInstructions.toDataURL("image/jpeg", 0.95);
+
+const pdf = new jsPDF("portrait", "px", "a4");
+const pdfWidth = pdf.internal.pageSize.getWidth();
+
+const certProps = pdf.getImageProperties(imgDataCertificate);
+const certHeight = (certProps.height * pdfWidth) / certProps.width;
+pdf.addImage(imgDataCertificate, "JPEG", 0, 0, pdfWidth, certHeight);
+
+pdf.addPage();
+
+const instProps = pdf.getImageProperties(imgDataInstructions);
+const instHeight = (instProps.height * pdfWidth) / instProps.width;
+pdf.addImage(imgDataInstructions, "JPEG", 0, 0, pdfWidth, instHeight);
+
       const pdfBlob = pdf.output("blob");
+
   
       // 🔹 Compress PDF before upload
       //const compressedBlob = await compressPDF(pdfBlob);
