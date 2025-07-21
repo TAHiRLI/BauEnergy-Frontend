@@ -286,7 +286,7 @@ const TutorialPage = () => {
                 <p>
                   Ich, {userData?.fullName}  bestätige hiermit, dass ich die oben genannten Bedingungen gelesen habe, sie 
                   vollständig akzeptiere und mich verpflichte, diese in vollem Umfang einzuhalten!{" "}
-                </p>
+                </p>  
               </div>
               
             </div>
