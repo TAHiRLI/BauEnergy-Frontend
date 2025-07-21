@@ -40,7 +40,7 @@ jobs:
       with:
         host: ${{ secrets.SERVER_PROD_HOST }}
         username: ${{ secrets.SERVER_PROD_USERNAME }}
-        password: ${{ secrets.SERVER_PROD_PASSWORD }}
+        password: ${{ secrets.SERVER_PROD_PASSWORD }}  
         port: ${{ secrets.SERVER_PROD_PORT }}
         script: |
           # Production-specific deployment script
