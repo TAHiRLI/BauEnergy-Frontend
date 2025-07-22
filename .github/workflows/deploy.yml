@@ -44,7 +44,7 @@ jobs:
         port: ${{ secrets.SERVER_PROD_PORT }}
         script: |
           # Production-specific deployment script
-          cd /root/bauenergy/frontend
+          cd /root/bau/frontend
           docker pull tahirli/bauenergy_frontend:latest
           docker-compose down
           docker-compose up -d
