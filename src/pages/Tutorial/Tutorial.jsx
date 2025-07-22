@@ -197,8 +197,8 @@ const TutorialPage = () => {
                 </p>
               </div>
 
-              <p className="absollute absolute text-[2vw] top-[78%] right-[66%] ">{formatDate(new Date())}</p>
-              <p className="absollute absolute text-[1.2vw] top-[82%] right-[69%] ">DATUM</p>
+              <p className="absollute absolute text-[2vw] top-[78%] md:top-[78%] right-[63%]">{formatDate(new Date())}</p>
+              <p className="absollute absolute text-[1.2vw] top-[82%] right-[67%]">DATUM</p>
             </div>
 
             <div
