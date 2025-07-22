@@ -275,7 +275,7 @@ const TutorialPage = () => {
                   Äußeres Erscheinungsbild — saubere Arbeitskleidung, gepflegte Frisur und Bart
                   Jeder Mitarbeiter ist verpflichtet, ein gepflegtes äußeres Erscheinungsbild zu wahren. Die 
                   ArbeitsKitovung muss sauber und ordentlich sein, die persönliche Hygiene ist auf hohem 
-                  Niveau zu halten (gepflegte Frisur und Bart).
+                  Niveau zu halten (gepflegte Frisur und Bart).   
                 </p>
                 <p>
                   Sauberkeit und Ordnung am Arbeitsplatz
