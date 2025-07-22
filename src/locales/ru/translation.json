@@ -37,7 +37,7 @@
     "Incorrect Password": "Некорректный пароль",
     "login": {
         "Welcome": "Добро пожаловать",
-        "YouDonthaveAccount": "У вас нет аккаунта? Пожалуйста, свяжитесь с",
+        "YouDonthaveAccount": "У вас нет аккаунта?",
         "EmailAddress": "Электронная почта",
         "Password": "Пароль",
         "Continue": "Продолжить",
@@ -89,7 +89,12 @@
         "Failed to add project.": "Не удалось добавить проект.",
         "Rejected!": "Отклонено!",
         "Something went wrong while rejecting the instrument.": "Что-то пошло не так при отклонении инструмента.",
-        "No user data found": "Данные пользователя не найдены"
+        "No user data found": "Данные пользователя не найдены",
+        "statusInDelivery": "Статус нельзя изменить, пока инструмент находится в статусе 'В доставке'.",
+        "default": "Произошла непредвиденная ошибка.",
+        "Warning": "Предупреждение"
+
+
     },
     "columns":{
         "NameLastname": "Имя и Фамилия",

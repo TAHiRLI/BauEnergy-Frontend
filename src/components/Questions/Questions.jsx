@@ -10,15 +10,33 @@ import Swal from "sweetalert2";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { userSerivce } from "../../APIs/Services/user.service";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+import image3 from "../../assets/images/certificateImage3.jpg";
+import { PDFDocument } from "pdf-lib";
 
 const cookies = new Cookies();
 
 const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
   const { t } = useTranslation();
     const { user, dispatch } = useAuth();
+
+    async function compressPDF(pdfBlob) {
+      const pdfDoc = await PDFDocument.load(await pdfBlob.arrayBuffer());
+      
+      // Set compression for each page
+      const pages = pdfDoc.getPages();
+      pages.forEach((page) => {
+        page.setFontSize(10);
+      });
+    
+      // Save compressed PDF
+      const compressedBytes = await pdfDoc.save({ useObjectStreams: true });
+    
+      return new Blob([compressedBytes], { type: "application/pdf" });
+    }
   
   // Define the survey JSON
-
   const surveyJson = {
     title: t("Quiz:Test Your Knowledge"),
     description: t("Quiz:Answer all questions correctly to pass the test."),
@@ -27,13 +45,13 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
     showTimerPanel: "top",
     firstPageIsStarted: true,
     startSurveyText: t("Quiz:Start Quiz"),
-    completedHtml: `<p>${t("Quiz:Thank you for completing the quiz!")}</p>`,
+    completedHtml: `<p>${t("Thank you for completing the quiz!")}</p>`,
     pages: [
       {
         elements: [
           {
             type: "html",
-            html: `${t("Quiz:You are about to start the quiz.")} <br/>${t("Quiz:Click on")} <b>${t("Quiz:Start Quiz")}</b> ${t("Quiz:to begin.")}`,
+            html: `${t("You are about to start the quiz.")} <br/>${t("Click on")} <b>${t("Start Quiz")}</b> ${t("to begin.")}`,
           },
         ],
       },
@@ -80,6 +98,83 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
       },
     ],
   };
+
+  const handleCertificateGet = async () => {
+    try {
+      const certificateDiv = document.getElementById("certificate");
+      const instructionsDiv = document.getElementById("instructions");
+  
+      if (!certificateDiv || !instructionsDiv) {
+        alert("Certificate element not found!");
+        return;
+      }
+  
+      // const SCALE_FACTOR = 1; // Reduce this to 0.5 or 0.7 for better compression
+
+
+//       const canvasCertificate = await html2canvas(certificateDiv, { scale: SCALE_FACTOR });
+//       const canvasInstructions = await html2canvas(instructionsDiv, { scale: SCALE_FACTOR });
+  
+//       let imgDataCertificate = canvasCertificate.toDataURL("image/jpeg", 0.95);
+//       let imgDataInstructions = canvasInstructions.toDataURL("image/jpeg", 0.95);
+  
+//       const pdf = new jsPDF("portrait", "pt", "a4");
+//       pdf.addImage(imgDataCertificate, "JPEG", 20, 20, 550, 780);
+//       pdf.addPage();
+//       pdf.addImage(imgDataInstructions, "JPEG", 20, 20, 550, 780);
+  
+
+const SCALE_FACTOR = Math.max(window.devicePixelRatio * 2, 4)
+
+const canvasCertificate = await html2canvas(certificateDiv, { scale: SCALE_FACTOR });
+const canvasInstructions = await html2canvas(instructionsDiv, { scale: SCALE_FACTOR });
+
+const imgDataCertificate = canvasCertificate.toDataURL("image/jpeg", 0.95);
+const imgDataInstructions = canvasInstructions.toDataURL("image/jpeg", 0.95);
+
+const pdf = new jsPDF("portrait", "px", "a4");
+const pdfWidth = pdf.internal.pageSize.getWidth();
+
+const certProps = pdf.getImageProperties(imgDataCertificate);
+const certHeight = (certProps.height * pdfWidth) / certProps.width;
+pdf.addImage(imgDataCertificate, "JPEG", 0, 0, pdfWidth, certHeight);
+
+pdf.addPage();
+
+const instProps = pdf.getImageProperties(imgDataInstructions);
+const instHeight = (instProps.height * pdfWidth) / instProps.width;
+pdf.addImage(imgDataInstructions, "JPEG", 0, 0, pdfWidth, instHeight);
+
+      const pdfBlob = pdf.output("blob");
+
+  
+      // 🔹 Compress PDF before upload
+      //const compressedBlob = await compressPDF(pdfBlob);
+      await uploadCompressedPDF(pdfBlob);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    }
+  };
+  
+
+  async function uploadCompressedPDF(pdfBlob) {
+    const pdfFile = new File([pdfBlob], "certificate.pdf", { type: "application/pdf" });
+    console.log("Compressed File Size:", pdfFile.size);
+  
+    if (pdfFile.size > 5 * 1024 * 1024) { // If still too large, retry compression
+      alert("File is still too big! Try reducing quality further.");
+    }
+  
+    const formData = new FormData();
+    formData.append("Files", pdfFile);
+  
+    try {
+      await userSerivce.uploadUserDocument(user.userId, [pdfFile]);
+      console.log("File uploaded successfully");
+    } catch (err) {
+      console.error("Upload error:", err);
+    }
+  }
   
 
   // State to track the survey instance and completion status
@@ -110,6 +205,7 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
       setIsSuccessful(true);
       Swal.fire(t("messages:Success"), t("You scored 100%! Well done!"), "success");
       await userSerivce.CompletedTest();
+      
       dispatch({ type: AuthActions.success, payload: {...user, hasCompletedTest: true , hasCompletedTutorial: true, } });
       cookies.set('user', JSON.stringify({...user, hasCompletedTest: true, hasCompletedTutorial: true,}), {
         expires: new Date(dayjs(user.expiration)),
@@ -121,6 +217,7 @@ const Questions = ({ isSuccessful, setIsSuccessful, setScorePercentage }) => {
     }
 
     setIsCompleted(true); // Mark survey as completed
+    handleCertificateGet()
   });
 
   // Reset survey for retrying

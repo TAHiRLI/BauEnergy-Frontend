@@ -124,6 +124,8 @@ export default function InstrumentTab({ project }) {
       setManagerError(true);
     }
   
+    console.log(selectedManager)
+
     if (!selectedInstrumentId || !selectedManager) {
       Swal.fire("Error!", "Please select an instrument and a project manager.", "error");
       return;
@@ -136,6 +138,7 @@ export default function InstrumentTab({ project }) {
         projectManagerId: selectedManager,
         count: instrumentCount, 
       };
+      console.log(body)
   
       await projectService.addInstrumentToProject(body);
       setOpenDialog(false);
@@ -195,6 +198,7 @@ export default function InstrumentTab({ project }) {
         const response = await teamMemberService.getAllProjectManagers(project.id);
         //const data = await response.json();
         setProjectManagers(response.data);
+        console.log(response)
         if (response.data && response.data.length > 0) {
           setSelectedManager(response.data[0].id); 
         }
@@ -671,7 +675,14 @@ const handleAssignInstruments = async () => {
 
   } catch (error) {
       console.error("Error assigning instruments:", error);
-      dispatch({ type: ProjectsActions.FAILURE, payload: error.message });
+      console.log(error)
+      Swal.fire({
+        title: t("messages:Error"),
+        text: error.response.data.message,
+        icon: "error",
+        timer: 2000,
+      });
+      // dispatch({ type: ProjectsActions.FAILURE, payload: error.message });
   }
 };
 
@@ -742,8 +753,8 @@ if (state.error) return <p>Error: {state.error}</p>;
           </div>
         </div>
         
-        <div className="flex justify-end h-12">
         {selectedInstrumentIds.length > 0 && (
+        <div className="flex justify-end h-12">
         <Button
         className="!rounded-3xl !normal-case !py-2 !my-1 !sm:my-0 !mr-3 w-full sm:w-auto"
         startIcon={<LocalShippingOutlinedIcon />}
@@ -761,9 +772,9 @@ if (state.error) return <p>Error: {state.error}</p>;
         >
           Load to car
         </Button>
-      )}
 
         </div>
+      )}
 
         <Paper
           className="!mt-4 !sm:mt-0 !h-full"

@@ -124,7 +124,7 @@ const handleAddExistingTeamMember = async () => {
       });
 
       if (result.isConfirmed) {
-        await teamMemberService.remove(id);
+        const responset = await teamMemberService.remove(id);
         Swal.fire(t('messages:Deleted'), t('messages:Team member has been removed from the project.'), 'success');
         const response = await projectService.getById(project.id);
         setSelectedProject(response.data)

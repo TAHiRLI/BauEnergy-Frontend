@@ -31,31 +31,9 @@ class InstrumentTagService extends HttpClient {
             }
         });
     }
-    async getById(id) {
-        return await this.get(`Instrument/${id}`, {
-            headers: {
-                authorization: `Bearer ${cookies.get('user')?.token}`
-            }
-        });
-    }
-
-    async add(body) {
-        return await this.post('Instrument', body, {
-            headers: {
-                authorization: `Bearer ${cookies.get('user')?.token}`
-            }
-        });
-    }
-    async edit(id,body) {
-        return await this.put('Instrument',id, body, {
-            headers: {
-                authorization: `Bearer ${cookies.get('user')?.token}`
-            }
-        });
-    }
 
     async remove(id) {
-        return await this.delete('Instrument',id,{
+        return await this.delete('InstrumentTags',id,{
             headers: {
                 authorization: `Bearer ${cookies.get('user')?.token}`
             }

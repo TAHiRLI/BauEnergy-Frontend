@@ -21,7 +21,7 @@ const validationSchema = yup.object().shape({
     .max(20, 'Password is too long'),
 });
 
-export const LoginPage = () => {
+export const RegisterPage = () => {
   const { t } = useTranslation();
   
   const { dispatch } = useAuth();
@@ -184,4 +184,4 @@ export const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

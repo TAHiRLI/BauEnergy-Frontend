@@ -90,7 +90,14 @@ export const Instruments = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState("/toolimage.png" || null);
-  const [imageError, setImageError] = useState(null);
+
+  const [isAndroid, setIsAndroid] = useState(false);
+
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isRealAndroid = userAgent.includes("android") && !userAgent.includes("windows") && !userAgent.includes("macintosh");
+    setIsAndroid(isRealAndroid);
+  }, []);
 
   const handleInstrumentClick = (id) => {
     navigate(`/instruments/details/${id}`);
@@ -433,38 +440,64 @@ export const Instruments = () => {
 
   
   const handleAddInstrument = async () => {
-    if (!selectedImage || selectedImage === "/toolimage.png") {
-      setImageError("Please upload an image before submitting.");
-      return;
-    }
-    setImageError(null);
-
+    
     try {
       setIsSubmitting(true);
-
+      
+      await fetchInstrumentsByName();
+      const arrayOfInstruments = Array.isArray(instrumentsByName.data) ? instrumentsByName.data : [];
+      // Check if a tool with the same name already exists
+      const alreadyExists = arrayOfInstruments.some(
+        (instrument) => instrument.name?.toLowerCase().trim() === newInstrument.name?.toLowerCase().trim()
+      );
+      if (alreadyExists) {
+        const result = await Swal.fire({
+          icon: "warning",
+          title: t("Warning"),
+          text: t("Such tool was created already. Do you want to add it to existing tool set?"),
+          showCancelButton: true,
+          confirmButtonText: t("Yes"),
+          cancelButtonText: t("No"),
+        });
+  
+        if (!result.isConfirmed) {
+          setIsSubmitting(false);
+          return; // If user clicks "No", stop adding
+        }
+        // else, continue to add the new tool to existing tool set
+      }
+  
       const { name, description, shortDesc, instrumentType, count, price, tags, files } = newInstrument;
       const formData = new FormData();
       formData.append("Name", name);
       formData.append("Description", description);
       formData.append("ShortDesc", shortDesc);
-      formData.append("InstrumentType", instrumentType);
+      formData.append("InstrumentType", instrumentType ?? "");
       formData.append("Count", count);
       formData.append("Price", price);
-      formData.append("Image", selectedImage);
-
+  
+      if (selectedImage instanceof File) {
+        formData.append("Image", selectedImage);
+      } else {
+        const response = await fetch("/toolimage.png");
+        const blob = await response.blob();
+        const defaultFile = new File([blob], "default.png", { type: "image/png" });
+        formData.append("Image", defaultFile);
+      }
+  
       tags?.forEach((tag) => {
         formData.append("Tags", tag);
       });
-
-      newInstrument?.files?.forEach((file) => {
+  
+      files?.forEach((file) => {
         formData.append("Files", file);
       });
-
+  
       await instrumentService.add(formData);
       forceUpdate((x) => !x);
       handleCloseModal();
       fetchInstrumentsByName();
-
+  
       Swal.fire({
         icon: "success",
         title: t("messages:Success"),
@@ -475,14 +508,15 @@ export const Instruments = () => {
       console.error("Error adding instrument:", err);
       Swal.fire({
         icon: "error",
-        title: t("messages:Success"),
-        text: t("messsages:An error occurred while adding the instrument. Please try again."),
+        title: t("messages:Error"),
+        text: t("messages:An error occurred while adding the instrument. Please try again."),
         confirmButtonText: "OK",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+  
 
   const handleShare = () => {
     const shareData = {
@@ -509,6 +543,30 @@ export const Instruments = () => {
     setOpenQRDialog(true);
   }
   const handleCloseQRDialog = () => setOpenQRDialog(false);
+
+  const handleRemoveTag = async (tagId) => {
+    try {
+      await instrumentTagService.remove(tagId);
+      // After removing, refresh tags list if needed
+      fetchTags(); // or update the state manually
+      setAvailableTags(prevTags => prevTags.filter(tag => tag.id !== tagId));
+
+      Swal.fire({
+        icon: "success",
+        title: "Tag removed",
+        confirmButtonText: "OK",
+      });
+    } catch (error) {
+      console.error("Error removing tag:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to remove tag.",
+        confirmButtonText: "OK",
+      });
+    }
+  };
+  
 
   const rows = instruments.map((instrument) => ({
     id: instrument.id,
@@ -603,27 +661,23 @@ export const Instruments = () => {
                   marginTop: "20px",
                 }}
               />
-              {/* Upload button */}
-              <Button
-                variant="text"
-                className="!text-[#1D34D8]"
-                onClick={() => document.getElementById("profile-image-input").click()}
-              >
-                {t("PopUp:UploadImage")}
-              </Button>
-              <input
-                id="profile-image-input"
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={handleImageUpload}
-              />
-              {/* Show error message */}
-              {imageError  && (
-                <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-                  {imageError}
-                </Typography>
-              )}
+                {/* Upload button */}
+                <Button
+                  variant="text"
+                  className="!text-[#1D34D8]"
+                  onClick={() => document.getElementById("profile-image-input").click()}
+                >
+                  {t("PopUp:UploadImage")}
+                </Button>
+
+                <input
+                  id="profile-image-input"
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleImageUpload}
+                />
+                
             </Box>
 
 
@@ -1079,28 +1133,36 @@ export const Instruments = () => {
             </IconButton>
           </DialogTitle>
           <DialogContent>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginBottom: 2,
+            }}
+          >
+            {/* Display the selected image */}
+            <img
+              src={imagePreviews ?? "/toolimage.png"}
+              alt="Instrument Preview"
+              style={{
+                width: 250,
+                height: 200,
+                borderRadius: "10%",
+                objectFit: "cover",
+                marginBottom: 0,
+                marginTop: "20px",
+              }}
+            />
+
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                marginBottom: 2,
+                gap: 2,
+                marginTop: 2,
               }}
             >
-              {/* Display the selected image */}
-              <img
-                src={imagePreviews ?? "/toolimage.png"}
-                alt="Instrument Preview"
-                style={{
-                  width: 250,
-                  height: 200,
-                  borderRadius: "10%",
-                  objectFit: "cover",
-                  marginBottom: 0,
-                  marginTop: "20px",
-                }}
-              />
-              {/* Upload button */}
+              {/* Upload from gallery */}
               <Button
                 variant="text"
                 className="!text-[#1D34D8]"
@@ -1115,14 +1177,29 @@ export const Instruments = () => {
                 style={{ display: "none" }}
                 onChange={handleImageUpload}
               />
-              {/* Show error message */}
-              {imageError  && (
-                <Typography color="error" variant="body2" style={{ marginTop: 8 }}>
-                  {imageError}
-                </Typography>
+
+              {/* Capture with camera (only Android) */}
+              {isAndroid && (
+                <>
+                  <Button
+                    variant="text"
+                    className="!text-[#1D34D8]"
+                    onClick={() => document.getElementById("profile-image-input-android").click()}
+                  >
+                    {t("Capture Image")}
+                  </Button>
+                  <input
+                    id="profile-image-input-android"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    style={{ display: "none" }}
+                    onChange={handleImageUpload}
+                  />
+                </>
               )}
             </Box>
-
+          </Box>
 
             <TextField
               autoFocus
@@ -1182,19 +1259,41 @@ export const Instruments = () => {
               <InputLabel>{t("PopUp:Tag")}</InputLabel>
               <Select
                 multiple
-                label="Tags"
+                label="Tag"
                 value={newInstrument.tags}
                 onChange={handleTagChange}
                 renderValue={(selected) => selected.join(", ")}
               >
                 {availableTags.map((tag) => (
-                  <MenuItem key={tag.id} value={tag.title}>
-                    <Checkbox checked={newInstrument.tags.includes(tag.title)} />
-                    <ListItemText primary={tag.title} />
+                  <MenuItem 
+                    key={tag.id} 
+                    value={tag.title} 
+                    sx={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "space-between", 
+                      pr: 1 
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Checkbox checked={newInstrument.tags.includes(tag.title)} />
+                      <ListItemText primary={tag.title} />
+                    </div>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveTag(tag.id);
+                      }}
+                      sx={{ ml: "auto" }}
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
+
 
             <FormControl fullWidth margin="dense" variant="outlined">
               <InputLabel htmlFor="add-new-tag">{t("PopUp:Addnewtag")}</InputLabel>

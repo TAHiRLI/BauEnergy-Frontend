@@ -27,13 +27,14 @@ import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useProjects } from '../../context/projectContext';
 import { projectService } from '../../APIs/Services/project.service';
+import CloseIcon from "@mui/icons-material/Close";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required('Instrument name is required'),
-  description: Yup.string().required('Description is required'),
-  shortDesc: Yup.string().required('Short description is required'),
-  instrumentType: Yup.string().required('Instrument type is required'),
-  price: Yup.string().required('Price is required'),
+  //description: Yup.string().required('Description is required'),
+  //shortDesc: Yup.string().required('Short description is required'),
+  //instrumentType: Yup.string().required('Instrument type is required'),
+  //price: Yup.string().required('Price is required'),
 });
 
 const VisuallyHiddenInput = styled('input')({
@@ -87,6 +88,9 @@ const InstrumentDetails = () => {
   const handleAddDocumentOpenDialog = () => setOpenAddDocumentDialog(true);
   const handleAddDocumentCloseDialog = () => setOpenAddDocumentDialog(false);
   const [triggerSearch, setTriggerSearch] = useState(true);
+
+  const [currentInstrumentName, setCurrentInstrumentName] = useState()
+
   const handleFileChange = (event) => {
     setSelectedFiles([...event.target.files]);
   };
@@ -177,6 +181,7 @@ const fetchInstrument = async () => {
   try {
     const response = await instrumentService.getById(id);
     setInstrument(response.data);
+    setCurrentInstrumentName(response.data.name)
     if(hasQr){
       setFirstInstrument(response.data)
     }
@@ -198,7 +203,7 @@ const fetchInstrument = async () => {
           const response = await instrumentService.getByExactName(
               projectSearch,
               statusSearch,
-              instrument.name,
+              currentInstrumentName,
               currentPage
           );
 
@@ -221,6 +226,7 @@ const fetchInstrument = async () => {
           setTriggerSearch(false); 
       }
   };
+  
   useEffect(() => {
 
     if (!isFirstEffectComplete || !triggerSearch) return;
@@ -461,9 +467,18 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
   formData.append('Name', values.name);
   formData.append('Description', values.description);
   formData.append('ShortDesc', values.shortDesc);
-  formData.append('InstrumentType', values.instrumentType);
+  formData.append('InstrumentType', values.instrumentType ?? "");
   formData.append('Price', values.price);
-  formData.append('Image', values.image);
+  // formData.append('Image', values.image);
+  if (selectedImage instanceof File) {
+    formData.append("Image", selectedImage);
+  } else {
+    // Fetch default image and send it as file
+    const response = await fetch("/toolimage.png");
+    const blob = await response.blob();
+    const defaultFile = new File([blob], "default.png", { type: "image/png" });
+    formData.append("Image", defaultFile);
+  }
 
   values.files?.forEach((file) => formData.append('Files', file));
   instrument.tags.forEach((tag) => formData.append('Tags', tag));
@@ -505,6 +520,29 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     );
   }
 
+  const handleRemoveTag = async (tagId) => {
+      try {
+        await instrumentTagService.remove(tagId);
+        // After removing, refresh tags list if needed
+        fetchTags(); // or update the state manually
+        setAvailableTags(prevTags => prevTags.filter(tag => tag.id !== tagId));
+  
+        Swal.fire({
+          icon: "success",
+          title: "Tag removed",
+          confirmButtonText: "OK",
+        });
+      } catch (error) {
+        console.error("Error removing tag:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to remove tag.",
+          confirmButtonText: "OK",
+        });
+      }
+  };
+
   const handleCloseHistoryDialog = () => setOpenHistoryDialog(false);
 
   const handleShowHistory = async (id) => {
@@ -545,39 +583,89 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     }
   };
   
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: t('PopUp:Areyousure?'),
-      text: t('PopUp:Doyouwanttodeletethisinstrument?Thisactioncannotbeundone.'),
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#1D34D8',
-      cancelButtonColor: '#d33',
-      confirmButtonText: t('PopUp:Yes,deleteit'),
-      cancelButtonText: t('PopUp:Cancel'),
-    });
-  
-    if (result.isConfirmed) {
-      try {
-        const response = await instrumentService.remove(id);
-        Swal.fire({
-          icon: 'success',
-          title: t('PopUp:Instrument Deleted'),
-          text: response.data?.message || 'The instrument has been successfully deleted...',
-        });
-        setRefresh((prev) => !prev);
-        fetchInstrumentsByName();
+// const handleDelete = async (id) => {
+//   const result = await Swal.fire({
+//     title: t('PopUp:Areyousure?'),
+//     text: t('PopUp:Doyouwanttodeletethisinstrument?Thisactioncannotbeundone.'),
+//     icon: 'warning',
+//     showCancelButton: true,
+//     confirmButtonColor: '#1D34D8',
+//     cancelButtonColor: '#d33',
+//     confirmButtonText: t('PopUp:Yes,deleteit'),
+//     cancelButtonText: t('PopUp:Cancel'),
+//   });
 
-      } catch (err) {
-        Swal.fire({
-          icon: 'error',
-          title: t('messages:Error'),
-          text: err.response?.data?.message || 'Failed to delete the instrument. Please try again later.',
-        });
-        console.error('Error deleting instrument:', err);
+//   if (result.isConfirmed) {
+//     try {
+//       const response = await instrumentService.remove(id);
+//       Swal.fire({
+//         icon: 'success',
+//         title: t('PopUp:Instrument Deleted'),
+//         text: response.data?.message || 'The instrument has been successfully deleted...',
+//       });
+
+//       setRefresh((prev) => !prev);
+//       await fetchInstrumentsByName(); 
+
+//       const instrumentByNameResponse =  instrumentService.getByExactName(filteredInstrument[0].name)
+
+//       if(filteredInstrument.length === 1){
+//         console.log(filteredInstrument)
+//         navigate('/')
+//       }
+
+//     } catch (err) {
+//       Swal.fire({
+//         icon: 'error',
+//         title: t('messages:Error'),
+//         text: err.response?.data?.message || 'Failed to delete the instrument. Please try again later.',
+//       });
+//       console.error('Error deleting instrument:', err);
+//     }
+//   }
+// };
+
+const handleDelete = async (id) => {
+  const result = await Swal.fire({
+    title: t('PopUp:Areyousure?'),
+    text: t('PopUp:Doyouwanttodeletethisinstrument?Thisactioncannotbeundone.'),
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#1D34D8',
+    cancelButtonColor: '#d33',
+    confirmButtonText: t('PopUp:Yes,deleteit'),
+    cancelButtonText: t('PopUp:Cancel'),
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const response = await instrumentService.remove(id);
+      Swal.fire({
+        icon: 'success',
+        title: t('PopUp:Instrument Deleted'),
+        text: response.data?.message || 'The instrument has been successfully deleted...',
+      });
+
+      // If only one instrument left before delete, redirect to homepage after delete
+      if (filteredInstrument.length === 1) {
+        navigate('/');
+        return;
       }
+
+      setRefresh((prev) => !prev);
+      await fetchInstrumentsByName();
+
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: t('messages:Error'),
+        text: err.response?.data?.message || 'Failed to delete the instrument. Please try again later.',
+      });
+      console.error('Error deleting instrument:', err);
     }
-  };
+  }
+};
+
   
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -601,7 +689,6 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
       console.error("Failed to fetch project details", error);
     }
   };
-
   
   return (
     <Box p={1}>
@@ -633,7 +720,7 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
             </div>
             {canViewPrice && (
               <div className="text-gray-600 my-2">
-                {t('PopUp:Price')}: {instrument.price.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {t('PopUp:Price')}: {instrument.price?.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </div>            
             )}
             <div className="mt-4 flex gap-4">
@@ -682,6 +769,10 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
                       cursor: 'pointer',
                       color: '#1D34D8',
                       fontWeight: 'bold',
+                      maxWidth: { xs: '250px' },
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
                     }}
                     onClick={() =>
                       handleDownload(`${process.env.REACT_APP_DOCUMENT_URL}/assets/pdf/${doc.fileName}`)
@@ -1194,21 +1285,42 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
               </Box>
 
               <FormControl fullWidth margin="dense">
-                    <InputLabel>{t("PopUp:Tag")}</InputLabel>
-                    <Select
-                        multiple
-                        label={t("PopUp:Tag")}
-                        value={instrument.tags}
-                        onChange={handleTagChange}
-                        renderValue={(selected) => selected.join(', ')}
+                <InputLabel>{t("PopUp:Tag")}</InputLabel>
+                <Select
+                  multiple
+                  label="Tag"
+                  value={instrument.tags}
+                  onChange={handleTagChange}
+                  renderValue={(selected) => selected.join(", ")}
+                >
+                  {availableTags.map((tag) => (
+                    <MenuItem 
+                      key={tag.id} 
+                      value={tag.title} 
+                      sx={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "space-between", 
+                        pr: 1 
+                      }}
                     >
-                        {availableTags.map((tag) => (
-                        <MenuItem key={tag.id} value={tag.title}>
-                            <Checkbox checked={instrument.tags.includes(tag.title)} />
-                            <ListItemText primary={tag.title} />
-                        </MenuItem>
-                        ))}
-                    </Select>
+                      <div className="flex items-center gap-2">
+                        <Checkbox checked={instrument.tags.includes(tag.title)} />
+                        <ListItemText primary={tag.title} />
+                      </div>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveTag(tag.id);
+                        }}
+                        sx={{ ml: "auto" }}
+                      >
+                        <CloseIcon fontSize="small" />
+                      </IconButton>
+                    </MenuItem>
+                  ))}
+                </Select>
               </FormControl>
 
               <FormControl fullWidth margin="dense" variant="outlined">

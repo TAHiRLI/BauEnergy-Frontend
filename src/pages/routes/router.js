@@ -1,14 +1,14 @@
 import { createBrowserRouter } from "react-router-dom";
 import { ROUTES } from "./routes";
 import Layout from "../../components/layout";
-import LoginPage from "../login/";
+import LoginPage from "../auth/login";
 import {Instruments} from "../instruments";
 import { PrivateRoute } from "../../components/PrivateRoute";
 import HomePage from "../HomePage";
 import { Roles } from "../../context/authContext";
 import ProjectPage from "../projects";
 import RegistrationView from "../Register";
-import ResetPassword from "../login/resetPassword";
+import ResetPassword from "../auth/resetPassword";
 import InstrumentDetails from "../instruments/details" ;
 import { Documents } from "../documentspage" ;
 import SettingsAndTeams from "../SettingsAndTeams";

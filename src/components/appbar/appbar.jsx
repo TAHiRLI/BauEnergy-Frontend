@@ -322,7 +322,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
       <MenuItem onClick={handleProfileButtonClick}>{t("Profile")}</MenuItem>
       <MenuItem onClick={() => handleResetPassword(email)}>
       {t("ResetPassword")}
-    </MenuItem>
+      </MenuItem>
     </Menu>
   );
 
@@ -344,7 +344,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
       onClose={handleMobileMenuClose}
     >
     
-      {!isUser &&   <MenuItem onClick={handleNotificationClick}>
+      <MenuItem onClick={handleNotificationClick}>
         <IconButton
           size="large"
           aria-label="show 17 new notifications"
@@ -356,7 +356,7 @@ const handleCreateUserFormSubmit = async (values, { setSubmitting, resetForm }) 
           </Badge>
         </IconButton>
         <p>{t("Notifications")}</p>
-      </MenuItem>}
+      </MenuItem>
       
       {!isUser && <MenuItem onClick={() => setOpenDialog(true)}>
         <IconButton size="large" aria-label="create new project" color="inherit" 

@@ -160,7 +160,8 @@ export default function CarTab( ) {
                 <DialogContent>
                     <List>
                         {selectedCarInstruments?.map((instrument) => (
-                        <ListItemText primary={`(ID_${instrument.id}) ${instrument.name}`} secondary={instrument.description} 
+                        <ListItemText primary={`(ID_${instrument.id}) ${instrument.name}`} 
+                        // secondary={instrument.description} 
                         />
                         ))}
                     </List>

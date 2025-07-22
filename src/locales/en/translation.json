@@ -38,7 +38,7 @@
 
     "login": {
         "Welcome": "Welcome",
-        "YouDonthaveAccount": "You don't have an account? Please contact",
+        "YouDonthaveAccount": "You don't have an account?",
         "EmailAddress": "Email address",
         "Password": "Password",
         "Continue": "Continue",
@@ -90,7 +90,11 @@
         "Failed to add project.": "Failed to add project.",
         "Rejected!": "Rejected!",
         "Something went wrong while rejecting the instrument.": "Something went wrong while rejecting the tool.",
-        "No user data found": "No user data found"
+        "No user data found": "No user data found",
+        "statusInDelivery": "Status cannot be changed when the instrument is in 'In Delivery' status.",
+        "default": "An unexpected error occurred.",
+        "Warning": "Warning"
+
     },
     "columns":{
         "NameLastname": "Name & Last name",
