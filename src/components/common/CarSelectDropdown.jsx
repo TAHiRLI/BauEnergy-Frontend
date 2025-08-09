@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { FormControl, MenuItem, Select, InputLabel, CircularProgress, Box } from "@mui/material";
 import { carService } from "../../APIs/Services/car.service";
+import { useTranslation } from "react-i18next";
  
 const CarDropdown = ({ onSelectCar }) => {
   const [availableCars, setAvailableCars] = useState([]);
   const [selectedCar, setSelectedCar] = useState("");
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
 
   useEffect(() => {
@@ -31,13 +33,13 @@ const CarDropdown = ({ onSelectCar }) => {
 
   return (
     <FormControl >
-      <InputLabel>Select Car</InputLabel>
+      <InputLabel>{t("selectCar")}</InputLabel>
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" height={50}>
           <CircularProgress size={24} />
         </Box>
       ) : (
-        <Select value={selectedCar} onChange={handleChange} className="min-w-40" label="Select Car"
+        <Select value={selectedCar} onChange={handleChange} className="min-w-40" label={t("selectCar")}
 >
           {availableCars.length > 0 ? (
             availableCars.map((car) => (
@@ -46,7 +48,7 @@ const CarDropdown = ({ onSelectCar }) => {
               </MenuItem>
             ))
           ) : (
-            <MenuItem disabled>No Cars Available</MenuItem>
+            <MenuItem disabled>{t("messages:No Cars Available")}</MenuItem>
           )}
         </Select>
       )}

@@ -13,8 +13,10 @@ import {
 import Swal from "sweetalert2";
 import { carService } from "../../APIs/Services/car.service";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import { useTranslation } from "react-i18next";
 
 const EditCarPopup = ({ open, onClose, carId }) => {
+  const { t } = useTranslation();
         
   const [carData, setCarData] = useState({
     vehicleNumber: "",
@@ -57,8 +59,8 @@ const EditCarPopup = ({ open, onClose, carId }) => {
     try {
       await carService.edit(carId, carData);
       Swal.fire({
-        title: "Success!",
-        text: "Car updated successfully!",
+        title: t('messages:Success'),
+        text: t('messages:CarUpdatedSuccesfully'),
         icon: "success",
         confirmButtonText: "OK",
       }).then(() => {
@@ -84,7 +86,7 @@ const EditCarPopup = ({ open, onClose, carId }) => {
       }}>
       <DialogTitle>
       <Typography>
-        Edit Car
+        {t("editCar")}
         <IconButton
                 className="!text-[#1D34D8]"
                 aria-label="close"
@@ -105,7 +107,7 @@ const EditCarPopup = ({ open, onClose, carId }) => {
         ) : (
           <form onSubmit={handleSubmit}>
             <TextField
-              label="Vehicle Number"
+              label={t("columns:VehicleNumber")}
               name="vehicleNumber"
               value={carData.vehicleNumber}
               onChange={handleChange}
@@ -114,7 +116,7 @@ const EditCarPopup = ({ open, onClose, carId }) => {
               margin="normal"
             />
             <TextField
-              label="Driver Full Name"
+              label={t("columns:DriverFullName")}
               name="driverFullName"
               value={carData.driverFullName}
               onChange={handleChange}
@@ -123,7 +125,7 @@ const EditCarPopup = ({ open, onClose, carId }) => {
               margin="normal"
             />
             <TextField
-              label="Note"
+              label={t("columns:Note")}
               name="note"
               value={carData.note}
               onChange={handleChange}
@@ -137,10 +139,10 @@ const EditCarPopup = ({ open, onClose, carId }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} variant="outlined">
-          Cancel
+          {t("PopUp:Cancel")}
         </Button>
         <Button onClick={handleSubmit} variant="contained" className='!bg-[#1D34D8]' disabled={loading}>
-          {loading ? "Updating..." : "Update"}
+          {loading ? "Updating..." : t("update")}
         </Button>
       </DialogActions>
     </Dialog>

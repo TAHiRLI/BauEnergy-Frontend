@@ -242,8 +242,8 @@ const handleAddExistingTeamMember = async () => {
             rows={selectedProject?.teamMembers || []}
             columns={columns}
             loading={!selectedProject}
-            initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-            pageSizeOptions={[5, 10]}
+            initialState={{ pagination: { paginationModel: { pageSize: 15 } } }}
+            pageSizeOptions={[15, 30]}
             sx={{
               border: 0,
               minWidth: 640,

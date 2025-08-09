@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Box, Button, Typography } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { carService } from '../../APIs/Services/car.service';
+import { t } from 'i18next';
 
 const CarSelectionPopup = ({ open, onClose, onSelectCar, projectId }) => {
     const [cars, setCars] = useState([]);
@@ -61,11 +62,11 @@ const CarSelectionPopup = ({ open, onClose, onSelectCar, projectId }) => {
                 }}
             >
                 <Typography variant="h6" mb={2}>
-                    Select Car
+                    {t("selectCar")}
                 </Typography>
 
                 {loading ? (
-                    <Typography>Loading...</Typography>
+                    <Typography>{t("Loading")}</Typography>
                 ) : (
                     cars.map((car) => (
                         <Button
@@ -81,9 +82,9 @@ const CarSelectionPopup = ({ open, onClose, onSelectCar, projectId }) => {
                 )}
 
                 <Box mt={2} display="flex" justifyContent="space-between">
-                    <Button onClick={onClose} variant="outlined">Cancel</Button>
+                    <Button onClick={onClose} variant="outlined">{t("PopUp:Cancel")}</Button>
                     <Button onClick={handleSelect} variant="contained" disabled={!selectedCar}>
-                        Select Car
+                        {t("selectCar")}
                     </Button>
                 </Box>
             </Box>

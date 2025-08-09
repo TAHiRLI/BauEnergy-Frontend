@@ -563,8 +563,10 @@ export default function InstrumentTab({ project }) {
       field: "status",
       headerName: t("columns:Status"),
       width: 160,
-      renderCell: (params) => renderStatus(params.row.status.split("_").join(" ")),
-    },    {
+      renderCell: (params) => t(`Statuses:${params.row.status.split("_").join(" ")}`),
+        // renderStatus(params.row.status.split("_").join(" ")),
+    },    
+    {
       field: "actions",
       headerName: t("columns:Actions"),
       width: 180,
@@ -770,7 +772,7 @@ if (state.error) return <p>Error: {state.error}</p>;
           }}
           aria-hidden
         >
-          Load to car
+          {t("loadToCar")}
         </Button>
 
         </div>

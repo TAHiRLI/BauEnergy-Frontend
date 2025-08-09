@@ -14,6 +14,7 @@
     "Certificate": "Certificate",
     "Projects": "Projects",
     "Project": "project",
+    "Cars": "Cars",
     "Trahsbin": "Trash Bin",
     "Logout": "Log Out",
     "Profile": "Profile",
@@ -35,6 +36,17 @@
     "LoadMore": "Load More",
     "Incorrect Email": "Incorrect Email",
     "Incorrect Password": "Incorrect Password",
+    "showInstruments": "Show instruments",
+    "unload": "Unload",
+    "Instruments in Selected Car":"Instruments in Selected Car",
+    "usedCars":"Used cars",
+    "selectCar": "Select Car",
+    "addCar": "Add Car",
+    "adddNewCar": "Add New Car",
+    "listOfCars": "List of Cars",
+    "editCar": "Edit Car",
+    "update": "Update",
+    "loadToCar": "Load to car",
 
     "login": {
         "Welcome": "Welcome",
@@ -93,8 +105,12 @@
         "No user data found": "No user data found",
         "statusInDelivery": "Status cannot be changed when the instrument is in 'In Delivery' status.",
         "default": "An unexpected error occurred.",
-        "Warning": "Warning"
-
+        "Warning": "Warning",
+        "No car found in this project": "No car found in this project.",
+        "All instruments have been unloaded from the car.": "All instruments have been unloaded from the car.",
+        "No Cars Available": "No Cars Available",
+        "Car added successfully!": "Car added successfully!",
+        "CarUpdatedSuccesfully": "Car updated successfully!"
     },
     "columns":{
         "NameLastname": "Name & Last name",
@@ -119,7 +135,11 @@
         "Documents": "Documents",
         "Available": "Available",
         "Description": "Description",
-        "SearchInstruments": "Search Tools..."
+        "SearchInstruments": "Search Tools...",
+        "VehicleNumber": "Vehicle Number",
+        "DriverName": "Driver Name",
+        "Note": "Note",
+        "DriverFullName": "Driver Full Name"
     },
     "PopUp":{
     "All":"All",
@@ -231,5 +251,15 @@
         "You scored": "You scored {{score}}",
         "%. Keep practicing!": "%. Keep practicing!",
         "Try Again": "Try Again"
-    }   
+    },
+    
+    "Statuses": {
+        "Available": "Available",
+        "In use": "In use",
+        "Under maintenance": "Under maintenance",
+        "In Delivery": "In Delivery",
+        "In controlling": "In controlling",
+        "Controlled": "Controlled",
+        "To be controlled": "To be controlled"
+    } 
 }

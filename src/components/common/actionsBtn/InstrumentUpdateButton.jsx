@@ -94,11 +94,11 @@ function getTranslatedErrorMessage(message, t) {
             labelId="status-label"
             value={status}
             onChange={handleStatusChange}
-            label="Change Instrument Status"
+            label={t("PopUp:ChangeInstrumentStatus")}
           >
             {statuses.map((statusOption) => (
               <MenuItem key={statusOption} value={statusOption}>
-                {statusOption}
+                {t(`Statuses:${statusOption}`)}
               </MenuItem>
             ))}
           </Select>

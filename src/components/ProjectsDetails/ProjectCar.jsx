@@ -6,6 +6,7 @@ import { useProjects } from "../../context/projectContext";
 import { projectService } from "../../APIs/Services/project.service";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import Swal from "sweetalert2";
+import { t } from 'i18next';
 
 export default function CarTab( ) {
     const [cars, setCars] = useState([]);
@@ -70,8 +71,8 @@ export default function CarTab( ) {
             setSelectedProject(projectResponse.data); 
 
             Swal.fire({
-                title: "Success!",
-                text: "All instruments have been unloaded from the car.",
+                title: t('messages:Success'),
+                text: t('messages:All instruments have been unloaded from the car.'),
                 icon: "success",
                 confirmButtonText: "OK",
             });
@@ -90,7 +91,7 @@ export default function CarTab( ) {
 
     return (
         <div style={{ padding: "16px" }}>
-            <Typography variant="h5">Used cars</Typography>
+            <Typography variant="h5">{t("usedCars")}</Typography>
             {loading ? (
                 <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
                     <CircularProgress />
@@ -109,7 +110,7 @@ export default function CarTab( ) {
                                         onClick={() => handleShowInstruments(car.instruments)}                                    
                                         aria-hidden
                                         >
-                                        Show instruments
+                                        {t("showInstruments")}
                                     </Button>
                                     <Button
                                         className="!bg-red-600 !rounded-3xl !normal-case !py-2 !my-2 !sm:my-0 !min-w-40 "
@@ -118,14 +119,14 @@ export default function CarTab( ) {
                                         onClick={() => handleUnassign(car.id)}
                                         aria-hidden
                                         >
-                                        Unload
+                                        {t("unload")}
                                     </Button>
                                 </Box>
                             </CardContent>
                         </Card>
                     ))
                 ) : (
-                    <Typography>No car found in this project.</Typography>
+                    <Typography>{t("messages:No car found in this project")}</Typography>
                 )
             )}
 
@@ -142,7 +143,7 @@ export default function CarTab( ) {
                  }}>
                 <DialogTitle>
                     <Typography>
-                        Instruments in Selected Car
+                        {t("Instruments in Selected Car")}
                         <IconButton
                             className="!text-[#1D34D8]"
                             aria-label="close"

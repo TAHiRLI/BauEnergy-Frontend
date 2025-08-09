@@ -15,6 +15,8 @@ import { jwtDecode } from "jwt-decode";
 import { useAuth } from "../../context/authContext";
 import { useTranslation } from "react-i18next";
 import { userSerivce } from "../../APIs/Services/user.service";
+import Swal from "sweetalert2";
+import { CollectionsBookmarkOutlined } from "@mui/icons-material";
 
 const cookies = new Cookies();
 
@@ -25,6 +27,7 @@ const TutorialPage = () => {
   const [userData, setUserData] = useState(null);
   const decodedToken = user?.token ? jwtDecode(user.token) : null;
   const userEmail = decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"];
+  
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -60,78 +63,154 @@ const TutorialPage = () => {
   };
 
   const handleCertificateGet = async () => {
+    // try {
+    //   const certificateDiv = document.getElementById("certificate");
+    //   const instructionsDiv = document.getElementById("instructions");
+
+    //   if (!certificateDiv || !instructionsDiv) {
+    //     alert("Certificate element not found!");
+    //     return;
+    //   }
+    //   const screenWidth = window.innerWidth;
+
+    //   // Dynamically set scale factor: Increase on smaller screens
+    //   let SCALE_FACTOR;
+    //   if (screenWidth < 500) {
+    //     SCALE_FACTOR = 5; // Very high quality for small screens
+    //   } else if (screenWidth < 768) {
+    //     SCALE_FACTOR = 4; // Medium quality for tablets
+    //   } else {
+    //     SCALE_FACTOR = 1; // Normal quality for large screens
+    //   }
+
+    //   // Capture the certificate and instructions using html2canvas with a scale factor for quality
+    //   const canvasCertificate = await html2canvas(certificateDiv, {
+    //     scale: SCALE_FACTOR,
+    //     // Optionally force a specific width/height if needed:
+    //     // width: YOUR_DESIRED_WIDTH,
+    //     // height: YOUR_DESIRED_HEIGHT,
+    //   });
+    //   const canvasInstructions = await html2canvas(instructionsDiv, {
+    //     scale: SCALE_FACTOR,
+    //   });
+
+    //   const imgDataCertificate = canvasCertificate.toDataURL("image/png");
+    //   const imgDataInstructions = canvasInstructions.toDataURL("image/png");
+
+    //   // Create PDF with fixed A4 size (in points)
+    //   const pdf = new jsPDF("portrait", "pt", "a4");
+    //   const pageWidth = pdf.internal.pageSize.getWidth();
+    //   const pageHeight = pdf.internal.pageSize.getHeight();
+
+    //   // Function to calculate proper dimensions and position for an image to fit into the page
+    //   const addImageToPDF = (imgData) => {
+    //     // Get the intrinsic dimensions of the image using jsPDF's built-in helper
+    //     const imgProps = pdf.getImageProperties(imgData);
+    //     const imgWidth = imgProps.width;
+    //     const imgHeight = imgProps.height;
+
+    //     // Calculate the scaling ratio so the image fits within the page while preserving aspect ratio
+    //     const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+    //     const newWidth = imgWidth * ratio;
+    //     const newHeight = imgHeight * ratio;
+
+    //     // Center the image on the page
+    //     const marginX = (pageWidth - newWidth) / 2;
+    //     const marginY = (pageHeight - newHeight) / 2;
+
+    //     // Add the image with the calculated dimensions and margins
+    //     pdf.addImage(imgData, "PNG", marginX, marginY, newWidth, newHeight);
+    //   };
+
+    //   // Add the certificate image on the first page
+    //   addImageToPDF(imgDataCertificate);
+
+    //   // Add a new page and the instructions image on the second page
+    //   pdf.addPage();
+    //   addImageToPDF(imgDataInstructions);
+
+    //   // Save the PDF
+    //   pdf.save("certificate.pdf");
+    // } catch (error) {
+    //   console.error("Error generating PDF:", error);
+    // }
+    console.log("1")
+
     try {
-      const certificateDiv = document.getElementById("certificate");
-      const instructionsDiv = document.getElementById("instructions");
+    const certificateDiv = document.getElementById("certificate");
+    const instructionsDiv = document.getElementById("instructions");
 
-      if (!certificateDiv || !instructionsDiv) {
-        alert("Certificate element not found!");
-        return;
-      }
-      const screenWidth = window.innerWidth;
-
-      // Dynamically set scale factor: Increase on smaller screens
-      let SCALE_FACTOR;
-      if (screenWidth < 500) {
-        SCALE_FACTOR = 5; // Very high quality for small screens
-      } else if (screenWidth < 768) {
-        SCALE_FACTOR = 4; // Medium quality for tablets
-      } else {
-        SCALE_FACTOR = 1; // Normal quality for large screens
-      }
-
-      // Capture the certificate and instructions using html2canvas with a scale factor for quality
-      const canvasCertificate = await html2canvas(certificateDiv, {
-        scale: SCALE_FACTOR,
-        // Optionally force a specific width/height if needed:
-        // width: YOUR_DESIRED_WIDTH,
-        // height: YOUR_DESIRED_HEIGHT,
-      });
-      const canvasInstructions = await html2canvas(instructionsDiv, {
-        scale: SCALE_FACTOR,
-      });
-
-      const imgDataCertificate = canvasCertificate.toDataURL("image/png");
-      const imgDataInstructions = canvasInstructions.toDataURL("image/png");
-
-      // Create PDF with fixed A4 size (in points)
-      const pdf = new jsPDF("portrait", "pt", "a4");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      // Function to calculate proper dimensions and position for an image to fit into the page
-      const addImageToPDF = (imgData) => {
-        // Get the intrinsic dimensions of the image using jsPDF's built-in helper
-        const imgProps = pdf.getImageProperties(imgData);
-        const imgWidth = imgProps.width;
-        const imgHeight = imgProps.height;
-
-        // Calculate the scaling ratio so the image fits within the page while preserving aspect ratio
-        const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
-        const newWidth = imgWidth * ratio;
-        const newHeight = imgHeight * ratio;
-
-        // Center the image on the page
-        const marginX = (pageWidth - newWidth) / 2;
-        const marginY = (pageHeight - newHeight) / 2;
-
-        // Add the image with the calculated dimensions and margins
-        pdf.addImage(imgData, "PNG", marginX, marginY, newWidth, newHeight);
-      };
-
-      // Add the certificate image on the first page
-      addImageToPDF(imgDataCertificate);
-
-      // Add a new page and the instructions image on the second page
-      pdf.addPage();
-      addImageToPDF(imgDataInstructions);
-
-      // Save the PDF
-      pdf.save("certificate.pdf");
-    } catch (error) {
-      console.error("Error generating PDF:", error);
+    if (!certificateDiv || !instructionsDiv) {
+      Swal.fire("Error", "Certificate elements not found!", "error");
+      return;
     }
+
+    const screenWidth = window.innerWidth;
+    let SCALE_FACTOR = screenWidth < 500 ? 5 : screenWidth < 768 ? 4 : 1;
+
+    const canvasCertificate = await html2canvas(certificateDiv, { scale: SCALE_FACTOR });
+    const canvasInstructions = await html2canvas(instructionsDiv, { scale: SCALE_FACTOR });
+
+    const imgDataCertificate = canvasCertificate.toDataURL("image/png");
+    const imgDataInstructions = canvasInstructions.toDataURL("image/png");
+
+    const pdf = new jsPDF("portrait", "pt", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const addImageToPDF = (imgData) => {
+      const imgProps = pdf.getImageProperties(imgData);
+      const ratio = Math.min(pageWidth / imgProps.width, pageHeight / imgProps.height);
+      const newWidth = imgProps.width * ratio;
+      const newHeight = imgProps.height * ratio;
+      const marginX = (pageWidth - newWidth) / 2;
+      const marginY = (pageHeight - newHeight) / 2;
+      pdf.addImage(imgData, "PNG", marginX, marginY, newWidth, newHeight);
+    };
+
+    addImageToPDF(imgDataCertificate);
+    pdf.addPage();
+    addImageToPDF(imgDataInstructions);
+
+    // Save PDF to browser
+    pdf.save("certificate.pdf");
+
+    // Convert PDF to Blob for upload
+    const blob = pdf.output("blob");
+    const file = new File([blob], "certificate.pdf", { type: "application/pdf" });
+
+    // Upload the PDF
+    await handleDocumentUpload([file]);
+
+  } catch (error) {
+    console.error("Certificate generation or upload failed:", error);
+    Swal.fire("Error", "An error occurred while generating or uploading the certificate.", "error");
+  }
   };
+
+  const handleDocumentUpload = async (selectedFiles) => {
+    console.log("dsfadsfa")
+  if (!selectedFiles || selectedFiles.length === 0) {
+    Swal.fire("Error", "Can not upload certificate", "error");
+    return;
+  }
+
+  const formData = new FormData();
+  selectedFiles.forEach(file => formData.append("Files", file));
+
+  try {
+    const response = await userSerivce.uploadUserDocument(user.userId, selectedFiles);
+    if (response.status !== 200) {
+      console.log(response)
+      throw new Error(response.data.message || "Upload failed.");
+    }
+
+  } catch (error) {
+    console.error("Upload failed:", error);
+    Swal.fire("Error", error.response?.data?.message || "Upload failed.", "error");
+  }
+};
+
 
   return (
     <div className=" mt-3">

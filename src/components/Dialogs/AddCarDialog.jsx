@@ -2,6 +2,7 @@ import { useState } from "react";
 import { carService } from "../../APIs/Services/car.service"; 
 import { Dialog, DialogActions, DialogContent, DialogTitle, Button, TextField, IconButton } from "@mui/material";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import { useTranslation } from "react-i18next";
 
 const AddCarPopup = ({ open, onClose, onCarAdded }) => {
   const [vehicleNumber, setVehicleNumber] = useState("");
@@ -9,6 +10,7 @@ const AddCarPopup = ({ open, onClose, onCarAdded }) => {
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+    const { t } = useTranslation();
 
   const handleAddCar = async () => {
     if (!vehicleNumber.trim()) {
