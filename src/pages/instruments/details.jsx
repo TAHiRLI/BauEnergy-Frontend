@@ -485,8 +485,8 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
 
   try {
     const response = await instrumentService.edit(id, formData);
+    console.log(response)
     if (response.status !== 200) throw new Error('Failed to submit data');
-    
     Swal.fire(t('messages:Success'), t('Instrument has been updated!'), 'success')
     // .then(() => {
     //   // Reload the page after the alert is closed
@@ -497,8 +497,10 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
     resetForm();
     setRefresh(!refresh);
   } catch (error) {
+    console.log(error)
+
     handleCloseUpdateModal();
-    Swal.fire(t('messages:Error'), t('Failed to edit instrument.'), 'error');
+    Swal.fire(t('messages:Error'), error.response.data.message, 'error');
   } finally {
     setSubmitting(false);
   }
