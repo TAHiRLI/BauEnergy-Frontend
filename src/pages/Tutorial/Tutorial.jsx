@@ -276,8 +276,10 @@ const TutorialPage = () => {
                 </p>
               </div>
 
-              <p className="absollute absolute text-[2vw] top-[78%] right-[66%] ">{formatDate(new Date())}</p>
-              <p className="absollute absolute text-[1.2vw] top-[82%] right-[69%] ">DATUM</p>
+              <p className="absollute absolute text-[2vw] top-[78%] md:top-[78%] right-[63%]">
+                {formatDate(new Date())}
+              </p>
+              <p className="absollute absolute text-[1.2vw] top-[82%] right-[67%]">DATUM</p>
             </div>
 
             <div
@@ -320,11 +322,10 @@ const TutorialPage = () => {
                   и обязуюсь соблюдать их в полном объеме!{" "}
                 </p>
               </div>
-              
             </div>
-                        
+
             <div
-              id="instructions"
+              id="instructionsDe"
               className="instructions aspect-[794/1122] border border-solid border-gray-500  mt-3 mx-10 p-2"
             >
               <img src={instructions} className="w-[15vw] ms-5" alt="" srcset="" />
@@ -332,42 +333,39 @@ const TutorialPage = () => {
               <div className="p-5  text-[1.5vw] flex flex-col gap-y-2">
                 <p className=" mt-6 font-bold">Bedingungen:</p>
                 <p>
-                  Verbot des Konsums von Drogen und Alkohol während der Dienstreise
-                  Der Konsum jeglicher Drogen und Alkohol ist während der gesamten Dauer der 
-                  Dienstreise strengstens untersagt. Ein Verstoß gegen diese Regel kann 
-                  disziplinarische Maßnahmen bis hin zur Beendigung des Arbeitsverhältnisses nach sich ziehen
+                  Verbot des Konsums von Drogen und Alkohol während der Dienstreise Der Konsum jeglicher Drogen und
+                  Alkohol ist während der gesamten Dauer der Dienstreise strengstens untersagt. Ein Verstoß gegen diese
+                  Regel kann disziplinarische Maßnahmen bis hin zur Beendigung des Arbeitsverhältnisses nach sich ziehen
                 </p>
                 <p>
-                  Sauberkeit und Ordnung in den Unterkünften
-                  Die Bewohner sind verpflichtet, in den zur Verfügung gestellten Unterkünften Sauberkeit und 
-                  Ordnung zu gewährleisten. Dazu gehören die Reinigung der Wohnräume, der sachgemäße Umgang mit 
-                  Haushaltsgeräten sowie die Einhaltung der hygienischen Vorschriften.
-                </p>
-
-                <p>
-                  Sauberkeit und Ordnung der Transportmittel
-                  Die für Arbeit oder Fahrten bereitgestellten Fahrzeuge müssen stets in einem sauberen und ordentlichen 
-                  Zustand gehalten werden. Die Mitarbeiter sind verpflichtet, regelmäßig Müll zu entsorgen und sich um 
-                  den technischen Zustand der Fahrzeuge zu kümmern
-                </p>
-                <p>
-                  Äußeres Erscheinungsbild — saubere Arbeitskleidung, gepflegte Frisur und Bart
-                  Jeder Mitarbeiter ist verpflichtet, ein gepflegtes äußeres Erscheinungsbild zu wahren. Die 
-                  ArbeitsKitovung muss sauber und ordentlich sein, die persönliche Hygiene ist auf hohem 
-                  Niveau zu halten (gepflegte Frisur und Bart).   
-                </p>
-                <p>
-                  Sauberkeit und Ordnung am Arbeitsplatz
-                  Der Arbeitsplatz muss sauber und organisiert sein. Abfall ist Kitovt zu entsorgen, und Arbeitsgeräte 
-                  sind an den dafür vorgesehenen Plätzen aufzubewahren, um Störungen und Unfälle zu vermeiden.
+                  Sauberkeit und Ordnung in den Unterkünften Die Bewohner sind verpflichtet, in den zur Verfügung
+                  gestellten Unterkünften Sauberkeit und Ordnung zu gewährleisten. Dazu gehören die Reinigung der
+                  Wohnräume, der sachgemäße Umgang mit Haushaltsgeräten sowie die Einhaltung der hygienischen
+                  Vorschriften.
                 </p>
 
                 <p>
-                  Ich, {userData?.fullName}  bestätige hiermit, dass ich die oben genannten Bedingungen gelesen habe, sie 
+                  Sauberkeit und Ordnung der Transportmittel Die für Arbeit oder Fahrten bereitgestellten Fahrzeuge
+                  müssen stets in einem sauberen und ordentlichen Zustand gehalten werden. Die Mitarbeiter sind
+                  verpflichtet, regelmäßig Müll zu entsorgen und sich um den technischen Zustand der Fahrzeuge zu
+                  kümmern
+                </p>
+                <p>
+                  Äußeres Erscheinungsbild — saubere Arbeitskleidung, gepflegte Frisur und Bart Jeder Mitarbeiter ist
+                  verpflichtet, ein gepflegtes äußeres Erscheinungsbild zu wahren. Die ArbeitsKitovung muss sauber und
+                  ordentlich sein, die persönliche Hygiene ist auf hohem Niveau zu halten (gepflegte Frisur und Bart).
+                </p>
+                <p>
+                  Sauberkeit und Ordnung am Arbeitsplatz Der Arbeitsplatz muss sauber und organisiert sein. Abfall ist
+                  Kitovt zu entsorgen, und Arbeitsgeräte sind an den dafür vorgesehenen Plätzen aufzubewahren, um
+                  Störungen und Unfälle zu vermeiden.
+                </p>
+
+                <p>
+                  Ich, {userData?.fullName} bestätige hiermit, dass ich die oben genannten Bedingungen gelesen habe, sie
                   vollständig akzeptiere und mich verpflichte, diese in vollem Umfang einzuhalten!{" "}
-                </p>  
+                </p>
               </div>
-              
             </div>
           </div>
         </>
