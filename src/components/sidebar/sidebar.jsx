@@ -366,13 +366,13 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
           {/* Main Content */}
           <div className="flex-1 overflow-y-auto"></div>
 
+        </div>
+      </Drawer>
           <NotificationModal
             open={isNotificationModalOpen}
             onClose={handleNotificationModalClose}
             style={{ zIndex: 2500 }}
           />
-        </div>
-      </Drawer>
     </div>
   );
 };

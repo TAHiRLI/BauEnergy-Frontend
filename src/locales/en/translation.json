@@ -42,7 +42,7 @@
     "usedCars":"Used cars",
     "selectCar": "Select Car",
     "addCar": "Add Car",
-    "adddNewCar": "Add New Car",
+    "addNewCar": "Add New Car",
     "listOfCars": "List of Cars",
     "editCar": "Edit Car",
     "update": "Update",
@@ -257,7 +257,7 @@
         "Available": "Available",
         "In use": "In use",
         "Under maintenance": "Under maintenance",
-        "In Delivery": "In Delivery",
+        "In delivery": "In Delivery",
         "In controlling": "In controlling",
         "Controlled": "Controlled",
         "To be controlled": "To be controlled"

@@ -42,7 +42,7 @@
     "usedCars": "Genutzte Fahrzeuge",
     "selectCar": "Fahrzeug auswählen",
     "addCar": "Fahrzeug hinzufügen",
-    "adddNewCar": "Neues Fahrzeug hinzufügen",
+    "addNewCar": "Neues Fahrzeug hinzufügen",
     "listOfCars": "Fahrzeugliste",
     "editCar": "Fahrzeug bearbeiten",
     "update": "Aktualisieren",
@@ -257,7 +257,7 @@
         "Available": "Verfügbar",
         "In use": "In Benutzung",
         "Under maintenance": "In Wartung",
-        "In Delivery": "In Lieferung",
+        "In delivery": "In Lieferung",
         "In controlling": "In Kontrolle",
         "Controlled": "Kontrolliert",
         "To be controlled": "Zu kontrollieren"

@@ -246,7 +246,6 @@ const SettingsAndTeams = () => {
   const handleOpen = async (userId) => {
     try {
       const response = await userSerivce.getUserDocuments(userId)
-console.log(response)      
       setSelectedUserId(userId)
       setDocuments(response.data);
       setOpen(true);

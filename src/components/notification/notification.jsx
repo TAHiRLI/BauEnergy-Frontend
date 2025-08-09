@@ -268,7 +268,7 @@ const NotificationModal = ({ open, onClose }) => {
   return (
     <>
       {/* First Modal */}
-      <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 ${open ? '' : 'hidden'}`} onClick={onClose} >
+      <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 ${open ? '' : 'hidden'}`} onClick={onClose} >
         <div className="bg-white w-full max-w-xl rounded-2xl shadow-lg" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between p-4 pb-0">
             <h2 className="text-lg font-medium">{t("Notifications")}</h2>

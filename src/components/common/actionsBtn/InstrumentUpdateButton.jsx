@@ -22,20 +22,24 @@ const errorTranslationMap = {
   "Status cannot be changed when instrument is in Delivery.": "messages:statusInDelivery",
   // Add more mappings as needed
 };
+
   const showErrorAlert = (error) => {
+    console.log(error)
     const errorMessage = error?.response?.data?.message || "";
 
     const errorMap = {
-      "Status cannot be changed when the instrument is In Delivery.": "errors.statusInDelivery"
+      "Status cannot be changed when the instrument is In Delivery.": "Status cannot be changed when the instrument is In Delivery."
     };
 
     const translatedMessage = t(errorMap[errorMessage] || "errors.default");
-
-    Swal.fire({
-      title: t("Warning"),
-      text: translatedMessage,
-      icon: "warning"
-    });
+    
+    if (errorMessage === "Status cannot be changed when the instrument is In Delivery.") {
+      Swal.fire({
+        title: t("Warning"),
+        text: t("Status cannot be changed when the instrument is In Delivery."),
+        icon: "warning"
+      });
+    }
   };
 
 function getTranslatedErrorMessage(message, t) {
@@ -61,11 +65,12 @@ function getTranslatedErrorMessage(message, t) {
   const handleSubmit = async () => {
     try {
       const statusValue = statusMap[status];
+      onClose();
       const payload = { status: statusValue };
       const response = await instrumentService.updateStatus(instrumentId, payload);
+      console.log(response)
       if (response.status === 200) {
         console.log("Status updated successfully.");
-        onClose();
       } else {
         console.error("Failed to update status.");
       }

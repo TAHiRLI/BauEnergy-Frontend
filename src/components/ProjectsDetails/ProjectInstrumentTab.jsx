@@ -124,8 +124,6 @@ export default function InstrumentTab({ project }) {
       setManagerError(true);
     }
   
-    console.log(selectedManager)
-
     if (!selectedInstrumentId || !selectedManager) {
       Swal.fire("Error!", "Please select an instrument and a project manager.", "error");
       return;
@@ -138,7 +136,6 @@ export default function InstrumentTab({ project }) {
         projectManagerId: selectedManager,
         count: instrumentCount, 
       };
-      console.log(body)
   
       await projectService.addInstrumentToProject(body);
       setOpenDialog(false);
@@ -198,7 +195,6 @@ export default function InstrumentTab({ project }) {
         const response = await teamMemberService.getAllProjectManagers(project.id);
         //const data = await response.json();
         setProjectManagers(response.data);
-        console.log(response)
         if (response.data && response.data.length > 0) {
           setSelectedManager(response.data[0].id); 
         }
@@ -303,36 +299,37 @@ export default function InstrumentTab({ project }) {
       return "Invalid date";
     }
   };
-  const renderStatus = (status) => {
-    let chipProps = {};
-    switch (status) {
-      case "Available":
-        chipProps = { label: "Available", style: { borderColor: "green", color: "green" }, variant: "outlined" };
-        break;
-      case "In use":
-        chipProps = { label: "In use", style: { borderColor: "blue", color: "blue" }, variant: "outlined" };
-        break;
-      case "Under maintenance":
-        chipProps = { label: "Under maintenance", style: { borderColor: "red", color: "red" }, variant: "outlined" };
-        break;
-      case "In delivery":
-        chipProps = { label: "In delivery", style: { borderColor: "orange", color: "orange" }, variant: "outlined" };
-        break;
-      case "In controlling":
-        chipProps = { label: "In controlling", style: { borderColor: "purple", color: "purple" }, variant: "outlined" };
-        break;
-      case "Controlled":
-        chipProps = { label: "Controlled", style: { borderColor: "teal", color: "teal" }, variant: "outlined" };
-        break;
-      case "To be controlled":
-        chipProps = { label: "To be controlled", style: { borderColor: "darkgoldenrod", color: "darkgoldenrod" }, variant: "outlined" };
-        break;
-      default:
-        chipProps = { label: "Unknown", style: { borderColor: "grey", color: "grey" }, variant: "outlined" };
-        break;
-    }
-    return <Chip {...chipProps} />;
-  };
+const renderStatus = (status, t) => {
+  let chipProps = {};
+  switch (status) {
+    case "Available":
+      chipProps = { label: t("Statuses:Available"), style: { borderColor: "green", color: "green" }, variant: "outlined" };
+      break;
+    case "In use":
+      chipProps = { label: t("Statuses:In use"), style: { borderColor: "blue", color: "blue" }, variant: "outlined" };
+      break;
+    case "Under maintenance":
+      chipProps = { label: t("Statuses:Under maintenance"), style: { borderColor: "red", color: "red" }, variant: "outlined" };
+      break;
+    case "In delivery":
+      chipProps = { label: t("Statuses:In delivery"), style: { borderColor: "orange", color: "orange" }, variant: "outlined" };
+      break;
+    case "In controlling":
+      chipProps = { label: t("Statuses:In controlling"), style: { borderColor: "purple", color: "purple" }, variant: "outlined" };
+      break;
+    case "Controlled":
+      chipProps = { label: t("Statuses:Controlled"), style: { borderColor: "teal", color: "teal" }, variant: "outlined" };
+      break;
+    case "To be controlled":
+      chipProps = { label: t("Statuses:To be controlled"), style: { borderColor: "darkgoldenrod", color: "darkgoldenrod" }, variant: "outlined" };
+      break;
+    default:
+      chipProps = { label: t("Statuses:Unknown"), style: { borderColor: "grey", color: "grey" }, variant: "outlined" };
+      break;
+  }
+  return <Chip {...chipProps} />;
+};
+
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -381,99 +378,11 @@ export default function InstrumentTab({ project }) {
     setSelectedInstrumentStatus(currentStatus);
     setEditOpen(true);
   };
+
   const handleEditClose = () => {
     setEditOpen(false);
     setRefresh((prev) => !prev);
   };
-
-  // const columns = [
-  //   {
-  //     field: "name",
-  //     headerName: t("columns:InstrumentName"),
-  //     width: 200,
-  //     renderCell: (params) => {
-  //       const mainImage = params.row.images?.find((img) => img.isMain);
-  //       return (
-  //         <Box display="flex" alignItems="center" sx={{ cursor: "pointer" }} onClick={() => handleShowQR(params.row)}>
-  //           {mainImage && (
-  //             <img
-  //               src={`${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${mainImage.image}`}
-  //               alt={params.row.name}
-  //               style={{ width: 50, height: 50, marginRight: 10 }}
-  //             />
-  //           )}
-  //         <Typography>(ID_{params.row.id}) {params.row.name}</Typography>
-  //         </Box>
-  //       );
-  //     },
-  //   },
-  //   {
-  //     field: "addedProjectDate",
-  //     headerName: t("columns:DateAdded"),
-  //     width: 150,
-  //     renderCell: (params) => formatDate(params.row.addedProjectDate),
-  //   },
-  //   { field: "instrumentType", headerName: t("columns:Type"), width: 150 },
-  //   {
-  //     field: "status",
-  //     headerName: t("columns:Status"),
-  //     width: 160,
-  //     renderCell: (params) => renderStatus(params.row.status.split("_").join(" ")),
-  //   },
-  //   {
-  //     field: "actions",
-  //     headerName: t("columns:Actions"),
-  //     width: 180,
-  //     renderCell: (params) => (
-  //       <>
-  //         <div className="text-center">
-  //           <IconButton
-  //             size="small"
-  //             variant="contained"
-  //             onClick={() => handleEditOpen(params.row.id, params.row.status)}
-  //             sx={{
-  //               backgroundColor: "#f5f5f5",
-  //               borderRadius: "20%",
-  //               padding: "5px",
-  //               border: "1px solid #e0e0e0",
-  //               "&:hover": { backgroundColor: "#e0e0e0" },
-  //               marginRight: "8px",
-  //             }}
-  //           >
-  //             <EditIcon style={{ color: "#424242" }} />
-  //           </IconButton>
-  //           <IconButton
-  //             onClick={() => handleDelete(params.row.id)}
-  //             sx={{
-  //               backgroundColor: "#f5f5f5",
-  //               borderRadius: "20%",
-  //               padding: "5px",
-  //               border: "1px solid #e0e0e0",
-  //               "&:hover": { backgroundColor: "#e0e0e0" },
-  //               marginRight: "8px",
-  //             }}
-  //           >
-  //             <DeleteIcon className="text-[#d33]" />
-  //           </IconButton>
-
-  //           <IconButton
-  //             onClick={() => handleShowHistory(params.row.id)}
-  //             color="primary"
-  //             sx={{
-  //               backgroundColor: "#f5f5f5",
-  //               borderRadius: "20%",
-  //               padding: "5px",
-  //               border: "1px solid #e0e0e0",
-  //               "&:hover": { backgroundColor: "#e0e0e0" },
-  //             }}
-  //           >
-  //             <HistoryIcon sx={{ color: "#424242" }} />
-  //           </IconButton>
-  //         </div>
-  //       </>
-  //     ),
-  //   },
-  // ];
 
   const mobileColumns = [
     {
@@ -537,8 +446,9 @@ export default function InstrumentTab({ project }) {
       field: "status",
       headerName: t("columns:Status"),
       width: 160,
-      renderCell: (params) => renderStatus(params.row.status.split("_").join(" ")),
-    },    {
+      renderCell: (params) => renderStatus(params.row.status.split("_").join(" "), t),
+    },
+    {
       field: "addedProjectDate",
       headerName: t("columns:DateAdded"),
       width: 150,
@@ -563,9 +473,8 @@ export default function InstrumentTab({ project }) {
       field: "status",
       headerName: t("columns:Status"),
       width: 160,
-      renderCell: (params) => t(`Statuses:${params.row.status.split("_").join(" ")}`),
-        // renderStatus(params.row.status.split("_").join(" ")),
-    },    
+      renderCell: (params) => renderStatus(params.row.status.split("_").join(" "), t),
+    },
     {
       field: "actions",
       headerName: t("columns:Actions"),
@@ -696,11 +605,6 @@ if (state.error) return <p>Error: {state.error}</p>;
     return <div>Error loading instruments</div>;
   }
 
-  // if(isSmallScreen)
-  // {
-  //   return <InstrumentTabResponsive searchType={searchType} setSearchType={setSearchType} searchStatus={searchStatus} handleStatusChange={handleStatusChange} filteredInstruments={filteredInstruments} statuses={statuses} />
-  // }
-  // else{
     return (
       <Box px={0} className="!px-0">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-5">
