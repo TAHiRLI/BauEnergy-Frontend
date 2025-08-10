@@ -492,7 +492,7 @@ export const Instruments = () => {
       files?.forEach((file) => {
         formData.append("Files", file);
       });
-  
+
       await instrumentService.add(formData);
       forceUpdate((x) => !x);
       handleCloseModal();

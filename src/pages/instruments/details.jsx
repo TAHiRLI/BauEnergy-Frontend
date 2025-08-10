@@ -74,6 +74,7 @@ const InstrumentDetails = () => {
   const [openHistoryDialog, setOpenHistoryDialog] = useState(false);
 
   const [selectedImage, setSelectedImage] = useState(instrument?.image || null);
+  const [imagePreviews, setImagePreviews] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -469,23 +470,24 @@ const handleUpdateSubmit = async (values, { setSubmitting, resetForm }) => {
   formData.append('ShortDesc', values.shortDesc);
   formData.append('InstrumentType', values.instrumentType ?? "");
   formData.append('Price', values.price);
-  // formData.append('Image', values.image);
+  formData.append('Count', 1);
+  console.log(selectedImage)
+
   if (selectedImage instanceof File) {
-    formData.append("Image", selectedImage);
-  } else {
-    // Fetch default image and send it as file
-    const response = await fetch("/toolimage.png");
-    const blob = await response.blob();
-    const defaultFile = new File([blob], "default.png", { type: "image/png" });
-    formData.append("Image", defaultFile);
-  }
+        formData.append("Image", selectedImage);
+      } else {                
+        const response = await fetch("/toolimage.png");
+        const blob = await response.blob();
+        const defaultFile = new File([blob], "default.png", { type: "image/png" });
+        formData.append("Image", defaultFile);
+      }
 
   values.files?.forEach((file) => formData.append('Files', file));
   instrument.tags.forEach((tag) => formData.append('Tags', tag));
 
   try {
+    
     const response = await instrumentService.edit(id, formData);
-    console.log(response)
     if (response.status !== 200) throw new Error('Failed to submit data');
     Swal.fire(t('messages:Success'), t('Instrument has been updated!'), 'success')
     // .then(() => {
@@ -673,7 +675,8 @@ const handleDelete = async (id) => {
     const file = event.target.files[0];
     if (file) {
       const objectUrl = URL.createObjectURL(file);
-      setSelectedImage(objectUrl); 
+      setImagePreviews(objectUrl);
+      setSelectedImage(file);
     }
   };
 
@@ -1197,12 +1200,12 @@ const handleDelete = async (id) => {
                 >
                   {/* Instrument Image */}
                   <img
-                  src={
-                    selectedImage?.startsWith("blob:") 
-                      ? selectedImage
-                      : `${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${selectedImage}`
-                  }
-                  alt="Profile"
+                    src={
+                      imagePreviews
+                        ? imagePreviews
+                        : `${process.env.REACT_APP_DOCUMENT_URL}/assets/images/instruments/${selectedImage}`
+                    }
+                    alt="Profile"
                     style={{
                       width: 250,
                       height: 200,
@@ -1226,10 +1229,12 @@ const handleDelete = async (id) => {
                     type="file"
                     accept="image/*"
                     style={{ display: 'none' }}
-                    onChange={(event) => {
-                      handleImageUpload(event);
-                      setFieldValue('image', event.currentTarget.files[0]);
-                    }}
+                    // onChange={(event) => {
+                    //   handleImageUpload(event);
+                    //   setFieldValue('image', event.currentTarget.files[0]);
+                    // }}
+                    onChange={handleImageUpload}
+
                   />
               </Box>
 
