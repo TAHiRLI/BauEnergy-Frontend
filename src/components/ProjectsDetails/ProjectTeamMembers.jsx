@@ -214,7 +214,7 @@ const handleAddExistingTeamMember = async () => {
 
   
   return (
-    <Box height={400} className="p-0">
+    <Box className="p-0">
       <Button
         className='!bg-[#1D34D8] !rounded-2xl !mb-5'
         startIcon={<AddIcon />}
