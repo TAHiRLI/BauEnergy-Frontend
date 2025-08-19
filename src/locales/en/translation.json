@@ -262,7 +262,8 @@
         "Controlled": "Controlled",
         "To be controlled": "To be controlled"
     }, 
-    "Errors":{
-        
+    "errors":{
+        "outOfStock": "You are out of stock. Only {{count}} instruments are available. Please restock your instruments.",
+        "generic": "Something went wrong. Please try again."
     }
 }

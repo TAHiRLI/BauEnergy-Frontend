@@ -261,5 +261,9 @@
         "In controlling": "In Kontrolle",
         "Controlled": "Kontrolliert",
         "To be controlled": "Zu kontrollieren"
-    }
+    },
+    "errors": {
+        "outOfStock": "Nicht genug auf Lager. Es sind nur {{count}} Instrumente verfügbar. Bitte füllen Sie den Bestand auf.",
+        "generic": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut."
+  }
 }

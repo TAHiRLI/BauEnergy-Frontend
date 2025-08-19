@@ -157,12 +157,18 @@ export default function InstrumentTab({ project }) {
       setSelectedInstrumentId("");
       setInstrumentCount(1);
       setOpenDialog(false);
-    } catch (error) {
-      console.error("Error adding instrument:", error);
-      setOpenDialog(false);
-  
-      Swal.fire("Error!", error.response.data, "error");
-    }
+      } catch (error) {
+        const errorData = error.response?.data;
+
+        let message = "";
+        if (errorData.errorCode === "OUT_OF_STOCK") {
+          message = t("errors:outOfStock", { count: errorData.available });
+        } else {
+          message = t("errors:generic");
+        }
+
+        Swal.fire("Error!", message, "error");
+      }
   };
 
   const handleCloseHistoryDialog = () => setOpenHistoryDialog(false);
