@@ -103,7 +103,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   
     projectId = projectId.split("?")[0];
   
-    console.log("Extracted Project ID:", projectId);
+    // console.log("Extracted Project ID:", projectId);
   
     if (projectId) {
       handleProjectSelect(projectId);

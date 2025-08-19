@@ -134,58 +134,67 @@ const TutorialPage = () => {
     // } catch (error) {
     //   console.error("Error generating PDF:", error);
     // }
-    console.log("1")
 
-    try {
-    const certificateDiv = document.getElementById("certificate");
-    const instructionsDiv = document.getElementById("instructions");
+  try {
+      const certificateDiv = document.getElementById("certificate");
+      const instructionsDiv = document.getElementById("instructions");
+      const instructionsDeDiv = document.getElementById("instructionsDe");
 
-    if (!certificateDiv || !instructionsDiv) {
-      Swal.fire("Error", "Certificate elements not found!", "error");
-      return;
+      if (!certificateDiv || !instructionsDiv || !instructionsDeDiv) {
+        Swal.fire("Error", "Certificate or instruction elements not found!", "error");
+        return;
+      }
+
+      const screenWidth = window.innerWidth;
+      const SCALE_FACTOR = screenWidth < 500 ? 5 : screenWidth < 768 ? 4 : 1;
+
+      // Capture all three sections
+      const canvasCertificate = await html2canvas(certificateDiv, { scale: SCALE_FACTOR });
+      const canvasInstructions = await html2canvas(instructionsDiv, { scale: SCALE_FACTOR });
+      const canvasInstructionsDe = await html2canvas(instructionsDeDiv, { scale: SCALE_FACTOR });
+
+      const imgDataCertificate = canvasCertificate.toDataURL("image/png");
+      const imgDataInstructions = canvasInstructions.toDataURL("image/png");
+      const imgDataInstructionsDe = canvasInstructionsDe.toDataURL("image/png");
+
+      // Create PDF
+      const pdf = new jsPDF("portrait", "pt", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const addImageToPDF = (imgData) => {
+        const imgProps = pdf.getImageProperties(imgData);
+        const ratio = Math.min(pageWidth / imgProps.width, pageHeight / imgProps.height);
+        const newWidth = imgProps.width * ratio;
+        const newHeight = imgProps.height * ratio;
+        const marginX = (pageWidth - newWidth) / 2;
+        const marginY = (pageHeight - newHeight) / 2;
+        pdf.addImage(imgData, "PNG", marginX, marginY, newWidth, newHeight);
+      };
+
+      // Add pages
+      addImageToPDF(imgDataCertificate);
+      pdf.addPage();
+      addImageToPDF(imgDataInstructions);
+      pdf.addPage();
+      addImageToPDF(imgDataInstructionsDe);
+
+      // Save PDF in browser
+      pdf.save("certificate.pdf");
+
+      // Convert PDF to Blob and upload
+      const blob = pdf.output("blob");
+      const file = new File([blob], "certificate.pdf", { type: "application/pdf" });
+      await handleDocumentUpload([file]);
+
+    } catch (error) {
+      console.error("Certificate generation or upload failed:", error);
+      Swal.fire(
+        "Error",
+        "An error occurred while generating or uploading the certificate.",
+        "error"
+      );
     }
-
-    const screenWidth = window.innerWidth;
-    let SCALE_FACTOR = screenWidth < 500 ? 5 : screenWidth < 768 ? 4 : 1;
-
-    const canvasCertificate = await html2canvas(certificateDiv, { scale: SCALE_FACTOR });
-    const canvasInstructions = await html2canvas(instructionsDiv, { scale: SCALE_FACTOR });
-
-    const imgDataCertificate = canvasCertificate.toDataURL("image/png");
-    const imgDataInstructions = canvasInstructions.toDataURL("image/png");
-
-    const pdf = new jsPDF("portrait", "pt", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-
-    const addImageToPDF = (imgData) => {
-      const imgProps = pdf.getImageProperties(imgData);
-      const ratio = Math.min(pageWidth / imgProps.width, pageHeight / imgProps.height);
-      const newWidth = imgProps.width * ratio;
-      const newHeight = imgProps.height * ratio;
-      const marginX = (pageWidth - newWidth) / 2;
-      const marginY = (pageHeight - newHeight) / 2;
-      pdf.addImage(imgData, "PNG", marginX, marginY, newWidth, newHeight);
-    };
-
-    addImageToPDF(imgDataCertificate);
-    pdf.addPage();
-    addImageToPDF(imgDataInstructions);
-
-    // Save PDF to browser
-    pdf.save("certificate.pdf");
-
-    // Convert PDF to Blob for upload
-    const blob = pdf.output("blob");
-    const file = new File([blob], "certificate.pdf", { type: "application/pdf" });
-
-    // Upload the PDF
-    await handleDocumentUpload([file]);
-
-  } catch (error) {
-    console.error("Certificate generation or upload failed:", error);
-    Swal.fire("Error", "An error occurred while generating or uploading the certificate.", "error");
-  }
   };
 
   const handleDocumentUpload = async (selectedFiles) => {
@@ -264,7 +273,7 @@ const TutorialPage = () => {
             <div id="certificate" className="certificate relative  border border-solid border-gray-500  mx-10 p-2">
               <img src={image3} className="!w-full h-auto" alt="certificate Image" />
               <div className=" text-[1.5vw] absolute top-[48%] left-[50%] -translate-x-1/2 w-3/4  ">
-                <p className="fullanme w-full text-nowrap  text-[5vw]  text-center z-2">{userData?.fullName}</p>
+                <p className="fullanme w-full text-nowrap  text-[3vw]  text-center z-2">{userData?.fullName}</p>
                 <p className="flex justify-between">
                   <span>Test: </span> <span>Eingangsunterweisung Deutschland</span>
                 </p>
@@ -286,7 +295,10 @@ const TutorialPage = () => {
               id="instructions"
               className="instructions aspect-[794/1122] border border-solid border-gray-500  mt-3 mx-10 p-2"
             >
-              <img src={instructions} className="w-[15vw] ms-5" alt="" srcset="" />
+              <div className="flex justify-center">
+                <img src={instructions} className="w-[15vw] text-center mt-5" alt="" srcset="" />
+
+              </div>
 
               <div className="p-5  text-[1.5vw] flex flex-col gap-y-2">
                 <p className=" mt-6 font-bold">Условия:</p>
@@ -328,7 +340,9 @@ const TutorialPage = () => {
               id="instructionsDe"
               className="instructions aspect-[794/1122] border border-solid border-gray-500  mt-3 mx-10 p-2"
             >
-              <img src={instructions} className="w-[15vw] ms-5" alt="" srcset="" />
+              <div className="flex justify-center">
+                <img src={instructions} className="w-[15vw] text-center mt-5" alt="" srcset="" />
+              </div>
 
               <div className="p-5  text-[1.5vw] flex flex-col gap-y-2">
                 <p className=" mt-6 font-bold">Bedingungen:</p>

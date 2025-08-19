@@ -86,6 +86,9 @@ const InstrumentDetails = () => {
   const [qrImage, setQrImage] = useState("");
   const {projects, setProjects, selectedProject, setSelectedProject} = useProjects();
 
+    const [isAndroid, setIsAndroid] = useState(false);
+  
+
   const handleAddDocumentOpenDialog = () => setOpenAddDocumentDialog(true);
   const handleAddDocumentCloseDialog = () => setOpenAddDocumentDialog(false);
   const [triggerSearch, setTriggerSearch] = useState(true);
@@ -114,6 +117,12 @@ const InstrumentDetails = () => {
   const [searchParams] = useSearchParams();
   const hasQr = location.pathname.includes("/qr");
   const [firstInstrument, setFirstInstrument] = useState(null)
+
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isRealAndroid = userAgent.includes("android") && !userAgent.includes("windows") && !userAgent.includes("macintosh");
+    setIsAndroid(isRealAndroid);
+  }, []);
 
 useEffect(() => {
   const idFromPath = location.pathname.split("/")[3];
@@ -1229,13 +1238,31 @@ const handleDelete = async (id) => {
                     type="file"
                     accept="image/*"
                     style={{ display: 'none' }}
-                    // onChange={(event) => {
-                    //   handleImageUpload(event);
-                    //   setFieldValue('image', event.currentTarget.files[0]);
-                    // }}
                     onChange={handleImageUpload}
-
                   />
+
+                                {/* Capture with camera (only Android) */}
+                                {isAndroid && (
+                                  <>
+                                    <Button
+                                      variant="text"
+                                      className="!text-[#1D34D8]"
+                                      onClick={() => document.getElementById("profile-image-input-android").click()}
+                                    >
+                                      {t("Capture Image")}
+                                    </Button>
+                                    <input
+                                      id="profile-image-input-android"
+                                      type="file"
+                                      accept="image/*"
+                                      capture="environment"
+                                      style={{ display: "none" }}
+                                      onChange={handleImageUpload}
+                                    />
+                                  </>
+                                )}
+
+
               </Box>
 
               <Box my={2}>

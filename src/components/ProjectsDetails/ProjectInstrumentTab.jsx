@@ -40,9 +40,13 @@ import { useTranslation } from "react-i18next";
 import CarSelectDropdown from "../common/CarSelectDropdown";
 import { carService } from "../../APIs/Services/car.service";
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import { useAuth } from "../../context/authContext";
+import { jwtDecode } from "jwt-decode";
 
 export default function InstrumentTab({ project }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const decodedToken = user?.token ? jwtDecode(user.token) : null;
 
   const { state, dispatch, fetchProject, selectedProject, setSelectedProject } = useProjects();
   const [openDialog, setOpenDialog] = useState(false);
@@ -600,6 +604,12 @@ const handleAssignInstruments = async () => {
 if (state.loading) return <p>Loading project...</p>;
 if (state.error) return <p>Error: {state.error}</p>;
 
+  var isAdmin = false
+  const userRoles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || []; 
+  if (userRoles.includes("Company_Owner")) {
+
+      isAdmin = true;
+  }
 
   if (state.error) {
     return <div>Error loading instruments</div>;
@@ -647,15 +657,17 @@ if (state.error) return <p>Error: {state.error}</p>;
           <div className="flex items-center gap-3 justify-between">
             <CarSelectDropdown onSelectCar={(car) => setSelectedCar(car)} />
 
-            <Button
-              className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0 sm:!mx-3 !min-w-40"
-              startIcon={<AddIcon />}
-              variant="contained"
-              onClick={() => setOpenDialog(true)}
-              aria-hidden
-            >
-              {t("PopUp:AddNewInstrument")}
-            </Button>
+                {isAdmin && (
+                  <Button
+                    className="!bg-[#1D34D8] !rounded-3xl !normal-case !py-2 !my-4 !sm:my-0 sm:!mx-3 !min-w-40"
+                    startIcon={<AddIcon />}
+                    variant="contained"
+                    onClick={() => setOpenDialog(true)}
+                    aria-hidden
+                  >
+                    {t("PopUp:AddNewInstrument")}
+                  </Button>
+                )}
           </div>
         </div>
         
